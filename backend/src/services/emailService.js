@@ -9,7 +9,7 @@ class EmailService {
   }
 
   // TODO: Implement service methods
-  
+
   async sendEmail() {
     // Implementation goes here
   }

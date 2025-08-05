@@ -87,5 +87,5 @@ module.exports = {
   closeConnection,
   executeRawQuery,
   getDatabaseStats,
-  sequelize
+  sequelize,
 };

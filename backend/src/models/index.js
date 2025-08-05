@@ -34,11 +34,11 @@ const models = {
   Notification: Notification(sequelize, Sequelize.DataTypes),
   ApiKey: ApiKey(sequelize, Sequelize.DataTypes),
   Configuration: Configuration(sequelize, Sequelize.DataTypes),
-  AuditLog: AuditLog(sequelize, Sequelize.DataTypes)
+  AuditLog: AuditLog(sequelize, Sequelize.DataTypes),
 };
 
 // Define associations
-Object.keys(models).forEach(modelName => {
+Object.keys(models).forEach((modelName) => {
   if (models[modelName].associate) {
     models[modelName].associate(models);
   }
@@ -48,5 +48,5 @@ Object.keys(models).forEach(modelName => {
 module.exports = {
   ...models,
   sequelize,
-  Sequelize
+  Sequelize,
 };

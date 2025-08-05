@@ -9,7 +9,7 @@ class AnalyticsService {
   }
 
   // TODO: Implement service methods
-  
+
   async processAnalytics() {
     // Implementation goes here
   }

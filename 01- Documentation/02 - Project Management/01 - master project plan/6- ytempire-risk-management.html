@@ -1,913 +1,978 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>YTEMPIRE Risk Management Framework</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #0a0a0a;
-            color: #e0e0e0;
-            margin: 0;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        h1 {
-            color: #00ff88;
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(0,255,136,0.3);
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #888;
-            margin-bottom: 40px;
-            font-size: 1.1em;
-        }
-        
-        /* Risk Heat Map */
-        .heatmap-container {
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .heatmap-title {
-            font-size: 1.8em;
-            color: #00ff88;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .heatmap-grid {
-            display: grid;
-            grid-template-columns: 100px repeat(5, 1fr);
-            grid-template-rows: repeat(6, 80px);
-            gap: 2px;
-            margin-bottom: 20px;
-        }
-        
-        .heatmap-cell {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            border-radius: 4px;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .heatmap-cell:hover {
-            transform: scale(1.05);
-            z-index: 10;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-        }
-        
-        .axis-label {
-            background: #252525;
-            color: #888;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .impact-low { background: #1a4d1a; }
-        .impact-medium { background: #4d4d1a; }
-        .impact-high { background: #664d1a; }
-        .impact-very-high { background: #802d1a; }
-        .impact-critical { background: #991a1a; }
-        
-        .risk-item {
-            background: rgba(0,0,0,0.5);
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin: 2px;
-            font-size: 0.8em;
-            text-align: center;
-        }
-        
-        /* Risk Register */
-        .risk-section {
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-        }
-        
-        .risk-category {
-            font-size: 1.5em;
-            color: #00ff88;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .category-icon {
-            margin-right: 15px;
-            font-size: 1.3em;
-        }
-        
-        .risk-card {
-            background: #252525;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-left: 4px solid #ff3333;
-            transition: all 0.3s ease;
-        }
-        
-        .risk-card:hover {
-            transform: translateX(10px);
-            box-shadow: 0 5px 20px rgba(255,51,51,0.2);
-        }
-        
-        .risk-card.low { border-left-color: #00ff88; }
-        .risk-card.medium { border-left-color: #ffff00; }
-        .risk-card.high { border-left-color: #ff8800; }
-        .risk-card.critical { border-left-color: #ff3333; }
-        
-        .risk-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .risk-id {
-            background: #333;
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.9em;
-            color: #00ff88;
-        }
-        
-        .risk-title {
-            font-size: 1.2em;
-            color: #fff;
-            font-weight: bold;
-            flex-grow: 1;
-            margin: 0 20px;
-        }
-        
-        .risk-score {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .score-badge {
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-        
-        .score-low { background: #00ff88; color: #000; }
-        .score-medium { background: #ffff00; color: #000; }
-        .score-high { background: #ff8800; color: #fff; }
-        .score-critical { background: #ff3333; color: #fff; }
-        
-        .risk-details {
-            margin-bottom: 15px;
-        }
-        
-        .risk-description {
-            color: #ccc;
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-        
-        .risk-metrics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .metric-card {
-            background: #2a2a2a;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-        }
-        
-        .metric-label {
-            color: #888;
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .metric-value {
-            color: #00ccff;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-top: 5px;
-        }
-        
-        /* Mitigation Strategies */
-        .mitigation-section {
-            background: #2a2a2a;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-        
-        .mitigation-header {
-            color: #00ff88;
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .mitigation-header::before {
-            content: "🛡️";
-            margin-right: 10px;
-        }
-        
-        .mitigation-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .mitigation-item {
-            padding: 8px 0;
-            color: #ccc;
-            display: flex;
-            align-items: flex-start;
-        }
-        
-        .mitigation-item::before {
-            content: "▸";
-            color: #00ff88;
-            margin-right: 10px;
-            font-weight: bold;
-        }
-        
-        /* Risk Timeline */
-        .timeline-container {
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .timeline-header {
-            font-size: 1.8em;
-            color: #00ff88;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .timeline-chart {
-            position: relative;
-            padding: 20px 0;
-        }
-        
-        .timeline-line {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #00ff88 0%, #00ccff 50%, #ff00ff 100%);
-            z-index: 1;
-        }
-        
-        .timeline-items {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .timeline-item {
-            background: #252525;
-            padding: 15px;
-            border-radius: 10px;
-            border: 2px solid #00ff88;
-            text-align: center;
-            max-width: 150px;
-            transition: all 0.3s ease;
-        }
-        
-        .timeline-item:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 30px rgba(0,255,136,0.3);
-        }
-        
-        .timeline-phase {
-            color: #00ff88;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .timeline-risks {
-            color: #ccc;
-            font-size: 0.9em;
-        }
-        
-        /* Risk Dashboard */
-        .dashboard-container {
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        
-        .dashboard-card {
-            background: #252525;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid #333;
-            transition: all 0.3s ease;
-        }
-        
-        .dashboard-card:hover {
-            border-color: #00ff88;
-            transform: translateY(-5px);
-        }
-        
-        .dashboard-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .value-critical { color: #ff3333; }
-        .value-high { color: #ff8800; }
-        .value-medium { color: #ffff00; }
-        .value-low { color: #00ff88; }
-        
-        .dashboard-label {
-            color: #888;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        /* Response Plans */
-        .response-plan {
-            background: #252525;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .response-trigger {
-            background: #ff3333;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            display: inline-block;
-        }
-        
-        .response-actions {
-            background: #2a2a2a;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-        
-        .action-item {
-            padding: 8px 0;
-            color: #ccc;
-            display: flex;
-            align-items: center;
-        }
-        
-        .action-priority {
-            background: #ff8800;
-            color: #fff;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.8em;
-            margin-right: 10px;
-            font-weight: bold;
-        }
+      body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: #0a0a0a;
+        color: #e0e0e0;
+        margin: 0;
+        padding: 20px;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        color: #00ff88;
+        text-align: center;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #888;
+        margin-bottom: 40px;
+        font-size: 1.1em;
+      }
+
+      /* Risk Heat Map */
+      .heatmap-container {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+      }
+
+      .heatmap-title {
+        font-size: 1.8em;
+        color: #00ff88;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .heatmap-grid {
+        display: grid;
+        grid-template-columns: 100px repeat(5, 1fr);
+        grid-template-rows: repeat(6, 80px);
+        gap: 2px;
+        margin-bottom: 20px;
+      }
+
+      .heatmap-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border-radius: 4px;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .heatmap-cell:hover {
+        transform: scale(1.05);
+        z-index: 10;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+      }
+
+      .axis-label {
+        background: #252525;
+        color: #888;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .impact-low {
+        background: #1a4d1a;
+      }
+      .impact-medium {
+        background: #4d4d1a;
+      }
+      .impact-high {
+        background: #664d1a;
+      }
+      .impact-very-high {
+        background: #802d1a;
+      }
+      .impact-critical {
+        background: #991a1a;
+      }
+
+      .risk-item {
+        background: rgba(0, 0, 0, 0.5);
+        padding: 4px 8px;
+        border-radius: 4px;
+        margin: 2px;
+        font-size: 0.8em;
+        text-align: center;
+      }
+
+      /* Risk Register */
+      .risk-section {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+      }
+
+      .risk-category {
+        font-size: 1.5em;
+        color: #00ff88;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+      }
+
+      .category-icon {
+        margin-right: 15px;
+        font-size: 1.3em;
+      }
+
+      .risk-card {
+        background: #252525;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-left: 4px solid #ff3333;
+        transition: all 0.3s ease;
+      }
+
+      .risk-card:hover {
+        transform: translateX(10px);
+        box-shadow: 0 5px 20px rgba(255, 51, 51, 0.2);
+      }
+
+      .risk-card.low {
+        border-left-color: #00ff88;
+      }
+      .risk-card.medium {
+        border-left-color: #ffff00;
+      }
+      .risk-card.high {
+        border-left-color: #ff8800;
+      }
+      .risk-card.critical {
+        border-left-color: #ff3333;
+      }
+
+      .risk-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .risk-id {
+        background: #333;
+        padding: 5px 15px;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 0.9em;
+        color: #00ff88;
+      }
+
+      .risk-title {
+        font-size: 1.2em;
+        color: #fff;
+        font-weight: bold;
+        flex-grow: 1;
+        margin: 0 20px;
+      }
+
+      .risk-score {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .score-badge {
+        padding: 5px 15px;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 0.9em;
+      }
+
+      .score-low {
+        background: #00ff88;
+        color: #000;
+      }
+      .score-medium {
+        background: #ffff00;
+        color: #000;
+      }
+      .score-high {
+        background: #ff8800;
+        color: #fff;
+      }
+      .score-critical {
+        background: #ff3333;
+        color: #fff;
+      }
+
+      .risk-details {
+        margin-bottom: 15px;
+      }
+
+      .risk-description {
+        color: #ccc;
+        margin-bottom: 15px;
+        line-height: 1.5;
+      }
+
+      .risk-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .metric-card {
+        background: #2a2a2a;
+        padding: 10px;
+        border-radius: 6px;
+        text-align: center;
+      }
+
+      .metric-label {
+        color: #888;
+        font-size: 0.85em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .metric-value {
+        color: #00ccff;
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-top: 5px;
+      }
+
+      /* Mitigation Strategies */
+      .mitigation-section {
+        background: #2a2a2a;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+      }
+
+      .mitigation-header {
+        color: #00ff88;
+        font-weight: bold;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+      }
+
+      .mitigation-header::before {
+        content: '🛡️';
+        margin-right: 10px;
+      }
+
+      .mitigation-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .mitigation-item {
+        padding: 8px 0;
+        color: #ccc;
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .mitigation-item::before {
+        content: '▸';
+        color: #00ff88;
+        margin-right: 10px;
+        font-weight: bold;
+      }
+
+      /* Risk Timeline */
+      .timeline-container {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+      }
+
+      .timeline-header {
+        font-size: 1.8em;
+        color: #00ff88;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .timeline-chart {
+        position: relative;
+        padding: 20px 0;
+      }
+
+      .timeline-line {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #00ff88 0%, #00ccff 50%, #ff00ff 100%);
+        z-index: 1;
+      }
+
+      .timeline-items {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .timeline-item {
+        background: #252525;
+        padding: 15px;
+        border-radius: 10px;
+        border: 2px solid #00ff88;
+        text-align: center;
+        max-width: 150px;
+        transition: all 0.3s ease;
+      }
+
+      .timeline-item:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+      }
+
+      .timeline-phase {
+        color: #00ff88;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .timeline-risks {
+        color: #ccc;
+        font-size: 0.9em;
+      }
+
+      /* Risk Dashboard */
+      .dashboard-container {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+      }
+
+      .dashboard-card {
+        background: #252525;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        border: 1px solid #333;
+        transition: all 0.3s ease;
+      }
+
+      .dashboard-card:hover {
+        border-color: #00ff88;
+        transform: translateY(-5px);
+      }
+
+      .dashboard-value {
+        font-size: 2.5em;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .value-critical {
+        color: #ff3333;
+      }
+      .value-high {
+        color: #ff8800;
+      }
+      .value-medium {
+        color: #ffff00;
+      }
+      .value-low {
+        color: #00ff88;
+      }
+
+      .dashboard-label {
+        color: #888;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Response Plans */
+      .response-plan {
+        background: #252525;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+
+      .response-trigger {
+        background: #ff3333;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        display: inline-block;
+      }
+
+      .response-actions {
+        background: #2a2a2a;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+      }
+
+      .action-item {
+        padding: 8px 0;
+        color: #ccc;
+        display: flex;
+        align-items: center;
+      }
+
+      .action-priority {
+        background: #ff8800;
+        color: #fff;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.8em;
+        margin-right: 10px;
+        font-weight: bold;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>YTEMPIRE Risk Management Framework</h1>
-        <p class="subtitle">Comprehensive Risk Assessment, Mitigation Strategies & Response Plans</p>
-        
-        <!-- Risk Dashboard -->
-        <div class="dashboard-container">
-            <div class="timeline-header">Risk Management Dashboard</div>
-            <div class="dashboard-grid">
-                <div class="dashboard-card">
-                    <div class="dashboard-value value-critical">3</div>
-                    <div class="dashboard-label">Critical Risks</div>
-                </div>
-                <div class="dashboard-card">
-                    <div class="dashboard-value value-high">7</div>
-                    <div class="dashboard-label">High Risks</div>
-                </div>
-                <div class="dashboard-card">
-                    <div class="dashboard-value value-medium">12</div>
-                    <div class="dashboard-label">Medium Risks</div>
-                </div>
-                <div class="dashboard-card">
-                    <div class="dashboard-value value-low">8</div>
-                    <div class="dashboard-label">Low Risks</div>
-                </div>
-                <div class="dashboard-card">
-                    <div class="dashboard-value" style="color: #00ccff;">$1.0M</div>
-                    <div class="dashboard-label">Risk Reserve</div>
-                </div>
-                <div class="dashboard-card">
-                    <div class="dashboard-value" style="color: #ff00ff;">85%</div>
-                    <div class="dashboard-label">Mitigation Coverage</div>
-                </div>
-            </div>
+      <h1>YTEMPIRE Risk Management Framework</h1>
+      <p class="subtitle">Comprehensive Risk Assessment, Mitigation Strategies & Response Plans</p>
+
+      <!-- Risk Dashboard -->
+      <div class="dashboard-container">
+        <div class="timeline-header">Risk Management Dashboard</div>
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <div class="dashboard-value value-critical">3</div>
+            <div class="dashboard-label">Critical Risks</div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-value value-high">7</div>
+            <div class="dashboard-label">High Risks</div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-value value-medium">12</div>
+            <div class="dashboard-label">Medium Risks</div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-value value-low">8</div>
+            <div class="dashboard-label">Low Risks</div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-value" style="color: #00ccff">$1.0M</div>
+            <div class="dashboard-label">Risk Reserve</div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-value" style="color: #ff00ff">85%</div>
+            <div class="dashboard-label">Mitigation Coverage</div>
+          </div>
         </div>
-        
-        <!-- Risk Heat Map -->
-        <div class="heatmap-container">
-            <div class="heatmap-title">Risk Probability vs Impact Matrix</div>
-            <div class="heatmap-grid">
-                <!-- Headers -->
-                <div class="heatmap-cell axis-label"></div>
-                <div class="heatmap-cell axis-label">Very Low<br>(< 10%)</div>
-                <div class="heatmap-cell axis-label">Low<br>(10-30%)</div>
-                <div class="heatmap-cell axis-label">Medium<br>(30-50%)</div>
-                <div class="heatmap-cell axis-label">High<br>(50-70%)</div>
-                <div class="heatmap-cell axis-label">Very High<br>(> 70%)</div>
-                
-                <!-- Critical Impact -->
-                <div class="heatmap-cell axis-label">Critical<br>Impact</div>
-                <div class="heatmap-cell impact-very-high"></div>
-                <div class="heatmap-cell impact-critical">
-                    <div class="risk-item">R-001</div>
-                </div>
-                <div class="heatmap-cell impact-critical">
-                    <div class="risk-item">R-002</div>
-                </div>
-                <div class="heatmap-cell impact-critical">
-                    <div class="risk-item">R-003</div>
-                </div>
-                <div class="heatmap-cell impact-critical"></div>
-                
-                <!-- High Impact -->
-                <div class="heatmap-cell axis-label">High<br>Impact</div>
-                <div class="heatmap-cell impact-medium"></div>
-                <div class="heatmap-cell impact-high">
-                    <div class="risk-item">R-004</div>
-                    <div class="risk-item">R-005</div>
-                </div>
-                <div class="heatmap-cell impact-high">
-                    <div class="risk-item">R-006</div>
-                </div>
-                <div class="heatmap-cell impact-very-high">
-                    <div class="risk-item">R-007</div>
-                </div>
-                <div class="heatmap-cell impact-very-high"></div>
-                
-                <!-- Medium Impact -->
-                <div class="heatmap-cell axis-label">Medium<br>Impact</div>
-                <div class="heatmap-cell impact-low"></div>
-                <div class="heatmap-cell impact-medium">
-                    <div class="risk-item">R-008</div>
-                </div>
-                <div class="heatmap-cell impact-medium">
-                    <div class="risk-item">R-009</div>
-                    <div class="risk-item">R-010</div>
-                </div>
-                <div class="heatmap-cell impact-high">
-                    <div class="risk-item">R-011</div>
-                </div>
-                <div class="heatmap-cell impact-high"></div>
-                
-                <!-- Low Impact -->
-                <div class="heatmap-cell axis-label">Low<br>Impact</div>
-                <div class="heatmap-cell impact-low">
-                    <div class="risk-item">R-012</div>
-                </div>
-                <div class="heatmap-cell impact-low">
-                    <div class="risk-item">R-013</div>
-                </div>
-                <div class="heatmap-cell impact-medium">
-                    <div class="risk-item">R-014</div>
-                </div>
-                <div class="heatmap-cell impact-medium"></div>
-                <div class="heatmap-cell impact-medium"></div>
-                
-                <!-- Very Low Impact -->
-                <div class="heatmap-cell axis-label">Very Low<br>Impact</div>
-                <div class="heatmap-cell impact-low"></div>
-                <div class="heatmap-cell impact-low"></div>
-                <div class="heatmap-cell impact-low"></div>
-                <div class="heatmap-cell impact-low"></div>
-                <div class="heatmap-cell impact-low"></div>
-            </div>
+      </div>
+
+      <!-- Risk Heat Map -->
+      <div class="heatmap-container">
+        <div class="heatmap-title">Risk Probability vs Impact Matrix</div>
+        <div class="heatmap-grid">
+          <!-- Headers -->
+          <div class="heatmap-cell axis-label"></div>
+          <div class="heatmap-cell axis-label">Very Low<br />(< 10%)</div>
+          <div class="heatmap-cell axis-label">Low<br />(10-30%)</div>
+          <div class="heatmap-cell axis-label">Medium<br />(30-50%)</div>
+          <div class="heatmap-cell axis-label">High<br />(50-70%)</div>
+          <div class="heatmap-cell axis-label">Very High<br />(> 70%)</div>
+
+          <!-- Critical Impact -->
+          <div class="heatmap-cell axis-label">Critical<br />Impact</div>
+          <div class="heatmap-cell impact-very-high"></div>
+          <div class="heatmap-cell impact-critical">
+            <div class="risk-item">R-001</div>
+          </div>
+          <div class="heatmap-cell impact-critical">
+            <div class="risk-item">R-002</div>
+          </div>
+          <div class="heatmap-cell impact-critical">
+            <div class="risk-item">R-003</div>
+          </div>
+          <div class="heatmap-cell impact-critical"></div>
+
+          <!-- High Impact -->
+          <div class="heatmap-cell axis-label">High<br />Impact</div>
+          <div class="heatmap-cell impact-medium"></div>
+          <div class="heatmap-cell impact-high">
+            <div class="risk-item">R-004</div>
+            <div class="risk-item">R-005</div>
+          </div>
+          <div class="heatmap-cell impact-high">
+            <div class="risk-item">R-006</div>
+          </div>
+          <div class="heatmap-cell impact-very-high">
+            <div class="risk-item">R-007</div>
+          </div>
+          <div class="heatmap-cell impact-very-high"></div>
+
+          <!-- Medium Impact -->
+          <div class="heatmap-cell axis-label">Medium<br />Impact</div>
+          <div class="heatmap-cell impact-low"></div>
+          <div class="heatmap-cell impact-medium">
+            <div class="risk-item">R-008</div>
+          </div>
+          <div class="heatmap-cell impact-medium">
+            <div class="risk-item">R-009</div>
+            <div class="risk-item">R-010</div>
+          </div>
+          <div class="heatmap-cell impact-high">
+            <div class="risk-item">R-011</div>
+          </div>
+          <div class="heatmap-cell impact-high"></div>
+
+          <!-- Low Impact -->
+          <div class="heatmap-cell axis-label">Low<br />Impact</div>
+          <div class="heatmap-cell impact-low">
+            <div class="risk-item">R-012</div>
+          </div>
+          <div class="heatmap-cell impact-low">
+            <div class="risk-item">R-013</div>
+          </div>
+          <div class="heatmap-cell impact-medium">
+            <div class="risk-item">R-014</div>
+          </div>
+          <div class="heatmap-cell impact-medium"></div>
+          <div class="heatmap-cell impact-medium"></div>
+
+          <!-- Very Low Impact -->
+          <div class="heatmap-cell axis-label">Very Low<br />Impact</div>
+          <div class="heatmap-cell impact-low"></div>
+          <div class="heatmap-cell impact-low"></div>
+          <div class="heatmap-cell impact-low"></div>
+          <div class="heatmap-cell impact-low"></div>
+          <div class="heatmap-cell impact-low"></div>
         </div>
-        
-        <!-- Technical Risks -->
-        <div class="risk-section">
-            <div class="risk-category">
-                <span class="category-icon">⚙️</span>
-                Technical Risks
-            </div>
-            
-            <div class="risk-card critical">
-                <div class="risk-header">
-                    <span class="risk-id">R-001</span>
-                    <span class="risk-title">AI Model Performance Degradation</span>
-                    <div class="risk-score">
-                        <span class="score-badge score-critical">Critical</span>
-                    </div>
-                </div>
-                <div class="risk-details">
-                    <div class="risk-description">
-                        LLM APIs may change behavior, reduce quality, or introduce biases over time, 
-                        potentially degrading content quality and viewer engagement.
-                    </div>
-                    <div class="risk-metrics">
-                        <div class="metric-card">
-                            <div class="metric-label">Probability</div>
-                            <div class="metric-value">40%</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Impact</div>
-                            <div class="metric-value">$2M+</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Detection Time</div>
-                            <div class="metric-value">1-7 days</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Recovery Time</div>
-                            <div class="metric-value">2-4 weeks</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mitigation-section">
-                    <div class="mitigation-header">Mitigation Strategies</div>
-                    <ul class="mitigation-list">
-                        <li class="mitigation-item">Implement multi-model fallback system with 3+ LLM providers</li>
-                        <li class="mitigation-item">Continuous A/B testing of model outputs with quality metrics</li>
-                        <li class="mitigation-item">Build proprietary fine-tuned models as backup</li>
-                        <li class="mitigation-item">Automated quality monitoring with alerting thresholds</li>
-                        <li class="mitigation-item">Weekly model performance reviews and prompt optimization</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="risk-card critical">
-                <div class="risk-header">
-                    <span class="risk-id">R-002</span>
-                    <span class="risk-title">System Scalability Failure</span>
-                    <div class="risk-score">
-                        <span class="score-badge score-critical">Critical</span>
-                    </div>
-                </div>
-                <div class="risk-details">
-                    <div class="risk-description">
-                        Infrastructure may fail to handle 300+ daily videos across 100+ channels, 
-                        causing system crashes, data loss, or service degradation.
-                    </div>
-                    <div class="risk-metrics">
-                        <div class="metric-card">
-                            <div class="metric-label">Probability</div>
-                            <div class="metric-value">35%</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Impact</div>
-                            <div class="metric-value">$1.5M+</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Detection Time</div>
-                            <div class="metric-value">< 1 hour</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Recovery Time</div>
-                            <div class="metric-value">4-48 hours</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mitigation-section">
-                    <div class="mitigation-header">Mitigation Strategies</div>
-                    <ul class="mitigation-list">
-                        <li class="mitigation-item">Design for 10x capacity with auto-scaling infrastructure</li>
-                        <li class="mitigation-item">Implement circuit breakers and rate limiting</li>
-                        <li class="mitigation-item">Multi-region deployment with automatic failover</li>
-                        <li class="mitigation-item">Comprehensive load testing at 2x, 5x, and 10x capacity</li>
-                        <li class="mitigation-item">Gradual rollout strategy with phased channel onboarding</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="risk-card high">
-                <div class="risk-header">
-                    <span class="risk-id">R-004</span>
-                    <span class="risk-title">API Rate Limiting & Quotas</span>
-                    <div class="risk-score">
-                        <span class="score-badge score-high">High</span>
-                    </div>
-                </div>
-                <div class="risk-details">
-                    <div class="risk-description">
-                        Third-party APIs (YouTube, OpenAI, ElevenLabs) may impose stricter rate limits 
-                        or quota restrictions, limiting content production capacity.
-                    </div>
-                    <div class="risk-metrics">
-                        <div class="metric-card">
-                            <div class="metric-label">Probability</div>
-                            <div class="metric-value">60%</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Impact</div>
-                            <div class="metric-value">$500K</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Detection Time</div>
-                            <div class="metric-value">Immediate</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Recovery Time</div>
-                            <div class="metric-value">1-2 weeks</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mitigation-section">
-                    <div class="mitigation-header">Mitigation Strategies</div>
-                    <ul class="mitigation-list">
-                        <li class="mitigation-item">Negotiate enterprise agreements with higher quotas</li>
-                        <li class="mitigation-item">Implement intelligent request queuing and batching</li>
-                        <li class="mitigation-item">Build request caching layer to minimize API calls</li>
-                        <li class="mitigation-item">Develop quota monitoring dashboard with predictive alerts</li>
-                    </ul>
-                </div>
-            </div>
+      </div>
+
+      <!-- Technical Risks -->
+      <div class="risk-section">
+        <div class="risk-category">
+          <span class="category-icon">⚙️</span>
+          Technical Risks
         </div>
-        
-        <!-- Business Risks -->
-        <div class="risk-section">
-            <div class="risk-category">
-                <span class="category-icon">💼</span>
-                Business & Market Risks
+
+        <div class="risk-card critical">
+          <div class="risk-header">
+            <span class="risk-id">R-001</span>
+            <span class="risk-title">AI Model Performance Degradation</span>
+            <div class="risk-score">
+              <span class="score-badge score-critical">Critical</span>
             </div>
-            
-            <div class="risk-card critical">
-                <div class="risk-header">
-                    <span class="risk-id">R-003</span>
-                    <span class="risk-title">Platform Policy Changes</span>
-                    <div class="risk-score">
-                        <span class="score-badge score-critical">Critical</span>
-                    </div>
-                </div>
-                <div class="risk-details">
-                    <div class="risk-description">
-                        YouTube/TikTok may change policies against AI-generated content, automated channels, 
-                        or implement stricter monetization requirements.
-                    </div>
-                    <div class="risk-metrics">
-                        <div class="metric-card">
-                            <div class="metric-label">Probability</div>
-                            <div class="metric-value">45%</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Impact</div>
-                            <div class="metric-value">$5M+</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Warning Time</div>
-                            <div class="metric-value">0-30 days</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Adaptation Time</div>
-                            <div class="metric-value">2-6 months</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mitigation-section">
-                    <div class="mitigation-header">Mitigation Strategies</div>
-                    <ul class="mitigation-list">
-                        <li class="mitigation-item">Maintain direct relationships with platform partnership teams</li>
-                        <li class="mitigation-item">Diversify across 5+ content platforms to reduce dependency</li>
-                        <li class="mitigation-item">Ensure all content includes clear AI disclosure</li>
-                        <li class="mitigation-item">Build proprietary audience on owned platforms</li>
-                        <li class="mitigation-item">Create contingency plans for rapid content strategy pivots</li>
-                    </ul>
-                </div>
+          </div>
+          <div class="risk-details">
+            <div class="risk-description">
+              LLM APIs may change behavior, reduce quality, or introduce biases over time,
+              potentially degrading content quality and viewer engagement.
             </div>
-            
-            <div class="risk-card high">
-                <div class="risk-header">
-                    <span class="risk-id">R-006</span>
-                    <span class="risk-title">Revenue Model Failure</span>
-                    <div class="risk-score">
-                        <span class="score-badge score-high">High</span>
-                    </div>
-                </div>
-                <div class="risk-details">
-                    <div class="risk-description">
-                        Monetization may fall short of projections due to lower CPMs, demonetization, 
-                        or audience rejection of AI content.
-                    </div>
-                    <div class="risk-metrics">
-                        <div class="metric-card">
-                            <div class="metric-label">Probability</div>
-                            <div class="metric-value">40%</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Impact</div>
-                            <div class="metric-value">$3M+</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Detection Time</div>
-                            <div class="metric-value">1-3 months</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Pivot Time</div>
-                            <div class="metric-value">3-6 months</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mitigation-section">
-                    <div class="mitigation-header">Mitigation Strategies</div>
-                    <ul class="mitigation-list">
-                        <li class="mitigation-item">Develop multiple revenue streams beyond ads (sponsors, products)</li>
-                        <li class="mitigation-item">Target high-CPM niches with proven monetization</li>
-                        <li class="mitigation-item">Build email lists and direct audience relationships</li>
-                        <li class="mitigation-item">Create premium content tiers and subscription models</li>
-                    </ul>
-                </div>
+            <div class="risk-metrics">
+              <div class="metric-card">
+                <div class="metric-label">Probability</div>
+                <div class="metric-value">40%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Impact</div>
+                <div class="metric-value">$2M+</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Detection Time</div>
+                <div class="metric-value">1-7 days</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Recovery Time</div>
+                <div class="metric-value">2-4 weeks</div>
+              </div>
             </div>
+          </div>
+          <div class="mitigation-section">
+            <div class="mitigation-header">Mitigation Strategies</div>
+            <ul class="mitigation-list">
+              <li class="mitigation-item">
+                Implement multi-model fallback system with 3+ LLM providers
+              </li>
+              <li class="mitigation-item">
+                Continuous A/B testing of model outputs with quality metrics
+              </li>
+              <li class="mitigation-item">Build proprietary fine-tuned models as backup</li>
+              <li class="mitigation-item">Automated quality monitoring with alerting thresholds</li>
+              <li class="mitigation-item">
+                Weekly model performance reviews and prompt optimization
+              </li>
+            </ul>
+          </div>
         </div>
-        
-        <!-- Operational Risks -->
-        <div class="risk-section">
-            <div class="risk-category">
-                <span class="category-icon">🔧</span>
-                Operational Risks
+
+        <div class="risk-card critical">
+          <div class="risk-header">
+            <span class="risk-id">R-002</span>
+            <span class="risk-title">System Scalability Failure</span>
+            <div class="risk-score">
+              <span class="score-badge score-critical">Critical</span>
             </div>
-            
-            <div class="risk-card high">
-                <div class="risk-header">
-                    <span class="risk-id">R-007</span>
-                    <span class="risk-title">Key Personnel Dependency</span>
-                    <div class="risk-score">
-                        <span class="score-badge score-high">High</span>
-                    </div>
-                </div>
-                <div class="risk-details">
-                    <div class="risk-description">
-                        Critical knowledge concentrated in few key engineers, creating single points 
-                        of failure if they leave or become unavailable.
-                    </div>
-                    <div class="risk-metrics">
-                        <div class="metric-card">
-                            <div class="metric-label">Probability</div>
-                            <div class="metric-value">55%</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Impact</div>
-                            <div class="metric-value">$800K</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Knowledge Gap</div>
-                            <div class="metric-value">2-4 months</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Replacement Time</div>
-                            <div class="metric-value">3-6 months</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mitigation-section">
-                    <div class="mitigation-header">Mitigation Strategies</div>
-                    <ul class="mitigation-list">
-                        <li class="mitigation-item">Implement pair programming and knowledge sharing sessions</li>
-                        <li class="mitigation-item">Comprehensive documentation requirements for all systems</li>
-                        <li class="mitigation-item">Competitive retention packages for critical roles</li>
-                        <li class="mitigation-item">Cross-training program with 2+ people per critical system</li>
-                    </ul>
-                </div>
+          </div>
+          <div class="risk-details">
+            <div class="risk-description">
+              Infrastructure may fail to handle 300+ daily videos across 100+ channels, causing
+              system crashes, data loss, or service degradation.
             </div>
+            <div class="risk-metrics">
+              <div class="metric-card">
+                <div class="metric-label">Probability</div>
+                <div class="metric-value">35%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Impact</div>
+                <div class="metric-value">$1.5M+</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Detection Time</div>
+                <div class="metric-value">< 1 hour</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Recovery Time</div>
+                <div class="metric-value">4-48 hours</div>
+              </div>
+            </div>
+          </div>
+          <div class="mitigation-section">
+            <div class="mitigation-header">Mitigation Strategies</div>
+            <ul class="mitigation-list">
+              <li class="mitigation-item">
+                Design for 10x capacity with auto-scaling infrastructure
+              </li>
+              <li class="mitigation-item">Implement circuit breakers and rate limiting</li>
+              <li class="mitigation-item">Multi-region deployment with automatic failover</li>
+              <li class="mitigation-item">
+                Comprehensive load testing at 2x, 5x, and 10x capacity
+              </li>
+              <li class="mitigation-item">
+                Gradual rollout strategy with phased channel onboarding
+              </li>
+            </ul>
+          </div>
         </div>
-        
-        <!-- Risk Timeline -->
-        <div class="timeline-container">
-            <div class="timeline-header">Risk Exposure Timeline</div>
-            <div class="timeline-chart">
-                <div class="timeline-line"></div>
-                <div class="timeline-items">
-                    <div class="timeline-item">
-                        <div class="timeline-phase">Months 1-3</div>
-                        <div class="timeline-risks">Infrastructure<br>Team Building<br>Security</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-phase">Months 4-6</div>
-                        <div class="timeline-risks">AI Performance<br>Integration<br>Scaling</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-phase">Months 7-9</div>
-                        <div class="timeline-risks">Platform Policy<br>Monetization<br>Competition</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-phase">Months 10-12</div>
-                        <div class="timeline-risks">Scale Limits<br>Market Saturation<br>Compliance</div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-phase">Months 13-18</div>
-                        <div class="timeline-risks">Sustainability<br>Innovation<br>Expansion</div>
-                    </div>
-                </div>
+
+        <div class="risk-card high">
+          <div class="risk-header">
+            <span class="risk-id">R-004</span>
+            <span class="risk-title">API Rate Limiting & Quotas</span>
+            <div class="risk-score">
+              <span class="score-badge score-high">High</span>
             </div>
+          </div>
+          <div class="risk-details">
+            <div class="risk-description">
+              Third-party APIs (YouTube, OpenAI, ElevenLabs) may impose stricter rate limits or
+              quota restrictions, limiting content production capacity.
+            </div>
+            <div class="risk-metrics">
+              <div class="metric-card">
+                <div class="metric-label">Probability</div>
+                <div class="metric-value">60%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Impact</div>
+                <div class="metric-value">$500K</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Detection Time</div>
+                <div class="metric-value">Immediate</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Recovery Time</div>
+                <div class="metric-value">1-2 weeks</div>
+              </div>
+            </div>
+          </div>
+          <div class="mitigation-section">
+            <div class="mitigation-header">Mitigation Strategies</div>
+            <ul class="mitigation-list">
+              <li class="mitigation-item">Negotiate enterprise agreements with higher quotas</li>
+              <li class="mitigation-item">Implement intelligent request queuing and batching</li>
+              <li class="mitigation-item">Build request caching layer to minimize API calls</li>
+              <li class="mitigation-item">
+                Develop quota monitoring dashboard with predictive alerts
+              </li>
+            </ul>
+          </div>
         </div>
-        
-        <!-- Emergency Response Plans -->
-        <div class="risk-section">
-            <div class="risk-category">
-                <span class="category-icon">🚨</span>
-                Emergency Response Protocols
-            </div>
-            
-            <div class="response-plan">
-                <div class="response-trigger">CRITICAL SYSTEM FAILURE</div>
-                <div class="risk-description">
-                    Immediate action plan for complete system outage or critical component failure
-                </div>
-                <div class="response-actions">
-                    <div class="action-item">
-                        <span class="action-priority">P0</span>
-                        Activate incident command center with all team leads
-                    </div>
-                    <div class="action-item">
-                        <span class="action-priority">P0</span>
-                        Switch to backup systems and failover regions
-                    </div>
-                    <div class="action-item">
-                        <span class="action-priority">P1</span>
-                        Notify all stakeholders via emergency communication channels
-                    </div>
-                    <div class="action-item">
-                        <span class="action-priority">P1</span>
-                        Pause all content generation to prevent quality issues
-                    </div>
-                    <div class="action-item">
-                        <span class="action-priority">P2</span>
-                        Begin root cause analysis and recovery procedures
-                    </div>
-                </div>
-            </div>
-            
-            <div class="response-plan">
-                <div class="response-trigger">PLATFORM BAN/SUSPENSION</div>
-                <div class="risk-description">
-                    Response protocol for major platform policy violation or account suspension
-                </div>
-                <div class="response-actions">
-                    <div class="action-item">
-                        <span class="action-priority">P0</span>
-                        Immediately contact platform partner support
-                    </div>
-                    <div class="action-item">
-                        <span class="action-priority">P0</span>
-                        Halt all automated posting to affected platform
-                    </div>
-                    <div class="action-item">
-                        <span class="action-priority">P1</span>
-                        Redirect traffic to alternative platforms
-                    </div>
-                    <div class="action-item">
-                        <span class="action-priority">P1</span>
-                        Initiate legal review and appeal process
-                    </div>
-                    <div class="action-item">
-                        <span class="action-priority">P2</span>
-                        Implement compliance changes across all channels
-                    </div>
-                </div>
-            </div>
+      </div>
+
+      <!-- Business Risks -->
+      <div class="risk-section">
+        <div class="risk-category">
+          <span class="category-icon">💼</span>
+          Business & Market Risks
         </div>
-        
+
+        <div class="risk-card critical">
+          <div class="risk-header">
+            <span class="risk-id">R-003</span>
+            <span class="risk-title">Platform Policy Changes</span>
+            <div class="risk-score">
+              <span class="score-badge score-critical">Critical</span>
+            </div>
+          </div>
+          <div class="risk-details">
+            <div class="risk-description">
+              YouTube/TikTok may change policies against AI-generated content, automated channels,
+              or implement stricter monetization requirements.
+            </div>
+            <div class="risk-metrics">
+              <div class="metric-card">
+                <div class="metric-label">Probability</div>
+                <div class="metric-value">45%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Impact</div>
+                <div class="metric-value">$5M+</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Warning Time</div>
+                <div class="metric-value">0-30 days</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Adaptation Time</div>
+                <div class="metric-value">2-6 months</div>
+              </div>
+            </div>
+          </div>
+          <div class="mitigation-section">
+            <div class="mitigation-header">Mitigation Strategies</div>
+            <ul class="mitigation-list">
+              <li class="mitigation-item">
+                Maintain direct relationships with platform partnership teams
+              </li>
+              <li class="mitigation-item">
+                Diversify across 5+ content platforms to reduce dependency
+              </li>
+              <li class="mitigation-item">Ensure all content includes clear AI disclosure</li>
+              <li class="mitigation-item">Build proprietary audience on owned platforms</li>
+              <li class="mitigation-item">
+                Create contingency plans for rapid content strategy pivots
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="risk-card high">
+          <div class="risk-header">
+            <span class="risk-id">R-006</span>
+            <span class="risk-title">Revenue Model Failure</span>
+            <div class="risk-score">
+              <span class="score-badge score-high">High</span>
+            </div>
+          </div>
+          <div class="risk-details">
+            <div class="risk-description">
+              Monetization may fall short of projections due to lower CPMs, demonetization, or
+              audience rejection of AI content.
+            </div>
+            <div class="risk-metrics">
+              <div class="metric-card">
+                <div class="metric-label">Probability</div>
+                <div class="metric-value">40%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Impact</div>
+                <div class="metric-value">$3M+</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Detection Time</div>
+                <div class="metric-value">1-3 months</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Pivot Time</div>
+                <div class="metric-value">3-6 months</div>
+              </div>
+            </div>
+          </div>
+          <div class="mitigation-section">
+            <div class="mitigation-header">Mitigation Strategies</div>
+            <ul class="mitigation-list">
+              <li class="mitigation-item">
+                Develop multiple revenue streams beyond ads (sponsors, products)
+              </li>
+              <li class="mitigation-item">Target high-CPM niches with proven monetization</li>
+              <li class="mitigation-item">Build email lists and direct audience relationships</li>
+              <li class="mitigation-item">Create premium content tiers and subscription models</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Operational Risks -->
+      <div class="risk-section">
+        <div class="risk-category">
+          <span class="category-icon">🔧</span>
+          Operational Risks
+        </div>
+
+        <div class="risk-card high">
+          <div class="risk-header">
+            <span class="risk-id">R-007</span>
+            <span class="risk-title">Key Personnel Dependency</span>
+            <div class="risk-score">
+              <span class="score-badge score-high">High</span>
+            </div>
+          </div>
+          <div class="risk-details">
+            <div class="risk-description">
+              Critical knowledge concentrated in few key engineers, creating single points of
+              failure if they leave or become unavailable.
+            </div>
+            <div class="risk-metrics">
+              <div class="metric-card">
+                <div class="metric-label">Probability</div>
+                <div class="metric-value">55%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Impact</div>
+                <div class="metric-value">$800K</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Knowledge Gap</div>
+                <div class="metric-value">2-4 months</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Replacement Time</div>
+                <div class="metric-value">3-6 months</div>
+              </div>
+            </div>
+          </div>
+          <div class="mitigation-section">
+            <div class="mitigation-header">Mitigation Strategies</div>
+            <ul class="mitigation-list">
+              <li class="mitigation-item">
+                Implement pair programming and knowledge sharing sessions
+              </li>
+              <li class="mitigation-item">
+                Comprehensive documentation requirements for all systems
+              </li>
+              <li class="mitigation-item">Competitive retention packages for critical roles</li>
+              <li class="mitigation-item">
+                Cross-training program with 2+ people per critical system
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk Timeline -->
+      <div class="timeline-container">
+        <div class="timeline-header">Risk Exposure Timeline</div>
+        <div class="timeline-chart">
+          <div class="timeline-line"></div>
+          <div class="timeline-items">
+            <div class="timeline-item">
+              <div class="timeline-phase">Months 1-3</div>
+              <div class="timeline-risks">Infrastructure<br />Team Building<br />Security</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-phase">Months 4-6</div>
+              <div class="timeline-risks">AI Performance<br />Integration<br />Scaling</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-phase">Months 7-9</div>
+              <div class="timeline-risks">Platform Policy<br />Monetization<br />Competition</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-phase">Months 10-12</div>
+              <div class="timeline-risks">Scale Limits<br />Market Saturation<br />Compliance</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-phase">Months 13-18</div>
+              <div class="timeline-risks">Sustainability<br />Innovation<br />Expansion</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emergency Response Plans -->
+      <div class="risk-section">
+        <div class="risk-category">
+          <span class="category-icon">🚨</span>
+          Emergency Response Protocols
+        </div>
+
+        <div class="response-plan">
+          <div class="response-trigger">CRITICAL SYSTEM FAILURE</div>
+          <div class="risk-description">
+            Immediate action plan for complete system outage or critical component failure
+          </div>
+          <div class="response-actions">
+            <div class="action-item">
+              <span class="action-priority">P0</span>
+              Activate incident command center with all team leads
+            </div>
+            <div class="action-item">
+              <span class="action-priority">P0</span>
+              Switch to backup systems and failover regions
+            </div>
+            <div class="action-item">
+              <span class="action-priority">P1</span>
+              Notify all stakeholders via emergency communication channels
+            </div>
+            <div class="action-item">
+              <span class="action-priority">P1</span>
+              Pause all content generation to prevent quality issues
+            </div>
+            <div class="action-item">
+              <span class="action-priority">P2</span>
+              Begin root cause analysis and recovery procedures
+            </div>
+          </div>
+        </div>
+
+        <div class="response-plan">
+          <div class="response-trigger">PLATFORM BAN/SUSPENSION</div>
+          <div class="risk-description">
+            Response protocol for major platform policy violation or account suspension
+          </div>
+          <div class="response-actions">
+            <div class="action-item">
+              <span class="action-priority">P0</span>
+              Immediately contact platform partner support
+            </div>
+            <div class="action-item">
+              <span class="action-priority">P0</span>
+              Halt all automated posting to affected platform
+            </div>
+            <div class="action-item">
+              <span class="action-priority">P1</span>
+              Redirect traffic to alternative platforms
+            </div>
+            <div class="action-item">
+              <span class="action-priority">P1</span>
+              Initiate legal review and appeal process
+            </div>
+            <div class="action-item">
+              <span class="action-priority">P2</span>
+              Implement compliance changes across all channels
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>

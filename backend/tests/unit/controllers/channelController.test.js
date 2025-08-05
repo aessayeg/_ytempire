@@ -3,8 +3,9 @@
  * YTEmpire Project
  */
 
-const request = require('supertest');
-const app = require('../../../src/app');
+// TODO: Uncomment when implementing actual tests
+// const request = require('supertest');
+// const app = require('../../../src/app');
 
 describe('ChannelController', () => {
   beforeEach(() => {

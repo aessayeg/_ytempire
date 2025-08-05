@@ -30,10 +30,10 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 6379
-    targetPort: 6379
-    nodePort: 30001
-    name: redis
+    - port: 6379
+      targetPort: 6379
+      nodePort: 30001
+      name: redis
   selector:
     app: redis
     tier: cache
@@ -59,81 +59,81 @@ spec:
         app: redis
         tier: cache
       annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9121"
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9121'
     spec:
       securityContext:
         fsGroup: 999
       containers:
-      - name: redis
-        image: redis:7-alpine
-        imagePullPolicy: IfNotPresent
-        command:
-        - redis-server
-        - /etc/redis/redis.conf
-        ports:
-        - containerPort: 6379
-          name: redis
-        volumeMounts:
-        - name: redis-data
-          mountPath: /data
-        - name: redis-config
-          mountPath: /etc/redis/redis.conf
-          subPath: redis.conf
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "50m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
-        livenessProbe:
-          exec:
-            command:
-            - redis-cli
-            - ping
-          initialDelaySeconds: 15
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        readinessProbe:
-          exec:
-            command:
-            - redis-cli
-            - ping
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 1
-          successThreshold: 1
-          failureThreshold: 3
-      - name: redis-exporter
-        image: oliver006/redis_exporter:latest
-        ports:
-        - containerPort: 9121
-          name: metrics
-        resources:
-          requests:
-            memory: "32Mi"
-            cpu: "10m"
-          limits:
-            memory: "64Mi"
-            cpu: "50m"
+        - name: redis
+          image: redis:7-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-server
+            - /etc/redis/redis.conf
+          ports:
+            - containerPort: 6379
+              name: redis
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+            - name: redis-config
+              mountPath: /etc/redis/redis.conf
+              subPath: redis.conf
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '50m'
+            limits:
+              memory: '256Mi'
+              cpu: '200m'
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 3
+        - name: redis-exporter
+          image: oliver006/redis_exporter:latest
+          ports:
+            - containerPort: 9121
+              name: metrics
+          resources:
+            requests:
+              memory: '32Mi'
+              cpu: '10m'
+            limits:
+              memory: '64Mi'
+              cpu: '50m'
       volumes:
-      - name: redis-config
-        configMap:
-          name: redis-config
+        - name: redis-config
+          configMap:
+            name: redis-config
   volumeClaimTemplates:
-  - metadata:
-      name: redis-data
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      storageClassName: local-storage
-      resources:
-        requests:
-          storage: 2Gi
-      selector:
-        matchLabels:
-          app: redis
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ['ReadWriteOnce']
+        storageClassName: local-storage
+        resources:
+          requests:
+            storage: 2Gi
+        selector:
+          matchLabels:
+            app: redis
 ---
 # pgAdmin deployment for database management
 apiVersion: v1
@@ -147,10 +147,10 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 80
-    targetPort: 80
-    nodePort: 30002
-    name: http
+    - port: 80
+      targetPort: 80
+      nodePort: 30002
+      name: http
   selector:
     app: pgadmin
     tier: tools
@@ -176,37 +176,37 @@ spec:
         tier: tools
     spec:
       containers:
-      - name: pgadmin
-        image: dpage/pgadmin4:latest
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 80
-          name: http
-        env:
-        - name: PGADMIN_DEFAULT_EMAIL
-          value: "admin@ytempire.com"
-        - name: PGADMIN_DEFAULT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: ytempire-secrets
-              key: pgadmin-password
-        - name: PGADMIN_CONFIG_SERVER_MODE
-          value: "False"
-        - name: PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED
-          value: "False"
-        volumeMounts:
-        - name: pgadmin-data
-          mountPath: /var/lib/pgadmin
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "50m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
+        - name: pgadmin
+          image: dpage/pgadmin4:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: http
+          env:
+            - name: PGADMIN_DEFAULT_EMAIL
+              value: 'admin@ytempire.com'
+            - name: PGADMIN_DEFAULT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ytempire-secrets
+                  key: pgadmin-password
+            - name: PGADMIN_CONFIG_SERVER_MODE
+              value: 'False'
+            - name: PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED
+              value: 'False'
+          volumeMounts:
+            - name: pgadmin-data
+              mountPath: /var/lib/pgadmin
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '50m'
+            limits:
+              memory: '256Mi'
+              cpu: '200m'
       volumes:
-      - name: pgadmin-data
-        emptyDir: {}
+        - name: pgadmin-data
+          emptyDir: {}
 ---
 # MailHog deployment for email testing
 apiVersion: v1
@@ -220,13 +220,13 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 1025
-    targetPort: 1025
-    name: smtp
-  - port: 8025
-    targetPort: 8025
-    nodePort: 30003
-    name: ui
+    - port: 1025
+      targetPort: 1025
+      name: smtp
+    - port: 8025
+      targetPort: 8025
+      nodePort: 30003
+      name: ui
   selector:
     app: mailhog
     tier: tools
@@ -252,23 +252,23 @@ spec:
         tier: tools
     spec:
       containers:
-      - name: mailhog
-        image: mailhog/mailhog:latest
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 1025
-          name: smtp
-        - containerPort: 8025
-          name: ui
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "10m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
-        env:
-        - name: MH_STORAGE
-          value: memory
-        - name: MH_HOSTNAME
-          value: mailhog.ytempire.local
+        - name: mailhog
+          image: mailhog/mailhog:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 1025
+              name: smtp
+            - containerPort: 8025
+              name: ui
+          resources:
+            requests:
+              memory: '64Mi'
+              cpu: '10m'
+            limits:
+              memory: '128Mi'
+              cpu: '100m'
+          env:
+            - name: MH_STORAGE
+              value: memory
+            - name: MH_HOSTNAME
+              value: mailhog.ytempire.local

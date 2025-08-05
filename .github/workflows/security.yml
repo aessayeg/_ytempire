@@ -2,7 +2,7 @@ name: Security and Compliance
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+    - cron: '0 2 * * *' # Daily at 2 AM UTC
   push:
     branches: [main, develop]
   pull_request:
@@ -33,7 +33,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -50,10 +50,10 @@ jobs:
         run: |
           echo "# Backend Dependency Audit" > ../backend-audit.md
           echo "## NPM Audit Results" >> ../backend-audit.md
-          
+
           # Run npm audit
           npm audit --json > audit.json || true
-          
+
           # Parse results
           if [ -f audit.json ]; then
             CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' audit.json)
@@ -70,7 +70,7 @@ jobs:
               echo "::warning::Backend has $CRITICAL critical and $HIGH high vulnerabilities"
             fi
           fi
-          
+
           # Try to fix automatically
           npm audit fix --force || true
 
@@ -79,10 +79,10 @@ jobs:
         run: |
           echo "# Frontend Dependency Audit" > ../frontend-audit.md
           echo "## NPM Audit Results" >> ../frontend-audit.md
-          
+
           # Run npm audit
           npm audit --json > audit.json || true
-          
+
           # Parse results
           if [ -f audit.json ]; then
             CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' audit.json)
@@ -113,25 +113,25 @@ jobs:
       - name: License Compliance Check
         run: |
           echo "## License Compliance" > license-compliance.md
-          
+
           # Check backend licenses
           cd backend
           npx license-checker --production --json > ../backend-licenses.json || true
-          
+
           # Check frontend licenses
           cd ../frontend
           npx license-checker --production --json > ../frontend-licenses.json || true
-          
+
           cd ..
-          
+
           # Check for problematic licenses
           PROBLEMATIC_LICENSES="GPL|AGPL|LGPL|SSPL|Commons Clause"
-          
+
           echo "### Backend Licenses" >> license-compliance.md
           if [ -f backend-licenses.json ]; then
             jq -r 'to_entries[] | "\(.key): \(.value.licenses)"' backend-licenses.json | grep -E "$PROBLEMATIC_LICENSES" || echo "No problematic licenses found" >> license-compliance.md
           fi
-          
+
           echo "### Frontend Licenses" >> license-compliance.md
           if [ -f frontend-licenses.json ]; then
             jq -r 'to_entries[] | "\(.key): \(.value.licenses)"' frontend-licenses.json | grep -E "$PROBLEMATIC_LICENSES" || echo "No problematic licenses found" >> license-compliance.md
@@ -151,11 +151,11 @@ jobs:
     name: Container Security Scanning
     runs-on: ubuntu-latest
     if: github.event.inputs.scan_type == 'full' || github.event.inputs.scan_type == 'containers' || github.event.inputs.scan_type == ''
-    
+
     strategy:
       matrix:
         service: [backend, frontend]
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -187,14 +187,14 @@ jobs:
       - name: Container Best Practices Check
         run: |
           echo "# Container Security Best Practices - ${{ matrix.service }}" > container-practices-${{ matrix.service }}.md
-          
+
           # Check for root user
           if docker run --rm --entrypoint="" ytempire-${{ matrix.service }}:scan id 2>/dev/null | grep -q "uid=0"; then
             echo "❌ Container runs as root user" >> container-practices-${{ matrix.service }}.md
           else
             echo "✅ Container runs as non-root user" >> container-practices-${{ matrix.service }}.md
           fi
-          
+
           # Check for exposed secrets
           docker history ytempire-${{ matrix.service }}:scan --no-trunc | grep -E "(PASSWORD|SECRET|KEY|TOKEN)" && echo "⚠️ Potential secrets in image layers" >> container-practices-${{ matrix.service }}.md || echo "✅ No secrets detected in image layers" >> container-practices-${{ matrix.service }}.md
 
@@ -209,7 +209,7 @@ jobs:
   secret-scanning:
     name: Secret and Credential Scanning
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -233,7 +233,7 @@ jobs:
         run: |
           echo "# Custom Secret Pattern Scan" > secret-scan.md
           echo "## Scanning for custom patterns..." >> secret-scan.md
-          
+
           # Define patterns to search for
           PATTERNS=(
             "sk_live_[0-9a-zA-Z]{24}"  # Stripe
@@ -241,7 +241,7 @@ jobs:
             "ya29\\.[0-9A-Za-z\\-_]+"   # Google OAuth
             "xox[baprs]-[0-9]{12}-[0-9]{12}-[0-9a-zA-Z]{24}"  # Slack
           )
-          
+
           for pattern in "${PATTERNS[@]}"; do
             echo "Checking pattern: $pattern" >> secret-scan.md
             grep -r -E "$pattern" --exclude-dir=node_modules --exclude-dir=.git . || echo "No matches found" >> secret-scan.md
@@ -250,7 +250,7 @@ jobs:
       - name: Check Environment Files
         run: |
           echo "## Environment File Security" >> secret-scan.md
-          
+
           # Check for .env files in repo
           if find . -name ".env*" -not -path "*/node_modules/*" -not -path "*/.git/*" | grep -q .; then
             echo "⚠️ WARNING: .env files found in repository" >> secret-scan.md
@@ -269,7 +269,7 @@ jobs:
     name: Infrastructure Security Assessment
     runs-on: ubuntu-latest
     if: github.event.inputs.scan_type == 'full' || github.event.inputs.scan_type == 'infrastructure' || github.event.inputs.scan_type == ''
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -278,17 +278,17 @@ jobs:
         run: |
           echo "# Docker Compose Security Assessment" > docker-security.md
           echo "## Security Configuration Check" >> docker-security.md
-          
+
           # Check for exposed ports
           echo "### Exposed Ports" >> docker-security.md
           grep -E "ports:" docker-compose*.yml | while read -r line; do
             echo "- $line" >> docker-security.md
           done
-          
+
           # Check for privileged containers
           echo "### Privileged Containers" >> docker-security.md
           grep -E "privileged: true" docker-compose*.yml && echo "⚠️ Privileged containers detected" >> docker-security.md || echo "✅ No privileged containers" >> docker-security.md
-          
+
           # Check for volume mounts
           echo "### Volume Mounts" >> docker-security.md
           grep -E "volumes:" docker-compose*.yml -A 5 | grep -E "^[ ]*-" | while read -r line; do
@@ -300,11 +300,11 @@ jobs:
       - name: Network Security Assessment
         run: |
           echo "## Network Security" >> docker-security.md
-          
+
           # Check for custom networks
           echo "### Custom Networks" >> docker-security.md
           grep -E "networks:" docker-compose*.yml | head -5 >> docker-security.md
-          
+
           # Check for exposed databases
           echo "### Database Exposure" >> docker-security.md
           if grep -E "5432:5432|3306:3306|27017:27017" docker-compose*.yml; then
@@ -325,7 +325,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -342,7 +342,7 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
         with:
-          category: "/language:javascript"
+          category: '/language:javascript'
 
       - name: Semgrep Security Scan
         uses: returntocorp/semgrep-action@v1
@@ -371,7 +371,7 @@ jobs:
     name: Security Compliance Assessment
     runs-on: ubuntu-latest
     if: github.event.inputs.scan_type == 'full' || github.event.inputs.scan_type == 'compliance' || github.event.inputs.scan_type == ''
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -381,34 +381,34 @@ jobs:
           echo "# OWASP Top 10 Compliance Report" > owasp-compliance.md
           echo "## Assessment Date: $(date)" >> owasp-compliance.md
           echo "" >> owasp-compliance.md
-          
+
           echo "### A01:2021 – Broken Access Control" >> owasp-compliance.md
           grep -r "JWT\|jsonwebtoken\|passport" --include="*.js" . > /dev/null && echo "✅ JWT authentication implemented" >> owasp-compliance.md || echo "⚠️ Authentication implementation review needed" >> owasp-compliance.md
-          
+
           echo "### A02:2021 – Cryptographic Failures" >> owasp-compliance.md
           grep -r "bcrypt\|crypto" --include="*.js" . > /dev/null && echo "✅ Password hashing implemented" >> owasp-compliance.md || echo "⚠️ Cryptography implementation review needed" >> owasp-compliance.md
-          
+
           echo "### A03:2021 – Injection" >> owasp-compliance.md
           grep -r "express-validator\|joi\|yup" --include="*.js" . > /dev/null && echo "✅ Input validation libraries detected" >> owasp-compliance.md || echo "⚠️ Input validation review needed" >> owasp-compliance.md
-          
+
           echo "### A04:2021 – Insecure Design" >> owasp-compliance.md
           [ -f "docs/architecture/security-architecture.md" ] && echo "✅ Security architecture documented" >> owasp-compliance.md || echo "⚠️ Security architecture documentation missing" >> owasp-compliance.md
-          
+
           echo "### A05:2021 – Security Misconfiguration" >> owasp-compliance.md
           grep -r "helmet\|cors" --include="*.js" . > /dev/null && echo "✅ Security headers middleware detected" >> owasp-compliance.md || echo "⚠️ Security headers review needed" >> owasp-compliance.md
-          
+
           echo "### A06:2021 – Vulnerable Components" >> owasp-compliance.md
           echo "See dependency scanning results" >> owasp-compliance.md
-          
+
           echo "### A07:2021 – Identification and Authentication Failures" >> owasp-compliance.md
           grep -r "express-rate-limit\|rate-limit" --include="*.js" . > /dev/null && echo "✅ Rate limiting detected" >> owasp-compliance.md || echo "⚠️ Rate limiting review needed" >> owasp-compliance.md
-          
+
           echo "### A08:2021 – Software and Data Integrity Failures" >> owasp-compliance.md
           [ -f ".github/workflows/ci.yml" ] && echo "✅ CI/CD pipeline configured" >> owasp-compliance.md || echo "⚠️ CI/CD pipeline review needed" >> owasp-compliance.md
-          
+
           echo "### A09:2021 – Security Logging and Monitoring Failures" >> owasp-compliance.md
           grep -r "winston\|morgan\|pino" --include="*.js" . > /dev/null && echo "✅ Logging libraries detected" >> owasp-compliance.md || echo "⚠️ Logging implementation review needed" >> owasp-compliance.md
-          
+
           echo "### A10:2021 – Server-Side Request Forgery" >> owasp-compliance.md
           echo "Manual review required" >> owasp-compliance.md
 
@@ -416,12 +416,12 @@ jobs:
         run: |
           echo "## Compliance Score" >> owasp-compliance.md
           echo "" >> owasp-compliance.md
-          
+
           PASSED=$(grep -c "✅" owasp-compliance.md || echo 0)
           WARNINGS=$(grep -c "⚠️" owasp-compliance.md || echo 0)
           FAILED=$(grep -c "❌" owasp-compliance.md || echo 0)
           TOTAL=$((PASSED + WARNINGS + FAILED))
-          
+
           if [ $TOTAL -gt 0 ]; then
             SCORE=$((PASSED * 100 / TOTAL))
             echo "- Overall Score: ${SCORE}%" >> owasp-compliance.md
@@ -439,9 +439,17 @@ jobs:
   security-summary:
     name: Generate Security Summary
     runs-on: ubuntu-latest
-    needs: [dependency-scanning, container-security, secret-scanning, infrastructure-security, sast-analysis, compliance-assessment]
+    needs:
+      [
+        dependency-scanning,
+        container-security,
+        secret-scanning,
+        infrastructure-security,
+        sast-analysis,
+        compliance-assessment,
+      ]
     if: always()
-    
+
     steps:
       - name: Download All Reports
         uses: actions/download-artifact@v4
@@ -457,10 +465,10 @@ jobs:
           echo "**Branch:** ${{ github.ref_name }}" >> security-summary.md
           echo "**Triggered by:** ${{ github.actor }}" >> security-summary.md
           echo "" >> security-summary.md
-          
+
           echo "## Assessment Results" >> security-summary.md
           echo "" >> security-summary.md
-          
+
           echo "| Category | Status | Details |" >> security-summary.md
           echo "|----------|--------|---------|" >> security-summary.md
           echo "| Dependency Scanning | ${{ needs.dependency-scanning.result }} | View dependency reports |" >> security-summary.md
@@ -470,7 +478,7 @@ jobs:
           echo "| SAST Analysis | ${{ needs.sast-analysis.result }} | View SAST reports |" >> security-summary.md
           echo "| Compliance Assessment | ${{ needs.compliance-assessment.result }} | View compliance reports |" >> security-summary.md
           echo "" >> security-summary.md
-          
+
           echo "## Recommendations" >> security-summary.md
           echo "" >> security-summary.md
           echo "1. Review and remediate all critical and high severity vulnerabilities" >> security-summary.md

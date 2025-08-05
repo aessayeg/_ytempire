@@ -9,7 +9,7 @@ class YouTubeService {
   }
 
   // TODO: Implement service methods
-  
+
   async getChannelData() {
     // Implementation goes here
   }

@@ -21,26 +21,26 @@ describe('Service Connectivity', () => {
   test('Backend can connect to PostgreSQL', async () => {
     const { stdout } = await execAsync(
       'docker-compose exec -T backend node -e "' +
-      'const { Client } = require(\'pg\');' +
-      'const client = new Client({' +
-      '  host: \'postgresql\',' +
-      '  port: 5432,' +
-      '  user: \'ytempire_user\',' +
-      '  password: \'ytempire_pass\',' +
-      '  database: \'ytempire_dev\'' +
-      '});' +
-      'client.connect()' +
-      '.then(() => client.query(\'SELECT 1 as connected\'))' +
-      '.then(result => {' +
-      '  console.log(JSON.stringify(result.rows[0]));' +
-      '  client.end();' +
-      '})' +
-      '.catch(err => {' +
-      '  console.error(err);' +
-      '  process.exit(1);' +
-      '});"'
+        'const { Client } = require(\'pg\');' +
+        'const client = new Client({' +
+        '  host: \'postgresql\',' +
+        '  port: 5432,' +
+        '  user: \'ytempire_user\',' +
+        '  password: \'ytempire_pass\',' +
+        '  database: \'ytempire_dev\'' +
+        '});' +
+        'client.connect()' +
+        '.then(() => client.query(\'SELECT 1 as connected\'))' +
+        '.then(result => {' +
+        '  console.log(JSON.stringify(result.rows[0]));' +
+        '  client.end();' +
+        '})' +
+        '.catch(err => {' +
+        '  console.error(err);' +
+        '  process.exit(1);' +
+        '});"'
     );
-    
+
     const result = JSON.parse(stdout);
     expect(result).toHaveProperty('connected', 1);
   });
@@ -48,20 +48,20 @@ describe('Service Connectivity', () => {
   test('Backend can connect to Redis', async () => {
     const { stdout } = await execAsync(
       'docker-compose exec -T backend node -e "' +
-      'const redis = require(\'redis\');' +
-      'const client = redis.createClient({ url: \'redis://redis:6379\' });' +
-      'client.connect()' +
-      '.then(() => client.ping())' +
-      '.then(result => {' +
-      '  console.log(JSON.stringify({ ping: result }));' +
-      '  client.disconnect();' +
-      '})' +
-      '.catch(err => {' +
-      '  console.error(err);' +
-      '  process.exit(1);' +
-      '});"'
+        'const redis = require(\'redis\');' +
+        'const client = redis.createClient({ url: \'redis://redis:6379\' });' +
+        'client.connect()' +
+        '.then(() => client.ping())' +
+        '.then(result => {' +
+        '  console.log(JSON.stringify({ ping: result }));' +
+        '  client.disconnect();' +
+        '})' +
+        '.catch(err => {' +
+        '  console.error(err);' +
+        '  process.exit(1);' +
+        '});"'
     );
-    
+
     const result = JSON.parse(stdout);
     expect(result).toHaveProperty('ping', 'PONG');
   });
@@ -70,7 +70,7 @@ describe('Service Connectivity', () => {
     const { stdout, stderr } = await execAsync(
       'docker-compose exec -T backend nc -zv mailhog 1025'
     );
-    
+
     // nc outputs to stderr on success
     expect(stderr).toContain('succeeded');
   });
@@ -78,11 +78,9 @@ describe('Service Connectivity', () => {
   test('Service discovery works between containers', async () => {
     // Test DNS resolution from backend container
     const services = ['postgresql', 'redis', 'mailhog', 'nginx', 'frontend'];
-    
+
     for (const service of services) {
-      const { stdout } = await execAsync(
-        `docker-compose exec -T backend nslookup ${service}`
-      );
+      const { stdout } = await execAsync(`docker-compose exec -T backend nslookup ${service}`);
       expect(stdout).toContain(`Name:\t${service}`);
       expect(stdout).toContain('172.20.'); // Our custom network subnet
     }
@@ -93,12 +91,12 @@ describe('Service Connectivity', () => {
     try {
       const response = await axios.get('http://localhost/socket.io/', {
         headers: {
-          'Upgrade': 'websocket',
-          'Connection': 'Upgrade'
+          Upgrade: 'websocket',
+          Connection: 'Upgrade',
         },
-        validateStatus: (status) => status < 500
+        validateStatus: (status) => status < 500,
       });
-      
+
       // Socket.io returns 400 when accessed via regular HTTP (expected)
       expect(response.status).toBe(400);
       expect(response.data).toContain('Transport unknown');
@@ -113,7 +111,7 @@ describe('Service Connectivity', () => {
     const { stdout } = await execAsync(
       'docker-compose exec -T nginx ls -la /usr/share/nginx/html/static'
     );
-    
+
     expect(stdout).toContain('favicon.ico');
     expect(stdout).toContain('robots.txt');
   });
@@ -121,15 +119,15 @@ describe('Service Connectivity', () => {
   test('Upload directory is mounted and writable', async () => {
     // Test upload directory in backend container
     const testFile = `test-${Date.now()}.txt`;
-    
+
     await execAsync(
       `docker-compose exec -T backend sh -c "echo 'test' > /app/uploads/${testFile}"`
     );
-    
+
     // Verify file exists in mounted volume
     const { stdout } = await execAsync(`ls -la ./uploads/${testFile}`);
     expect(stdout).toContain(testFile);
-    
+
     // Cleanup
     await execAsync(`rm -f ./uploads/${testFile}`);
   });
@@ -138,19 +136,19 @@ describe('Service Connectivity', () => {
     // Make an API call from frontend to backend through nginx
     const { stdout } = await execAsync(
       'docker-compose exec -T frontend node -e "' +
-      'const http = require(\'http\');' +
-      'http.get(\'http://nginx/api/health\', (res) => {' +
-      '  let data = \'\';' +
-      '  res.on(\'data\', (chunk) => data += chunk);' +
-      '  res.on(\'end\', () => {' +
-      '    console.log(data);' +
-      '  });' +
-      '}).on(\'error\', (err) => {' +
-      '  console.error(err);' +
-      '  process.exit(1);' +
-      '});"'
+        'const http = require(\'http\');' +
+        'http.get(\'http://nginx/api/health\', (res) => {' +
+        '  let data = \'\';' +
+        '  res.on(\'data\', (chunk) => data += chunk);' +
+        '  res.on(\'end\', () => {' +
+        '    console.log(data);' +
+        '  });' +
+        '}).on(\'error\', (err) => {' +
+        '  console.error(err);' +
+        '  process.exit(1);' +
+        '});"'
     );
-    
+
     const response = JSON.parse(stdout);
     expect(response).toHaveProperty('status', 'OK');
   });
@@ -160,7 +158,7 @@ describe('Service Connectivity', () => {
     const { stdout } = await execAsync(
       'docker-compose exec -T postgresql ls -la /docker-entrypoint-initdb.d/'
     );
-    
+
     expect(stdout).toContain('01-init.sql');
   });
 });

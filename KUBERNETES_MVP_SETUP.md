@@ -94,6 +94,7 @@ kubectl apply -f kubernetes/base/ingress.yaml
 ### 6. Configure Local DNS
 
 Add to `/etc/hosts`:
+
 ```
 127.0.0.1 ytempire.local api.ytempire.local pgadmin.ytempire.local mailhog.ytempire.local
 ```
@@ -326,23 +327,25 @@ helm uninstall ytempire -n ytempire-dev
 ### Custom Values
 
 Create `values-local.yaml`:
+
 ```yaml
 frontend:
   replicaCount: 1
-  
+
 backend:
   replicaCount: 1
-  
+
 postgresql:
   auth:
     password: your-secure-password
-    
+
 ingress:
   hosts:
     - host: my-ytempire.local
 ```
 
 Install with custom values:
+
 ```bash
 helm install ytempire ./helm/ytempire -f values-local.yaml
 ```

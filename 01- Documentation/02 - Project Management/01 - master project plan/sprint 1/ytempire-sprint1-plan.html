@@ -1,1325 +1,1328 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>YTEMPIRE Sprint 1 Plan</title>
     <style>
-        @media print {
-            body { margin: 0; }
-            .page-break { page-break-after: always; }
-        }
-        
+      @media print {
         body {
-            font-family: 'Arial', 'Helvetica', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 8.5in;
-            margin: 0 auto;
-            padding: 0.5in;
-            background: white;
+          margin: 0;
         }
-        
-        /* Header Styles */
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 3px solid #2c3e50;
+        .page-break {
+          page-break-after: always;
         }
-        
-        h1 {
-            color: #2c3e50;
-            font-size: 28pt;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        
-        .subtitle {
-            color: #7f8c8d;
-            font-size: 14pt;
-            margin-bottom: 20px;
-        }
-        
-        .sprint-info {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-        
-        .info-box {
-            text-align: center;
-            padding: 10px 20px;
-            background: #ecf0f1;
-            border-radius: 5px;
-        }
-        
-        .info-label {
-            color: #7f8c8d;
-            font-size: 10pt;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .info-value {
-            color: #2c3e50;
-            font-size: 14pt;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        
-        /* Section Styles */
-        .section {
-            margin-bottom: 30px;
-        }
-        
-        h2 {
-            color: #2c3e50;
-            font-size: 20pt;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #3498db;
-        }
-        
-        h3 {
-            color: #34495e;
-            font-size: 16pt;
-            margin-bottom: 10px;
-            margin-top: 20px;
-        }
-        
-        h4 {
-            color: #34495e;
-            font-size: 12pt;
-            margin-bottom: 8px;
-            margin-top: 15px;
-        }
-        
-        /* Sprint Goal Box */
-        .sprint-goal {
-            background: #e8f4f8;
-            border-left: 5px solid #3498db;
-            padding: 20px;
-            margin-bottom: 30px;
-            border-radius: 5px;
-        }
-        
-        .goal-title {
-            color: #2c3e50;
-            font-size: 16pt;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .goal-description {
-            color: #34495e;
-            font-size: 11pt;
-            line-height: 1.6;
-        }
-        
-        /* Team Roster */
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .team-member {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px solid #dee2e6;
-        }
-        
-        .member-role {
-            color: #2c3e50;
-            font-weight: bold;
-            font-size: 12pt;
-            margin-bottom: 5px;
-        }
-        
-        .member-name {
-            color: #495057;
-            font-size: 11pt;
-            margin-bottom: 5px;
-        }
-        
-        .member-allocation {
-            color: #6c757d;
-            font-size: 10pt;
-            font-style: italic;
-        }
-        
-        /* Feature Cards */
-        .feature-card {
-            background: #ffffff;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 25px;
-            page-break-inside: avoid;
-        }
-        
-        .feature-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e9ecef;
-        }
-        
-        .feature-id {
-            background: #3498db;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 10pt;
-        }
-        
-        .feature-title {
-            font-size: 14pt;
-            color: #2c3e50;
-            font-weight: bold;
-            flex-grow: 1;
-            margin: 0 15px;
-        }
-        
-        .feature-points {
-            background: #e9ecef;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            color: #495057;
-        }
-        
-        /* User Story */
-        .user-story {
-            background: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            border-left: 3px solid #28a745;
-        }
-        
-        .story-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        
-        .story-id {
-            color: #28a745;
-            font-weight: bold;
-            font-size: 10pt;
-        }
-        
-        .story-points {
-            background: #28a745;
-            color: white;
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-size: 9pt;
-        }
-        
-        .story-text {
-            color: #495057;
-            font-style: italic;
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-        
-        /* Tasks Table */
-        .tasks-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 10pt;
-        }
-        
-        .tasks-table th {
-            background: #e9ecef;
-            color: #2c3e50;
-            padding: 10px;
-            text-align: left;
-            border: 1px solid #dee2e6;
-            font-weight: bold;
-        }
-        
-        .tasks-table td {
-            padding: 8px 10px;
-            border: 1px solid #dee2e6;
-            vertical-align: top;
-        }
-        
-        .tasks-table tr:nth-child(even) {
-            background: #f8f9fa;
-        }
-        
-        .task-id {
-            font-weight: bold;
-            color: #6c757d;
-        }
-        
-        .assignee {
-            background: #e7f3ff;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-weight: bold;
-            color: #004085;
-            white-space: nowrap;
-        }
-        
-        .hours {
-            text-align: center;
-            font-weight: bold;
-            color: #495057;
-        }
-        
-        /* Sprint Metrics */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        
-        .metric-card {
-            background: #f8f9fa;
-            padding: 15px;
-            text-align: center;
-            border-radius: 5px;
-            border: 1px solid #dee2e6;
-        }
-        
-        .metric-value {
-            font-size: 24pt;
-            color: #3498db;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .metric-label {
-            color: #6c757d;
-            font-size: 9pt;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        /* Risk Section */
-        .risk-item {
-            background: #fff5f5;
-            border-left: 3px solid #dc3545;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-        }
-        
-        .risk-title {
-            color: #dc3545;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .risk-mitigation {
-            color: #495057;
-            font-size: 10pt;
-        }
-        
-        /* Success Criteria */
-        .criteria-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .criteria-item {
-            padding: 10px;
-            margin-bottom: 8px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .criteria-item::before {
-            content: "✓";
-            color: #28a745;
-            font-weight: bold;
-            margin-right: 10px;
-            font-size: 14pt;
-        }
-        
-        /* Acceptance Criteria */
-        .acceptance-criteria {
-            background: #e8f4f8;
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        
-        .acceptance-title {
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 5px;
-            font-size: 10pt;
-        }
-        
-        .acceptance-list {
-            margin: 0;
-            padding-left: 20px;
-            color: #495057;
-            font-size: 9pt;
-        }
-        
-        .acceptance-list li {
-            margin-bottom: 3px;
-        }
-        
-        /* Status Tags */
-        .status-tag {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 3px;
-            font-size: 9pt;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        .status-ready { background: #d4edda; color: #155724; }
-        .status-blocked { background: #f8d7da; color: #721c24; }
-        .status-inprogress { background: #fff3cd; color: #856404; }
-        
-        /* Dependencies */
-        .dependencies {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            font-size: 10pt;
-        }
-        
-        .dep-label {
-            font-weight: bold;
-            color: #6c757d;
-            margin-right: 10px;
-        }
-        
-        .dep-item {
-            display: inline-block;
-            background: #e9ecef;
-            padding: 2px 8px;
-            border-radius: 3px;
-            margin-right: 5px;
-        }
+      }
+
+      body {
+        font-family: 'Arial', 'Helvetica', sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 8.5in;
+        margin: 0 auto;
+        padding: 0.5in;
+        background: white;
+      }
+
+      /* Header Styles */
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 3px solid #2c3e50;
+      }
+
+      h1 {
+        color: #2c3e50;
+        font-size: 28pt;
+        margin-bottom: 10px;
+        font-weight: bold;
+      }
+
+      .subtitle {
+        color: #7f8c8d;
+        font-size: 14pt;
+        margin-bottom: 20px;
+      }
+
+      .sprint-info {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+      }
+
+      .info-box {
+        text-align: center;
+        padding: 10px 20px;
+        background: #ecf0f1;
+        border-radius: 5px;
+      }
+
+      .info-label {
+        color: #7f8c8d;
+        font-size: 10pt;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .info-value {
+        color: #2c3e50;
+        font-size: 14pt;
+        font-weight: bold;
+        margin-top: 5px;
+      }
+
+      /* Section Styles */
+      .section {
+        margin-bottom: 30px;
+      }
+
+      h2 {
+        color: #2c3e50;
+        font-size: 20pt;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #3498db;
+      }
+
+      h3 {
+        color: #34495e;
+        font-size: 16pt;
+        margin-bottom: 10px;
+        margin-top: 20px;
+      }
+
+      h4 {
+        color: #34495e;
+        font-size: 12pt;
+        margin-bottom: 8px;
+        margin-top: 15px;
+      }
+
+      /* Sprint Goal Box */
+      .sprint-goal {
+        background: #e8f4f8;
+        border-left: 5px solid #3498db;
+        padding: 20px;
+        margin-bottom: 30px;
+        border-radius: 5px;
+      }
+
+      .goal-title {
+        color: #2c3e50;
+        font-size: 16pt;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+
+      .goal-description {
+        color: #34495e;
+        font-size: 11pt;
+        line-height: 1.6;
+      }
+
+      /* Team Roster */
+      .team-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .team-member {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+      }
+
+      .member-role {
+        color: #2c3e50;
+        font-weight: bold;
+        font-size: 12pt;
+        margin-bottom: 5px;
+      }
+
+      .member-name {
+        color: #495057;
+        font-size: 11pt;
+        margin-bottom: 5px;
+      }
+
+      .member-allocation {
+        color: #6c757d;
+        font-size: 10pt;
+        font-style: italic;
+      }
+
+      /* Feature Cards */
+      .feature-card {
+        background: #ffffff;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        page-break-inside: avoid;
+      }
+
+      .feature-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .feature-id {
+        background: #3498db;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 10pt;
+      }
+
+      .feature-title {
+        font-size: 14pt;
+        color: #2c3e50;
+        font-weight: bold;
+        flex-grow: 1;
+        margin: 0 15px;
+      }
+
+      .feature-points {
+        background: #e9ecef;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        color: #495057;
+      }
+
+      /* User Story */
+      .user-story {
+        background: #f8f9fa;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        border-left: 3px solid #28a745;
+      }
+
+      .story-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .story-id {
+        color: #28a745;
+        font-weight: bold;
+        font-size: 10pt;
+      }
+
+      .story-points {
+        background: #28a745;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 9pt;
+      }
+
+      .story-text {
+        color: #495057;
+        font-style: italic;
+        margin-bottom: 10px;
+        line-height: 1.5;
+      }
+
+      /* Tasks Table */
+      .tasks-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        font-size: 10pt;
+      }
+
+      .tasks-table th {
+        background: #e9ecef;
+        color: #2c3e50;
+        padding: 10px;
+        text-align: left;
+        border: 1px solid #dee2e6;
+        font-weight: bold;
+      }
+
+      .tasks-table td {
+        padding: 8px 10px;
+        border: 1px solid #dee2e6;
+        vertical-align: top;
+      }
+
+      .tasks-table tr:nth-child(even) {
+        background: #f8f9fa;
+      }
+
+      .task-id {
+        font-weight: bold;
+        color: #6c757d;
+      }
+
+      .assignee {
+        background: #e7f3ff;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-weight: bold;
+        color: #004085;
+        white-space: nowrap;
+      }
+
+      .hours {
+        text-align: center;
+        font-weight: bold;
+        color: #495057;
+      }
+
+      /* Sprint Metrics */
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+
+      .metric-card {
+        background: #f8f9fa;
+        padding: 15px;
+        text-align: center;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+      }
+
+      .metric-value {
+        font-size: 24pt;
+        color: #3498db;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .metric-label {
+        color: #6c757d;
+        font-size: 9pt;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Risk Section */
+      .risk-item {
+        background: #fff5f5;
+        border-left: 3px solid #dc3545;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+      }
+
+      .risk-title {
+        color: #dc3545;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .risk-mitigation {
+        color: #495057;
+        font-size: 10pt;
+      }
+
+      /* Success Criteria */
+      .criteria-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .criteria-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+      }
+
+      .criteria-item::before {
+        content: '✓';
+        color: #28a745;
+        font-weight: bold;
+        margin-right: 10px;
+        font-size: 14pt;
+      }
+
+      /* Acceptance Criteria */
+      .acceptance-criteria {
+        background: #e8f4f8;
+        padding: 10px 15px;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+
+      .acceptance-title {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 5px;
+        font-size: 10pt;
+      }
+
+      .acceptance-list {
+        margin: 0;
+        padding-left: 20px;
+        color: #495057;
+        font-size: 9pt;
+      }
+
+      .acceptance-list li {
+        margin-bottom: 3px;
+      }
+
+      /* Status Tags */
+      .status-tag {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 3px;
+        font-size: 9pt;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      .status-ready {
+        background: #d4edda;
+        color: #155724;
+      }
+      .status-blocked {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .status-inprogress {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      /* Dependencies */
+      .dependencies {
+        margin-top: 10px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        font-size: 10pt;
+      }
+
+      .dep-label {
+        font-weight: bold;
+        color: #6c757d;
+        margin-right: 10px;
+      }
+
+      .dep-item {
+        display: inline-block;
+        background: #e9ecef;
+        padding: 2px 8px;
+        border-radius: 3px;
+        margin-right: 5px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Page 1: Title and Overview -->
     <div class="header">
-        <h1>YTEMPIRE Sprint 1 Plan</h1>
-        <div class="subtitle">Project Kickoff & Environment Setup</div>
-        <div class="sprint-info">
-            <div class="info-box">
-                <div class="info-label">Sprint Duration</div>
-                <div class="info-value">2 Weeks</div>
-            </div>
-            <div class="info-box">
-                <div class="info-label">Start Date</div>
-                <div class="info-value">Week 1 - Day 1</div>
-            </div>
-            <div class="info-box">
-                <div class="info-label">Team Size</div>
-                <div class="info-value">8 Members</div>
-            </div>
-            <div class="info-box">
-                <div class="info-label">Total Points</div>
-                <div class="info-value">55 Points</div>
-            </div>
+      <h1>YTEMPIRE Sprint 1 Plan</h1>
+      <div class="subtitle">Project Kickoff & Environment Setup</div>
+      <div class="sprint-info">
+        <div class="info-box">
+          <div class="info-label">Sprint Duration</div>
+          <div class="info-value">2 Weeks</div>
         </div>
+        <div class="info-box">
+          <div class="info-label">Start Date</div>
+          <div class="info-value">Week 1 - Day 1</div>
+        </div>
+        <div class="info-box">
+          <div class="info-label">Team Size</div>
+          <div class="info-value">8 Members</div>
+        </div>
+        <div class="info-box">
+          <div class="info-label">Total Points</div>
+          <div class="info-value">55 Points</div>
+        </div>
+      </div>
     </div>
 
     <!-- Sprint Goal -->
     <div class="sprint-goal">
-        <div class="goal-title">Sprint 1 Goal</div>
-        <div class="goal-description">
-            Establish the foundational development environment, onboard the core team, and set up the initial CI/CD pipeline
-            to enable rapid, reliable development for the YTEMPIRE platform. By the end of this sprint, the team will have
-            a fully functional development environment with automated testing and deployment capabilities.
-        </div>
+      <div class="goal-title">Sprint 1 Goal</div>
+      <div class="goal-description">
+        Establish the foundational development environment, onboard the core team, and set up the
+        initial CI/CD pipeline to enable rapid, reliable development for the YTEMPIRE platform. By
+        the end of this sprint, the team will have a fully functional development environment with
+        automated testing and deployment capabilities.
+      </div>
     </div>
 
     <!-- Sprint Metrics -->
     <div class="section">
-        <h2>Sprint Metrics</h2>
-        <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="metric-value">4</div>
-                <div class="metric-label">Features</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">12</div>
-                <div class="metric-label">User Stories</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">48</div>
-                <div class="metric-label">Tasks</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">640</div>
-                <div class="metric-label">Total Hours</div>
-            </div>
+      <h2>Sprint Metrics</h2>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-value">4</div>
+          <div class="metric-label">Features</div>
         </div>
+        <div class="metric-card">
+          <div class="metric-value">12</div>
+          <div class="metric-label">User Stories</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">48</div>
+          <div class="metric-label">Tasks</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value">640</div>
+          <div class="metric-label">Total Hours</div>
+        </div>
+      </div>
     </div>
 
     <!-- Team Roster -->
     <div class="section">
-        <h2>Sprint Team Roster</h2>
-        <div class="team-grid">
-            <div class="team-member">
-                <div class="member-role">Platform Team Lead</div>
-                <div class="member-name">Sr. Infrastructure Architect</div>
-                <div class="member-allocation">100% allocated - Sprint Captain</div>
-            </div>
-            <div class="team-member">
-                <div class="member-role">Sr. Backend Engineer #1</div>
-                <div class="member-name">Microservices Specialist</div>
-                <div class="member-allocation">100% allocated</div>
-            </div>
-            <div class="team-member">
-                <div class="member-role">Sr. Backend Engineer #2</div>
-                <div class="member-name">API Design Expert</div>
-                <div class="member-allocation">100% allocated</div>
-            </div>
-            <div class="team-member">
-                <div class="member-role">DevOps Engineer #1</div>
-                <div class="member-name">CI/CD Pipeline Specialist</div>
-                <div class="member-allocation">100% allocated</div>
-            </div>
-            <div class="team-member">
-                <div class="member-role">DevOps Engineer #2</div>
-                <div class="member-name">Infrastructure Automation</div>
-                <div class="member-allocation">100% allocated</div>
-            </div>
-            <div class="team-member">
-                <div class="member-role">Security Engineer</div>
-                <div class="member-name">Security Architecture</div>
-                <div class="member-allocation">50% allocated</div>
-            </div>
-            <div class="team-member">
-                <div class="member-role">QA Engineer</div>
-                <div class="member-name">Test Automation Specialist</div>
-                <div class="member-allocation">50% allocated</div>
-            </div>
-            <div class="team-member">
-                <div class="member-role">Technical Writer</div>
-                <div class="member-name">Documentation Specialist</div>
-                <div class="member-allocation">25% allocated</div>
-            </div>
+      <h2>Sprint Team Roster</h2>
+      <div class="team-grid">
+        <div class="team-member">
+          <div class="member-role">Platform Team Lead</div>
+          <div class="member-name">Sr. Infrastructure Architect</div>
+          <div class="member-allocation">100% allocated - Sprint Captain</div>
         </div>
+        <div class="team-member">
+          <div class="member-role">Sr. Backend Engineer #1</div>
+          <div class="member-name">Microservices Specialist</div>
+          <div class="member-allocation">100% allocated</div>
+        </div>
+        <div class="team-member">
+          <div class="member-role">Sr. Backend Engineer #2</div>
+          <div class="member-name">API Design Expert</div>
+          <div class="member-allocation">100% allocated</div>
+        </div>
+        <div class="team-member">
+          <div class="member-role">DevOps Engineer #1</div>
+          <div class="member-name">CI/CD Pipeline Specialist</div>
+          <div class="member-allocation">100% allocated</div>
+        </div>
+        <div class="team-member">
+          <div class="member-role">DevOps Engineer #2</div>
+          <div class="member-name">Infrastructure Automation</div>
+          <div class="member-allocation">100% allocated</div>
+        </div>
+        <div class="team-member">
+          <div class="member-role">Security Engineer</div>
+          <div class="member-name">Security Architecture</div>
+          <div class="member-allocation">50% allocated</div>
+        </div>
+        <div class="team-member">
+          <div class="member-role">QA Engineer</div>
+          <div class="member-name">Test Automation Specialist</div>
+          <div class="member-allocation">50% allocated</div>
+        </div>
+        <div class="team-member">
+          <div class="member-role">Technical Writer</div>
+          <div class="member-name">Documentation Specialist</div>
+          <div class="member-allocation">25% allocated</div>
+        </div>
+      </div>
     </div>
 
     <div class="page-break"></div>
 
     <!-- Feature 1: Team Onboarding & Setup -->
     <div class="section">
-        <h2>Sprint 1 Features & Tasks</h2>
-        
-        <div class="feature-card">
-            <div class="feature-header">
-                <span class="feature-id">F-001</span>
-                <span class="feature-title">Team Onboarding & Project Setup</span>
-                <span class="feature-points">8 Points</span>
-            </div>
-            
-            <div class="user-story">
-                <div class="story-header">
-                    <span class="story-id">US-001-01</span>
-                    <span class="story-points">3 Points</span>
-                </div>
-                <div class="story-text">
-                    As a team member, I want to be fully onboarded with access to all necessary tools and documentation
-                    so that I can start contributing to the project immediately.
-                </div>
-                <div class="acceptance-criteria">
-                    <div class="acceptance-title">Acceptance Criteria:</div>
-                    <ul class="acceptance-list">
-                        <li>All team members have access to development tools</li>
-                        <li>Project wiki and documentation repository set up</li>
-                        <li>Communication channels established (Slack/Teams)</li>
-                        <li>Initial project kickoff meeting completed</li>
-                    </ul>
-                </div>
-                
-                <table class="tasks-table">
-                    <thead>
-                        <tr>
-                            <th width="10%">Task ID</th>
-                            <th width="40%">Task Description</th>
-                            <th width="20%">Assignee</th>
-                            <th width="10%">Hours</th>
-                            <th width="20%">Dependencies</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="task-id">T-001</td>
-                            <td>Create team onboarding checklist and documentation</td>
-                            <td><span class="assignee">Platform Lead</span></td>
-                            <td class="hours">8</td>
-                            <td>None</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-002</td>
-                            <td>Set up Slack workspace and channels</td>
-                            <td><span class="assignee">Platform Lead</span></td>
-                            <td class="hours">4</td>
-                            <td>None</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-003</td>
-                            <td>Configure GitHub organization and repositories</td>
-                            <td><span class="assignee">DevOps Eng #1</span></td>
-                            <td class="hours">6</td>
-                            <td>None</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-004</td>
-                            <td>Set up project wiki and documentation structure</td>
-                            <td><span class="assignee">Technical Writer</span></td>
-                            <td class="hours">8</td>
-                            <td>T-003</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-005</td>
-                            <td>Conduct project kickoff meeting</td>
-                            <td><span class="assignee">Platform Lead</span></td>
-                            <td class="hours">4</td>
-                            <td>T-001, T-002</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-006</td>
-                            <td>Create and distribute development environment setup guides</td>
-                            <td><span class="assignee">DevOps Eng #2</span></td>
-                            <td class="hours">6</td>
-                            <td>T-004</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="user-story">
-                <div class="story-header">
-                    <span class="story-id">US-001-02</span>
-                    <span class="story-points">5 Points</span>
-                </div>
-                <div class="story-text">
-                    As a project manager, I want to establish project governance and tracking mechanisms
-                    so that we can monitor progress and maintain alignment with project goals.
-                </div>
-                <div class="acceptance-criteria">
-                    <div class="acceptance-title">Acceptance Criteria:</div>
-                    <ul class="acceptance-list">
-                        <li>JIRA project configured with epics and sprints</li>
-                        <li>Confluence space set up for documentation</li>
-                        <li>Sprint ceremonies scheduled for entire quarter</li>
-                        <li>Project dashboard created with key metrics</li>
-                    </ul>
-                </div>
-                
-                <table class="tasks-table">
-                    <thead>
-                        <tr>
-                            <th width="10%">Task ID</th>
-                            <th width="40%">Task Description</th>
-                            <th width="20%">Assignee</th>
-                            <th width="10%">Hours</th>
-                            <th width="20%">Dependencies</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="task-id">T-007</td>
-                            <td>Configure JIRA project with custom workflows</td>
-                            <td><span class="assignee">Platform Lead</span></td>
-                            <td class="hours">8</td>
-                            <td>None</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-008</td>
-                            <td>Create epic structure and initial backlog</td>
-                            <td><span class="assignee">Platform Lead</span></td>
-                            <td class="hours">12</td>
-                            <td>T-007</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-009</td>
-                            <td>Set up Confluence space with templates</td>
-                            <td><span class="assignee">Technical Writer</span></td>
-                            <td class="hours">6</td>
-                            <td>None</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-010</td>
-                            <td>Schedule sprint ceremonies and send calendar invites</td>
-                            <td><span class="assignee">Platform Lead</span></td>
-                            <td class="hours">4</td>
-                            <td>T-005</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-011</td>
-                            <td>Create project status dashboard</td>
-                            <td><span class="assignee">DevOps Eng #1</span></td>
-                            <td class="hours">8</td>
-                            <td>T-007</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+      <h2>Sprint 1 Features & Tasks</h2>
+
+      <div class="feature-card">
+        <div class="feature-header">
+          <span class="feature-id">F-001</span>
+          <span class="feature-title">Team Onboarding & Project Setup</span>
+          <span class="feature-points">8 Points</span>
         </div>
 
-        <div class="page-break"></div>
+        <div class="user-story">
+          <div class="story-header">
+            <span class="story-id">US-001-01</span>
+            <span class="story-points">3 Points</span>
+          </div>
+          <div class="story-text">
+            As a team member, I want to be fully onboarded with access to all necessary tools and
+            documentation so that I can start contributing to the project immediately.
+          </div>
+          <div class="acceptance-criteria">
+            <div class="acceptance-title">Acceptance Criteria:</div>
+            <ul class="acceptance-list">
+              <li>All team members have access to development tools</li>
+              <li>Project wiki and documentation repository set up</li>
+              <li>Communication channels established (Slack/Teams)</li>
+              <li>Initial project kickoff meeting completed</li>
+            </ul>
+          </div>
 
-        <!-- Feature 2: Development Environment -->
-        <div class="feature-card">
-            <div class="feature-header">
-                <span class="feature-id">F-002</span>
-                <span class="feature-title">Development Environment Setup</span>
-                <span class="feature-points">13 Points</span>
-            </div>
-            
-            <div class="user-story">
-                <div class="story-header">
-                    <span class="story-id">US-002-01</span>
-                    <span class="story-points">8 Points</span>
-                </div>
-                <div class="story-text">
-                    As a developer, I want a standardized local development environment
-                    so that I can develop and test code consistently across the team.
-                </div>
-                <div class="acceptance-criteria">
-                    <div class="acceptance-title">Acceptance Criteria:</div>
-                    <ul class="acceptance-list">
-                        <li>Docker-based development environment configured</li>
-                        <li>Local Kubernetes cluster (minikube/kind) working</li>
-                        <li>Development databases and services running</li>
-                        <li>Hot-reload and debugging capabilities enabled</li>
-                    </ul>
-                </div>
-                
-                <table class="tasks-table">
-                    <thead>
-                        <tr>
-                            <th width="10%">Task ID</th>
-                            <th width="40%">Task Description</th>
-                            <th width="20%">Assignee</th>
-                            <th width="10%">Hours</th>
-                            <th width="20%">Dependencies</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="task-id">T-012</td>
-                            <td>Create Docker Compose configuration for local development</td>
-                            <td><span class="assignee">DevOps Eng #2</span></td>
-                            <td class="hours">12</td>
-                            <td>None</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-013</td>
-                            <td>Set up local Kubernetes cluster configuration</td>
-                            <td><span class="assignee">DevOps Eng #1</span></td>
-                            <td class="hours">8</td>
-                            <td>None</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-014</td>
-                            <td>Configure PostgreSQL and Redis for local development</td>
-                            <td><span class="assignee">Backend Eng #1</span></td>
-                            <td class="hours">6</td>
-                            <td>T-012</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-015</td>
-                            <td>Create development environment setup scripts</td>
-                            <td><span class="assignee">DevOps Eng #2</span></td>
-                            <td class="hours">10</td>
-                            <td>T-012, T-013</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-016</td>
-                            <td>Configure VS Code with debugging profiles</td>
-                            <td><span class="assignee">Backend Eng #2</span></td>
-                            <td class="hours">4</td>
-                            <td>T-012</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-017</td>
-                            <td>Document environment setup process</td>
-                            <td><span class="assignee">Technical Writer</span></td>
-                            <td class="hours">6</td>
-                            <td>T-015</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-018</td>
-                            <td>Validate setup on all team machines</td>
-                            <td><span class="assignee">QA Engineer</span></td>
-                            <td class="hours">8</td>
-                            <td>T-015, T-017</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="user-story">
-                <div class="story-header">
-                    <span class="story-id">US-002-02</span>
-                    <span class="story-points">5 Points</span>
-                </div>
-                <div class="story-text">
-                    As a developer, I want cloud development environments available
-                    so that I can work remotely and collaborate effectively with the team.
-                </div>
-                <div class="acceptance-criteria">
-                    <div class="acceptance-title">Acceptance Criteria:</div>
-                    <ul class="acceptance-list">
-                        <li>AWS development accounts provisioned</li>
-                        <li>Cloud development environments accessible</li>
-                        <li>VPN access configured for secure connections</li>
-                        <li>Shared development resources available</li>
-                    </ul>
-                </div>
-                
-                <table class="tasks-table">
-                    <thead>
-                        <tr>
-                            <th width="10%">Task ID</th>
-                            <th width="40%">Task Description</th>
-                            <th width="20%">Assignee</th>
-                            <th width="10%">Hours</th>
-                            <th width="20%">Dependencies</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="task-id">T-019</td>
-                            <td>Provision AWS development accounts</td>
-                            <td><span class="assignee">DevOps Eng #1</span></td>
-                            <td class="hours">6</td>
-                            <td>None</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-020</td>
-                            <td>Set up AWS Cloud9 or similar IDE environments</td>
-                            <td><span class="assignee">DevOps Eng #2</span></td>
-                            <td class="hours">8</td>
-                            <td>T-019</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-021</td>
-                            <td>Configure VPN access for team members</td>
-                            <td><span class="assignee">Security Engineer</span></td>
-                            <td class="hours">10</td>
-                            <td>T-019</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-022</td>
-                            <td>Create shared development S3 buckets and resources</td>
-                            <td><span class="assignee">DevOps Eng #1</span></td>
-                            <td class="hours">4</td>
-                            <td>T-019</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th width="10%">Task ID</th>
+                <th width="40%">Task Description</th>
+                <th width="20%">Assignee</th>
+                <th width="10%">Hours</th>
+                <th width="20%">Dependencies</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="task-id">T-001</td>
+                <td>Create team onboarding checklist and documentation</td>
+                <td><span class="assignee">Platform Lead</span></td>
+                <td class="hours">8</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-002</td>
+                <td>Set up Slack workspace and channels</td>
+                <td><span class="assignee">Platform Lead</span></td>
+                <td class="hours">4</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-003</td>
+                <td>Configure GitHub organization and repositories</td>
+                <td><span class="assignee">DevOps Eng #1</span></td>
+                <td class="hours">6</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-004</td>
+                <td>Set up project wiki and documentation structure</td>
+                <td><span class="assignee">Technical Writer</span></td>
+                <td class="hours">8</td>
+                <td>T-003</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-005</td>
+                <td>Conduct project kickoff meeting</td>
+                <td><span class="assignee">Platform Lead</span></td>
+                <td class="hours">4</td>
+                <td>T-001, T-002</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-006</td>
+                <td>Create and distribute development environment setup guides</td>
+                <td><span class="assignee">DevOps Eng #2</span></td>
+                <td class="hours">6</td>
+                <td>T-004</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div class="page-break"></div>
+        <div class="user-story">
+          <div class="story-header">
+            <span class="story-id">US-001-02</span>
+            <span class="story-points">5 Points</span>
+          </div>
+          <div class="story-text">
+            As a project manager, I want to establish project governance and tracking mechanisms so
+            that we can monitor progress and maintain alignment with project goals.
+          </div>
+          <div class="acceptance-criteria">
+            <div class="acceptance-title">Acceptance Criteria:</div>
+            <ul class="acceptance-list">
+              <li>JIRA project configured with epics and sprints</li>
+              <li>Confluence space set up for documentation</li>
+              <li>Sprint ceremonies scheduled for entire quarter</li>
+              <li>Project dashboard created with key metrics</li>
+            </ul>
+          </div>
 
-        <!-- Feature 3: CI/CD Pipeline -->
-        <div class="feature-card">
-            <div class="feature-header">
-                <span class="feature-id">F-003</span>
-                <span class="feature-title">CI/CD Pipeline Foundation</span>
-                <span class="feature-points">21 Points</span>
-            </div>
-            
-            <div class="user-story">
-                <div class="story-header">
-                    <span class="story-id">US-003-01</span>
-                    <span class="story-points">13 Points</span>
-                </div>
-                <div class="story-text">
-                    As a developer, I want automated CI/CD pipelines so that code changes are automatically
-                    tested and deployed, ensuring quality and rapid delivery.
-                </div>
-                <div class="acceptance-criteria">
-                    <div class="acceptance-title">Acceptance Criteria:</div>
-                    <ul class="acceptance-list">
-                        <li>GitHub Actions workflows configured</li>
-                        <li>Automated testing on every pull request</li>
-                        <li>Docker image building and registry push</li>
-                        <li>Development environment auto-deployment</li>
-                    </ul>
-                </div>
-                
-                <table class="tasks-table">
-                    <thead>
-                        <tr>
-                            <th width="10%">Task ID</th>
-                            <th width="40%">Task Description</th>
-                            <th width="20%">Assignee</th>
-                            <th width="10%">Hours</th>
-                            <th width="20%">Dependencies</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="task-id">T-023</td>
-                            <td>Set up GitHub Actions runner infrastructure</td>
-                            <td><span class="assignee">DevOps Eng #1</span></td>
-                            <td class="hours">8</td>
-                            <td>T-003</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-024</td>
-                            <td>Create CI workflow for code linting and testing</td>
-                            <td><span class="assignee">DevOps Eng #1</span></td>
-                            <td class="hours">12</td>
-                            <td>T-023</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-025</td>
-                            <td>Configure Docker build and push workflows</td>
-                            <td><span class="assignee">DevOps Eng #2</span></td>
-                            <td class="hours">10</td>
-                            <td>T-023</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-026</td>
-                            <td>Set up AWS ECR for Docker image storage</td>
-                            <td><span class="assignee">DevOps Eng #2</span></td>
-                            <td class="hours">6</td>
-                            <td>T-019</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-027</td>
-                            <td>Create deployment workflow for dev environment</td>
-                            <td><span class="assignee">DevOps Eng #1</span></td>
-                            <td class="hours">16</td>
-                            <td>T-025, T-026</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-028</td>
-                            <td>Configure branch protection and merge requirements</td>
-                            <td><span class="assignee">Platform Lead</span></td>
-                            <td class="hours">4</td>
-                            <td>T-024</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="user-story">
-                <div class="story-header">
-                    <span class="story-id">US-003-02</span>
-                    <span class="story-points">8 Points</span>
-                </div>
-                <div class="story-text">
-                    As a QA engineer, I want automated testing frameworks integrated into CI/CD
-                    so that code quality is maintained and regressions are caught early.
-                </div>
-                <div class="acceptance-criteria">
-                    <div class="acceptance-title">Acceptance Criteria:</div>
-                    <ul class="acceptance-list">
-                        <li>Unit test framework configured (pytest)</li>
-                        <li>Integration test framework set up</li>
-                        <li>Code coverage reporting enabled</li>
-                        <li>Test results visible in pull requests</li>
-                    </ul>
-                </div>
-                
-                <table class="tasks-table">
-                    <thead>
-                        <tr>
-                            <th width="10%">Task ID</th>
-                            <th width="40%">Task Description</th>
-                            <th width="20%">Assignee</th>
-                            <th width="10%">Hours</th>
-                            <th width="20%">Dependencies</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="task-id">T-029</td>
-                            <td>Set up pytest framework and configuration</td>
-                            <td><span class="assignee">QA Engineer</span></td>
-                            <td class="hours">8</td>
-                            <td>None</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-030</td>
-                            <td>Create integration test framework structure</td>
-                            <td><span class="assignee">QA Engineer</span></td>
-                            <td class="hours">12</td>
-                            <td>T-014</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-031</td>
-                            <td>Configure code coverage tools (coverage.py)</td>
-                            <td><span class="assignee">Backend Eng #1</span></td>
-                            <td class="hours">6</td>
-                            <td>T-029</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-032</td>
-                            <td>Integrate test reporting with GitHub PR comments</td>
-                            <td><span class="assignee">DevOps Eng #1</span></td>
-                            <td class="hours">8</td>
-                            <td>T-024, T-031</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-033</td>
-                            <td>Create sample tests and documentation</td>
-                            <td><span class="assignee">QA Engineer</span></td>
-                            <td class="hours">10</td>
-                            <td>T-029, T-030</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th width="10%">Task ID</th>
+                <th width="40%">Task Description</th>
+                <th width="20%">Assignee</th>
+                <th width="10%">Hours</th>
+                <th width="20%">Dependencies</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="task-id">T-007</td>
+                <td>Configure JIRA project with custom workflows</td>
+                <td><span class="assignee">Platform Lead</span></td>
+                <td class="hours">8</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-008</td>
+                <td>Create epic structure and initial backlog</td>
+                <td><span class="assignee">Platform Lead</span></td>
+                <td class="hours">12</td>
+                <td>T-007</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-009</td>
+                <td>Set up Confluence space with templates</td>
+                <td><span class="assignee">Technical Writer</span></td>
+                <td class="hours">6</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-010</td>
+                <td>Schedule sprint ceremonies and send calendar invites</td>
+                <td><span class="assignee">Platform Lead</span></td>
+                <td class="hours">4</td>
+                <td>T-005</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-011</td>
+                <td>Create project status dashboard</td>
+                <td><span class="assignee">DevOps Eng #1</span></td>
+                <td class="hours">8</td>
+                <td>T-007</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="page-break"></div>
+
+      <!-- Feature 2: Development Environment -->
+      <div class="feature-card">
+        <div class="feature-header">
+          <span class="feature-id">F-002</span>
+          <span class="feature-title">Development Environment Setup</span>
+          <span class="feature-points">13 Points</span>
         </div>
 
-        <div class="page-break"></div>
+        <div class="user-story">
+          <div class="story-header">
+            <span class="story-id">US-002-01</span>
+            <span class="story-points">8 Points</span>
+          </div>
+          <div class="story-text">
+            As a developer, I want a standardized local development environment so that I can
+            develop and test code consistently across the team.
+          </div>
+          <div class="acceptance-criteria">
+            <div class="acceptance-title">Acceptance Criteria:</div>
+            <ul class="acceptance-list">
+              <li>Docker-based development environment configured</li>
+              <li>Local Kubernetes cluster (minikube/kind) working</li>
+              <li>Development databases and services running</li>
+              <li>Hot-reload and debugging capabilities enabled</li>
+            </ul>
+          </div>
 
-        <!-- Feature 4: Initial Architecture Review -->
-        <div class="feature-card">
-            <div class="feature-header">
-                <span class="feature-id">F-004</span>
-                <span class="feature-title">Initial Architecture Review & Planning</span>
-                <span class="feature-points">13 Points</span>
-            </div>
-            
-            <div class="user-story">
-                <div class="story-header">
-                    <span class="story-id">US-004-01</span>
-                    <span class="story-points">8 Points</span>
-                </div>
-                <div class="story-text">
-                    As an architect, I want to review and refine the system architecture
-                    so that all team members understand the technical vision and can begin implementation.
-                </div>
-                <div class="acceptance-criteria">
-                    <div class="acceptance-title">Acceptance Criteria:</div>
-                    <ul class="acceptance-list">
-                        <li>Architecture review session completed</li>
-                        <li>Technical decision records created</li>
-                        <li>Component interaction diagrams finalized</li>
-                        <li>Technology stack confirmed and documented</li>
-                    </ul>
-                </div>
-                
-                <table class="tasks-table">
-                    <thead>
-                        <tr>
-                            <th width="10%">Task ID</th>
-                            <th width="40%">Task Description</th>
-                            <th width="20%">Assignee</th>
-                            <th width="10%">Hours</th>
-                            <th width="20%">Dependencies</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="task-id">T-034</td>
-                            <td>Conduct architecture review workshop</td>
-                            <td><span class="assignee">Platform Lead</span></td>
-                            <td class="hours">8</td>
-                            <td>T-005</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-035</td>
-                            <td>Create Architecture Decision Records (ADRs)</td>
-                            <td><span class="assignee">Platform Lead</span></td>
-                            <td class="hours">12</td>
-                            <td>T-034</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-036</td>
-                            <td>Update component interaction diagrams</td>
-                            <td><span class="assignee">Backend Eng #1</span></td>
-                            <td class="hours">8</td>
-                            <td>T-034</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-037</td>
-                            <td>Document technology stack decisions</td>
-                            <td><span class="assignee">Technical Writer</span></td>
-                            <td class="hours">6</td>
-                            <td>T-035</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-038</td>
-                            <td>Create API design guidelines</td>
-                            <td><span class="assignee">Backend Eng #2</span></td>
-                            <td class="hours">10</td>
-                            <td>T-035</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="user-story">
-                <div class="story-header">
-                    <span class="story-id">US-004-02</span>
-                    <span class="story-points">5 Points</span>
-                </div>
-                <div class="story-text">
-                    As a security engineer, I want to establish security architecture principles
-                    so that security is built into the system from the beginning.
-                </div>
-                <div class="acceptance-criteria">
-                    <div class="acceptance-title">Acceptance Criteria:</div>
-                    <ul class="acceptance-list">
-                        <li>Security architecture review completed</li>
-                        <li>Security requirements documented</li>
-                        <li>Initial threat model created</li>
-                        <li>Security scanning tools integrated</li>
-                    </ul>
-                </div>
-                
-                <table class="tasks-table">
-                    <thead>
-                        <tr>
-                            <th width="10%">Task ID</th>
-                            <th width="40%">Task Description</th>
-                            <th width="20%">Assignee</th>
-                            <th width="10%">Hours</th>
-                            <th width="20%">Dependencies</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="task-id">T-039</td>
-                            <td>Conduct security architecture review</td>
-                            <td><span class="assignee">Security Engineer</span></td>
-                            <td class="hours">8</td>
-                            <td>T-034</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-040</td>
-                            <td>Document security requirements and standards</td>
-                            <td><span class="assignee">Security Engineer</span></td>
-                            <td class="hours">10</td>
-                            <td>T-039</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-041</td>
-                            <td>Create initial threat model</td>
-                            <td><span class="assignee">Security Engineer</span></td>
-                            <td class="hours">12</td>
-                            <td>T-036</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-042</td>
-                            <td>Integrate security scanning into CI pipeline</td>
-                            <td><span class="assignee">DevOps Eng #1</span></td>
-                            <td class="hours">8</td>
-                            <td>T-024</td>
-                        </tr>
-                        <tr>
-                            <td class="task-id">T-043</td>
-                            <td>Set up dependency vulnerability scanning</td>
-                            <td><span class="assignee">Security Engineer</span></td>
-                            <td class="hours">6</td>
-                            <td>T-024</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th width="10%">Task ID</th>
+                <th width="40%">Task Description</th>
+                <th width="20%">Assignee</th>
+                <th width="10%">Hours</th>
+                <th width="20%">Dependencies</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="task-id">T-012</td>
+                <td>Create Docker Compose configuration for local development</td>
+                <td><span class="assignee">DevOps Eng #2</span></td>
+                <td class="hours">12</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-013</td>
+                <td>Set up local Kubernetes cluster configuration</td>
+                <td><span class="assignee">DevOps Eng #1</span></td>
+                <td class="hours">8</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-014</td>
+                <td>Configure PostgreSQL and Redis for local development</td>
+                <td><span class="assignee">Backend Eng #1</span></td>
+                <td class="hours">6</td>
+                <td>T-012</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-015</td>
+                <td>Create development environment setup scripts</td>
+                <td><span class="assignee">DevOps Eng #2</span></td>
+                <td class="hours">10</td>
+                <td>T-012, T-013</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-016</td>
+                <td>Configure VS Code with debugging profiles</td>
+                <td><span class="assignee">Backend Eng #2</span></td>
+                <td class="hours">4</td>
+                <td>T-012</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-017</td>
+                <td>Document environment setup process</td>
+                <td><span class="assignee">Technical Writer</span></td>
+                <td class="hours">6</td>
+                <td>T-015</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-018</td>
+                <td>Validate setup on all team machines</td>
+                <td><span class="assignee">QA Engineer</span></td>
+                <td class="hours">8</td>
+                <td>T-015, T-017</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+
+        <div class="user-story">
+          <div class="story-header">
+            <span class="story-id">US-002-02</span>
+            <span class="story-points">5 Points</span>
+          </div>
+          <div class="story-text">
+            As a developer, I want cloud development environments available so that I can work
+            remotely and collaborate effectively with the team.
+          </div>
+          <div class="acceptance-criteria">
+            <div class="acceptance-title">Acceptance Criteria:</div>
+            <ul class="acceptance-list">
+              <li>AWS development accounts provisioned</li>
+              <li>Cloud development environments accessible</li>
+              <li>VPN access configured for secure connections</li>
+              <li>Shared development resources available</li>
+            </ul>
+          </div>
+
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th width="10%">Task ID</th>
+                <th width="40%">Task Description</th>
+                <th width="20%">Assignee</th>
+                <th width="10%">Hours</th>
+                <th width="20%">Dependencies</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="task-id">T-019</td>
+                <td>Provision AWS development accounts</td>
+                <td><span class="assignee">DevOps Eng #1</span></td>
+                <td class="hours">6</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-020</td>
+                <td>Set up AWS Cloud9 or similar IDE environments</td>
+                <td><span class="assignee">DevOps Eng #2</span></td>
+                <td class="hours">8</td>
+                <td>T-019</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-021</td>
+                <td>Configure VPN access for team members</td>
+                <td><span class="assignee">Security Engineer</span></td>
+                <td class="hours">10</td>
+                <td>T-019</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-022</td>
+                <td>Create shared development S3 buckets and resources</td>
+                <td><span class="assignee">DevOps Eng #1</span></td>
+                <td class="hours">4</td>
+                <td>T-019</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="page-break"></div>
+
+      <!-- Feature 3: CI/CD Pipeline -->
+      <div class="feature-card">
+        <div class="feature-header">
+          <span class="feature-id">F-003</span>
+          <span class="feature-title">CI/CD Pipeline Foundation</span>
+          <span class="feature-points">21 Points</span>
+        </div>
+
+        <div class="user-story">
+          <div class="story-header">
+            <span class="story-id">US-003-01</span>
+            <span class="story-points">13 Points</span>
+          </div>
+          <div class="story-text">
+            As a developer, I want automated CI/CD pipelines so that code changes are automatically
+            tested and deployed, ensuring quality and rapid delivery.
+          </div>
+          <div class="acceptance-criteria">
+            <div class="acceptance-title">Acceptance Criteria:</div>
+            <ul class="acceptance-list">
+              <li>GitHub Actions workflows configured</li>
+              <li>Automated testing on every pull request</li>
+              <li>Docker image building and registry push</li>
+              <li>Development environment auto-deployment</li>
+            </ul>
+          </div>
+
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th width="10%">Task ID</th>
+                <th width="40%">Task Description</th>
+                <th width="20%">Assignee</th>
+                <th width="10%">Hours</th>
+                <th width="20%">Dependencies</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="task-id">T-023</td>
+                <td>Set up GitHub Actions runner infrastructure</td>
+                <td><span class="assignee">DevOps Eng #1</span></td>
+                <td class="hours">8</td>
+                <td>T-003</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-024</td>
+                <td>Create CI workflow for code linting and testing</td>
+                <td><span class="assignee">DevOps Eng #1</span></td>
+                <td class="hours">12</td>
+                <td>T-023</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-025</td>
+                <td>Configure Docker build and push workflows</td>
+                <td><span class="assignee">DevOps Eng #2</span></td>
+                <td class="hours">10</td>
+                <td>T-023</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-026</td>
+                <td>Set up AWS ECR for Docker image storage</td>
+                <td><span class="assignee">DevOps Eng #2</span></td>
+                <td class="hours">6</td>
+                <td>T-019</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-027</td>
+                <td>Create deployment workflow for dev environment</td>
+                <td><span class="assignee">DevOps Eng #1</span></td>
+                <td class="hours">16</td>
+                <td>T-025, T-026</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-028</td>
+                <td>Configure branch protection and merge requirements</td>
+                <td><span class="assignee">Platform Lead</span></td>
+                <td class="hours">4</td>
+                <td>T-024</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="user-story">
+          <div class="story-header">
+            <span class="story-id">US-003-02</span>
+            <span class="story-points">8 Points</span>
+          </div>
+          <div class="story-text">
+            As a QA engineer, I want automated testing frameworks integrated into CI/CD so that code
+            quality is maintained and regressions are caught early.
+          </div>
+          <div class="acceptance-criteria">
+            <div class="acceptance-title">Acceptance Criteria:</div>
+            <ul class="acceptance-list">
+              <li>Unit test framework configured (pytest)</li>
+              <li>Integration test framework set up</li>
+              <li>Code coverage reporting enabled</li>
+              <li>Test results visible in pull requests</li>
+            </ul>
+          </div>
+
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th width="10%">Task ID</th>
+                <th width="40%">Task Description</th>
+                <th width="20%">Assignee</th>
+                <th width="10%">Hours</th>
+                <th width="20%">Dependencies</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="task-id">T-029</td>
+                <td>Set up pytest framework and configuration</td>
+                <td><span class="assignee">QA Engineer</span></td>
+                <td class="hours">8</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-030</td>
+                <td>Create integration test framework structure</td>
+                <td><span class="assignee">QA Engineer</span></td>
+                <td class="hours">12</td>
+                <td>T-014</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-031</td>
+                <td>Configure code coverage tools (coverage.py)</td>
+                <td><span class="assignee">Backend Eng #1</span></td>
+                <td class="hours">6</td>
+                <td>T-029</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-032</td>
+                <td>Integrate test reporting with GitHub PR comments</td>
+                <td><span class="assignee">DevOps Eng #1</span></td>
+                <td class="hours">8</td>
+                <td>T-024, T-031</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-033</td>
+                <td>Create sample tests and documentation</td>
+                <td><span class="assignee">QA Engineer</span></td>
+                <td class="hours">10</td>
+                <td>T-029, T-030</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="page-break"></div>
+
+      <!-- Feature 4: Initial Architecture Review -->
+      <div class="feature-card">
+        <div class="feature-header">
+          <span class="feature-id">F-004</span>
+          <span class="feature-title">Initial Architecture Review & Planning</span>
+          <span class="feature-points">13 Points</span>
+        </div>
+
+        <div class="user-story">
+          <div class="story-header">
+            <span class="story-id">US-004-01</span>
+            <span class="story-points">8 Points</span>
+          </div>
+          <div class="story-text">
+            As an architect, I want to review and refine the system architecture so that all team
+            members understand the technical vision and can begin implementation.
+          </div>
+          <div class="acceptance-criteria">
+            <div class="acceptance-title">Acceptance Criteria:</div>
+            <ul class="acceptance-list">
+              <li>Architecture review session completed</li>
+              <li>Technical decision records created</li>
+              <li>Component interaction diagrams finalized</li>
+              <li>Technology stack confirmed and documented</li>
+            </ul>
+          </div>
+
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th width="10%">Task ID</th>
+                <th width="40%">Task Description</th>
+                <th width="20%">Assignee</th>
+                <th width="10%">Hours</th>
+                <th width="20%">Dependencies</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="task-id">T-034</td>
+                <td>Conduct architecture review workshop</td>
+                <td><span class="assignee">Platform Lead</span></td>
+                <td class="hours">8</td>
+                <td>T-005</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-035</td>
+                <td>Create Architecture Decision Records (ADRs)</td>
+                <td><span class="assignee">Platform Lead</span></td>
+                <td class="hours">12</td>
+                <td>T-034</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-036</td>
+                <td>Update component interaction diagrams</td>
+                <td><span class="assignee">Backend Eng #1</span></td>
+                <td class="hours">8</td>
+                <td>T-034</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-037</td>
+                <td>Document technology stack decisions</td>
+                <td><span class="assignee">Technical Writer</span></td>
+                <td class="hours">6</td>
+                <td>T-035</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-038</td>
+                <td>Create API design guidelines</td>
+                <td><span class="assignee">Backend Eng #2</span></td>
+                <td class="hours">10</td>
+                <td>T-035</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="user-story">
+          <div class="story-header">
+            <span class="story-id">US-004-02</span>
+            <span class="story-points">5 Points</span>
+          </div>
+          <div class="story-text">
+            As a security engineer, I want to establish security architecture principles so that
+            security is built into the system from the beginning.
+          </div>
+          <div class="acceptance-criteria">
+            <div class="acceptance-title">Acceptance Criteria:</div>
+            <ul class="acceptance-list">
+              <li>Security architecture review completed</li>
+              <li>Security requirements documented</li>
+              <li>Initial threat model created</li>
+              <li>Security scanning tools integrated</li>
+            </ul>
+          </div>
+
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th width="10%">Task ID</th>
+                <th width="40%">Task Description</th>
+                <th width="20%">Assignee</th>
+                <th width="10%">Hours</th>
+                <th width="20%">Dependencies</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="task-id">T-039</td>
+                <td>Conduct security architecture review</td>
+                <td><span class="assignee">Security Engineer</span></td>
+                <td class="hours">8</td>
+                <td>T-034</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-040</td>
+                <td>Document security requirements and standards</td>
+                <td><span class="assignee">Security Engineer</span></td>
+                <td class="hours">10</td>
+                <td>T-039</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-041</td>
+                <td>Create initial threat model</td>
+                <td><span class="assignee">Security Engineer</span></td>
+                <td class="hours">12</td>
+                <td>T-036</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-042</td>
+                <td>Integrate security scanning into CI pipeline</td>
+                <td><span class="assignee">DevOps Eng #1</span></td>
+                <td class="hours">8</td>
+                <td>T-024</td>
+              </tr>
+              <tr>
+                <td class="task-id">T-043</td>
+                <td>Set up dependency vulnerability scanning</td>
+                <td><span class="assignee">Security Engineer</span></td>
+                <td class="hours">6</td>
+                <td>T-024</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <div class="page-break"></div>
 
     <!-- Sprint Risks -->
     <div class="section">
-        <h2>Sprint 1 Risks & Mitigation</h2>
-        
-        <div class="risk-item">
-            <div class="risk-title">Risk: Team Member Onboarding Delays</div>
-            <div class="risk-mitigation">
-                <strong>Mitigation:</strong> Pre-provision all accounts and access before sprint start. 
-                Have backup team members identified. Create self-service onboarding documentation.
-            </div>
+      <h2>Sprint 1 Risks & Mitigation</h2>
+
+      <div class="risk-item">
+        <div class="risk-title">Risk: Team Member Onboarding Delays</div>
+        <div class="risk-mitigation">
+          <strong>Mitigation:</strong> Pre-provision all accounts and access before sprint start.
+          Have backup team members identified. Create self-service onboarding documentation.
         </div>
-        
-        <div class="risk-item">
-            <div class="risk-title">Risk: Environment Setup Complexity</div>
-            <div class="risk-mitigation">
-                <strong>Mitigation:</strong> Use containerization to minimize local dependencies. 
-                Provide pre-configured VM images as fallback. Schedule dedicated pairing sessions for setup help.
-            </div>
+      </div>
+
+      <div class="risk-item">
+        <div class="risk-title">Risk: Environment Setup Complexity</div>
+        <div class="risk-mitigation">
+          <strong>Mitigation:</strong> Use containerization to minimize local dependencies. Provide
+          pre-configured VM images as fallback. Schedule dedicated pairing sessions for setup help.
         </div>
-        
-        <div class="risk-item">
-            <div class="risk-title">Risk: CI/CD Pipeline Configuration Issues</div>
-            <div class="risk-mitigation">
-                <strong>Mitigation:</strong> Start with simple pipeline and iterate. Use proven GitHub Actions templates. 
-                Have DevOps engineers available for immediate support.
-            </div>
+      </div>
+
+      <div class="risk-item">
+        <div class="risk-title">Risk: CI/CD Pipeline Configuration Issues</div>
+        <div class="risk-mitigation">
+          <strong>Mitigation:</strong> Start with simple pipeline and iterate. Use proven GitHub
+          Actions templates. Have DevOps engineers available for immediate support.
         </div>
-        
-        <div class="risk-item">
-            <div class="risk-title">Risk: Architecture Decision Conflicts</div>
-            <div class="risk-mitigation">
-                <strong>Mitigation:</strong> Time-box architecture discussions. Use ADR process for decisions. 
-                Escalate unresolved issues to technical steering committee.
-            </div>
+      </div>
+
+      <div class="risk-item">
+        <div class="risk-title">Risk: Architecture Decision Conflicts</div>
+        <div class="risk-mitigation">
+          <strong>Mitigation:</strong> Time-box architecture discussions. Use ADR process for
+          decisions. Escalate unresolved issues to technical steering committee.
         </div>
+      </div>
     </div>
 
     <!-- Success Criteria -->
     <div class="section">
-        <h2>Sprint 1 Success Criteria</h2>
-        
-        <ul class="criteria-list">
-            <li class="criteria-item">
-                All 8 team members fully onboarded with necessary access and tools
-            </li>
-            <li class="criteria-item">
-                Development environment successfully set up on 100% of developer machines
-            </li>
-            <li class="criteria-item">
-                CI/CD pipeline running with automated tests on every pull request
-            </li>
-            <li class="criteria-item">
-                First successful automated deployment to development environment completed
-            </li>
-            <li class="criteria-item">
-                Architecture decisions documented and approved by all technical leads
-            </li>
-            <li class="criteria-item">
-                Project wiki containing all setup guides and architecture documentation
-            </li>
-            <li class="criteria-item">
-                Sprint 2 backlog refined and ready with estimated user stories
-            </li>
-        </ul>
+      <h2>Sprint 1 Success Criteria</h2>
+
+      <ul class="criteria-list">
+        <li class="criteria-item">
+          All 8 team members fully onboarded with necessary access and tools
+        </li>
+        <li class="criteria-item">
+          Development environment successfully set up on 100% of developer machines
+        </li>
+        <li class="criteria-item">
+          CI/CD pipeline running with automated tests on every pull request
+        </li>
+        <li class="criteria-item">
+          First successful automated deployment to development environment completed
+        </li>
+        <li class="criteria-item">
+          Architecture decisions documented and approved by all technical leads
+        </li>
+        <li class="criteria-item">
+          Project wiki containing all setup guides and architecture documentation
+        </li>
+        <li class="criteria-item">
+          Sprint 2 backlog refined and ready with estimated user stories
+        </li>
+      </ul>
     </div>
 
     <!-- Sprint Schedule -->
     <div class="section">
-        <h2>Sprint 1 Key Ceremonies</h2>
-        
-        <table class="tasks-table">
-            <thead>
-                <tr>
-                    <th width="25%">Ceremony</th>
-                    <th width="25%">Date/Time</th>
-                    <th width="25%">Duration</th>
-                    <th width="25%">Required Attendees</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Sprint Planning</strong></td>
-                    <td>Day 1 - 9:00 AM</td>
-                    <td>4 hours</td>
-                    <td>Entire Team</td>
-                </tr>
-                <tr>
-                    <td><strong>Daily Standups</strong></td>
-                    <td>Daily - 9:30 AM</td>
-                    <td>15 minutes</td>
-                    <td>Entire Team</td>
-                </tr>
-                <tr>
-                    <td><strong>Architecture Review</strong></td>
-                    <td>Day 3 - 1:00 PM</td>
-                    <td>4 hours</td>
-                    <td>All Engineers + PM</td>
-                </tr>
-                <tr>
-                    <td><strong>Mid-Sprint Check-in</strong></td>
-                    <td>Day 5 - 2:00 PM</td>
-                    <td>1 hour</td>
-                    <td>Team Leads + PM</td>
-                </tr>
-                <tr>
-                    <td><strong>Sprint Review</strong></td>
-                    <td>Day 10 - 2:00 PM</td>
-                    <td>2 hours</td>
-                    <td>Team + Stakeholders</td>
-                </tr>
-                <tr>
-                    <td><strong>Sprint Retrospective</strong></td>
-                    <td>Day 10 - 4:00 PM</td>
-                    <td>1.5 hours</td>
-                    <td>Entire Team</td>
-                </tr>
-            </tbody>
-        </table>
+      <h2>Sprint 1 Key Ceremonies</h2>
+
+      <table class="tasks-table">
+        <thead>
+          <tr>
+            <th width="25%">Ceremony</th>
+            <th width="25%">Date/Time</th>
+            <th width="25%">Duration</th>
+            <th width="25%">Required Attendees</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Sprint Planning</strong></td>
+            <td>Day 1 - 9:00 AM</td>
+            <td>4 hours</td>
+            <td>Entire Team</td>
+          </tr>
+          <tr>
+            <td><strong>Daily Standups</strong></td>
+            <td>Daily - 9:30 AM</td>
+            <td>15 minutes</td>
+            <td>Entire Team</td>
+          </tr>
+          <tr>
+            <td><strong>Architecture Review</strong></td>
+            <td>Day 3 - 1:00 PM</td>
+            <td>4 hours</td>
+            <td>All Engineers + PM</td>
+          </tr>
+          <tr>
+            <td><strong>Mid-Sprint Check-in</strong></td>
+            <td>Day 5 - 2:00 PM</td>
+            <td>1 hour</td>
+            <td>Team Leads + PM</td>
+          </tr>
+          <tr>
+            <td><strong>Sprint Review</strong></td>
+            <td>Day 10 - 2:00 PM</td>
+            <td>2 hours</td>
+            <td>Team + Stakeholders</td>
+          </tr>
+          <tr>
+            <td><strong>Sprint Retrospective</strong></td>
+            <td>Day 10 - 4:00 PM</td>
+            <td>1.5 hours</td>
+            <td>Entire Team</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Definition of Done -->
     <div class="section">
-        <h2>Definition of Done</h2>
-        
-        <ul class="criteria-list">
-            <li class="criteria-item">
-                Code reviewed and approved by at least one other team member
-            </li>
-            <li class="criteria-item">
-                All automated tests passing (unit, integration where applicable)
-            </li>
-            <li class="criteria-item">
-                Documentation updated (code comments, API docs, wiki)
-            </li>
-            <li class="criteria-item">
-                Security scan completed with no critical vulnerabilities
-            </li>
-            <li class="criteria-item">
-                Deployed to development environment and smoke tested
-            </li>
-            <li class="criteria-item">
-                Acceptance criteria verified by Product Owner or delegate
-            </li>
-        </ul>
+      <h2>Definition of Done</h2>
+
+      <ul class="criteria-list">
+        <li class="criteria-item">Code reviewed and approved by at least one other team member</li>
+        <li class="criteria-item">
+          All automated tests passing (unit, integration where applicable)
+        </li>
+        <li class="criteria-item">Documentation updated (code comments, API docs, wiki)</li>
+        <li class="criteria-item">Security scan completed with no critical vulnerabilities</li>
+        <li class="criteria-item">Deployed to development environment and smoke tested</li>
+        <li class="criteria-item">Acceptance criteria verified by Product Owner or delegate</li>
+      </ul>
     </div>
 
     <div class="page-break"></div>
 
     <!-- Summary -->
     <div class="section">
-        <h2>Sprint 1 Summary</h2>
-        
-        <p style="line-height: 1.8;">
-            Sprint 1 lays the critical foundation for the YTEMPIRE project success. By focusing on team formation,
-            environment setup, and CI/CD infrastructure, we ensure that all subsequent development can proceed
-            efficiently and with high quality.
-        </p>
-        
-        <p style="line-height: 1.8;">
-            The sprint delivers 4 major features across 12 user stories, implemented through 48 specific tasks.
-            With 55 story points and 640 hours of effort, this represents an aggressive but achievable start
-            to our 18-month journey.
-        </p>
-        
-        <p style="line-height: 1.8;">
-            Success in Sprint 1 will be measured not just by task completion, but by the team's ability to
-            work together effectively, the robustness of our development infrastructure, and the clarity of
-            our technical direction moving forward.
-        </p>
-        
-        <div style="margin-top: 40px; padding: 20px; background: #e8f4f8; border-radius: 5px;">
-            <p style="margin: 0; font-weight: bold; color: #2c3e50;">
-                Next Steps: Upon successful completion of Sprint 1, the team will immediately begin Sprint 2
-                focusing on microservices architecture implementation and initial API development.
-            </p>
-        </div>
-    </div>
+      <h2>Sprint 1 Summary</h2>
 
-</body>
+      <p style="line-height: 1.8">
+        Sprint 1 lays the critical foundation for the YTEMPIRE project success. By focusing on team
+        formation, environment setup, and CI/CD infrastructure, we ensure that all subsequent
+        development can proceed efficiently and with high quality.
+      </p>
+
+      <p style="line-height: 1.8">
+        The sprint delivers 4 major features across 12 user stories, implemented through 48 specific
+        tasks. With 55 story points and 640 hours of effort, this represents an aggressive but
+        achievable start to our 18-month journey.
+      </p>
+
+      <p style="line-height: 1.8">
+        Success in Sprint 1 will be measured not just by task completion, but by the team's ability
+        to work together effectively, the robustness of our development infrastructure, and the
+        clarity of our technical direction moving forward.
+      </p>
+
+      <div style="margin-top: 40px; padding: 20px; background: #e8f4f8; border-radius: 5px">
+        <p style="margin: 0; font-weight: bold; color: #2c3e50">
+          Next Steps: Upon successful completion of Sprint 1, the team will immediately begin Sprint
+          2 focusing on microservices architecture implementation and initial API development.
+        </p>
+      </div>
+    </div>
+  </body>
 </html>

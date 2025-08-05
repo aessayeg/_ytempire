@@ -52,3 +52,4 @@ venv/
 .cache/
 
 frontend/nul
+*nul*

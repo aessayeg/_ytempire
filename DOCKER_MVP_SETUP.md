@@ -28,12 +28,14 @@ The YTEmpire MVP consists of the following services:
 ## Quick Start
 
 ### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/aessayeg/ytempire.git
 cd ytempire
 ```
 
 ### 2. Set Up Environment Variables
+
 ```bash
 # Copy the development environment file
 cp .env.development .env
@@ -44,6 +46,7 @@ cp .env.development .env
 ```
 
 ### 3. Start All Services
+
 ```bash
 # Start all services in detached mode
 docker-compose up -d --build
@@ -53,6 +56,7 @@ npm run docker:up
 ```
 
 ### 4. Verify Services
+
 ```bash
 # Check service status
 docker-compose ps
@@ -72,6 +76,7 @@ docker-compose logs -f
 ## Development Workflow
 
 ### Starting Development
+
 ```bash
 # Start all services
 docker-compose up -d
@@ -81,11 +86,13 @@ docker-compose logs -f backend frontend
 ```
 
 ### Making Code Changes
+
 - Frontend and backend code is mounted as volumes
 - Changes are automatically reflected (hot reload)
 - No need to rebuild containers for code changes
 
 ### Database Operations
+
 ```bash
 # Access PostgreSQL CLI
 docker-compose exec postgresql psql -U ytempire_user -d ytempire_dev
@@ -100,11 +107,13 @@ docker-compose exec backend npm run seed
 ### Testing
 
 #### Run All Tests
+
 ```bash
 npm run test:docker:all
 ```
 
 #### Run Specific Test Suites
+
 ```bash
 # Test Docker configuration
 npm run test:docker:compose
@@ -117,6 +126,7 @@ npm run test:docker:integration
 ```
 
 #### Automated Test Runner
+
 ```bash
 node run-docker-tests.js
 ```
@@ -124,6 +134,7 @@ node run-docker-tests.js
 ### Debugging
 
 #### View Container Logs
+
 ```bash
 # All services
 docker-compose logs
@@ -136,6 +147,7 @@ docker-compose logs -f frontend
 ```
 
 #### Access Container Shell
+
 ```bash
 # Backend container
 docker-compose exec backend sh
@@ -167,6 +179,7 @@ MailHog captures all emails sent by the application:
 ## Common Tasks
 
 ### Reset Database
+
 ```bash
 # Stop services and remove volumes
 docker-compose down -v
@@ -176,6 +189,7 @@ docker-compose up -d
 ```
 
 ### Update Dependencies
+
 ```bash
 # Backend
 docker-compose exec backend npm update
@@ -188,6 +202,7 @@ docker-compose up -d --build
 ```
 
 ### Performance Monitoring
+
 ```bash
 # Check resource usage
 docker stats
@@ -199,6 +214,7 @@ docker-compose top
 ## Troubleshooting
 
 ### Services Won't Start
+
 ```bash
 # Check for port conflicts
 netstat -tulpn | grep -E '(3000|5000|5432|6379|80|443|8080|8025)'
@@ -210,6 +226,7 @@ docker-compose up -d --build
 ```
 
 ### Database Connection Issues
+
 ```bash
 # Check PostgreSQL is running
 docker-compose ps postgresql
@@ -222,6 +239,7 @@ docker-compose logs postgresql
 ```
 
 ### Frontend/Backend Not Updating
+
 ```bash
 # Ensure volumes are mounted correctly
 docker-compose exec frontend ls -la /app
@@ -232,6 +250,7 @@ docker-compose restart frontend backend
 ```
 
 ### Out of Disk Space
+
 ```bash
 # Clean up Docker resources
 docker system prune -a --volumes

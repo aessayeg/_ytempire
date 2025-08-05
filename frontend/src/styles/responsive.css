@@ -41,18 +41,32 @@
 }
 
 /* Utility classes for responsive design */
-.d-none { display: none; }
-.d-block { display: block; }
-.d-flex { display: flex; }
+.d-none {
+  display: none;
+}
+.d-block {
+  display: block;
+}
+.d-flex {
+  display: flex;
+}
 
 @media (max-width: 767px) {
-  .d-md-none { display: none; }
-  .d-md-block { display: block; }
+  .d-md-none {
+    display: none;
+  }
+  .d-md-block {
+    display: block;
+  }
 }
 
 @media (min-width: 768px) {
-  .d-md-none { display: none; }
-  .d-md-block { display: block; }
+  .d-md-none {
+    display: none;
+  }
+  .d-md-block {
+    display: block;
+  }
 }
 
 /* TODO: Add more responsive styles */

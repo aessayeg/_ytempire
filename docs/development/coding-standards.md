@@ -3,6 +3,7 @@
 This document outlines the coding standards, conventions, and best practices for the YTEmpire project.
 
 ## Table of Contents
+
 - [General Principles](#general-principles)
 - [JavaScript/TypeScript Standards](#javascripttypescript-standards)
 - [React/Frontend Standards](#reactfrontend-standards)
@@ -15,6 +16,7 @@ This document outlines the coding standards, conventions, and best practices for
 ## General Principles
 
 ### Core Values
+
 1. **Readability**: Code should be self-documenting
 2. **Maintainability**: Easy to modify and extend
 3. **Consistency**: Follow established patterns
@@ -23,6 +25,7 @@ This document outlines the coding standards, conventions, and best practices for
 6. **Security**: Security-first mindset
 
 ### File Organization
+
 ```
 project/
 ├── src/
@@ -40,6 +43,7 @@ project/
 ## JavaScript/TypeScript Standards
 
 ### Language Features
+
 - Use ES6+ features (const, let, arrow functions, destructuring)
 - Prefer TypeScript for new code
 - Use strict mode
@@ -78,16 +82,17 @@ const fetchUserDataAsync = async () => { };
 ### Code Style
 
 #### Variables
+
 ```javascript
 // ✅ Good
 const user = {
   id: 1,
   name: 'John',
-  email: 'john@example.com'
+  email: 'john@example.com',
 };
 
 // ❌ Bad
-const user={id:1,name:'John',email:'john@example.com'};
+const user = { id: 1, name: 'John', email: 'john@example.com' };
 
 // ✅ Use destructuring
 const { id, name } = user;
@@ -98,6 +103,7 @@ const name = user.name;
 ```
 
 #### Functions
+
 ```javascript
 // ✅ Good - Arrow functions for simple operations
 const double = (n) => n * 2;
@@ -119,7 +125,7 @@ function createUser(name, role = 'user') {
 }
 
 // ❌ Bad - Avoid nested ternaries
-const status = isActive ? isVerified ? 'active' : 'pending' : 'inactive';
+const status = isActive ? (isVerified ? 'active' : 'pending') : 'inactive';
 
 // ✅ Good - Use if/else for clarity
 let status;
@@ -133,6 +139,7 @@ if (!isActive) {
 ```
 
 #### Async/Await
+
 ```javascript
 // ✅ Good
 async function processData() {
@@ -148,7 +155,7 @@ async function processData() {
 
 // ❌ Bad - Mixing promises and async/await
 async function processData() {
-  return fetchData().then(data => {
+  return fetchData().then((data) => {
     return transform(data);
   });
 }
@@ -167,17 +174,19 @@ interface User {
 
 // ✅ Good - Type guards
 function isUser(obj: any): obj is User {
-  return obj && 
+  return (
+    obj &&
     typeof obj.id === 'string' &&
     typeof obj.name === 'string' &&
-    typeof obj.email === 'string';
+    typeof obj.email === 'string'
+  );
 }
 
 // ✅ Good - Enums for constants
 enum UserRole {
   Admin = 'ADMIN',
   User = 'USER',
-  Guest = 'GUEST'
+  Guest = 'GUEST',
 }
 
 // ✅ Good - Utility types
@@ -201,10 +210,7 @@ interface UserProfileProps {
   onUpdate?: (user: User) => void;
 }
 
-export const UserProfile: React.FC<UserProfileProps> = ({ 
-  userId, 
-  onUpdate 
-}) => {
+export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUpdate }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { user, error } = useUser(userId);
 
@@ -215,11 +221,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({
   if (isLoading) return <LoadingSpinner />;
   if (error) return <ErrorMessage error={error} />;
 
-  return (
-    <div className={styles.container}>
-      {/* Component JSX */}
-    </div>
-  );
+  return <div className={styles.container}>{/* Component JSX */}</div>;
 };
 ```
 
@@ -230,23 +232,20 @@ export const UserProfile: React.FC<UserProfileProps> = ({
 function useChannelData(channelId) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     fetchChannelData(channelId)
       .then(setData)
       .finally(() => setLoading(false));
   }, [channelId]);
-  
+
   return { data, loading };
 }
 
 // ✅ Good - Memoization for expensive operations
 const ExpensiveComponent = React.memo(({ data }) => {
-  const processedData = useMemo(
-    () => processData(data),
-    [data]
-  );
-  
+  const processedData = useMemo(() => processData(data), [data]);
+
   return <div>{processedData}</div>;
 });
 
@@ -255,7 +254,7 @@ class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     logErrorToService(error, errorInfo);
   }
-  
+
   render() {
     if (this.state.hasError) {
       return <ErrorFallback />;
@@ -276,7 +275,7 @@ const userSlice = createSlice({
   initialState: {
     data: null,
     loading: false,
-    error: null
+    error: null,
   },
   reducers: {
     fetchStart: (state) => {
@@ -289,8 +288,8 @@ const userSlice = createSlice({
     fetchError: (state, action) => {
       state.error = action.payload;
       state.loading = false;
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -300,10 +299,10 @@ const userSlice = createSlice({
 
 ```javascript
 // ✅ Good - RESTful routes
-router.get('/channels', getChannels);          // GET all
-router.get('/channels/:id', getChannel);       // GET one
-router.post('/channels', createChannel);       // CREATE
-router.put('/channels/:id', updateChannel);    // UPDATE
+router.get('/channels', getChannels); // GET all
+router.get('/channels/:id', getChannel); // GET one
+router.post('/channels', createChannel); // CREATE
+router.put('/channels/:id', updateChannel); // UPDATE
 router.delete('/channels/:id', deleteChannel); // DELETE
 
 // ✅ Good - Nested resources
@@ -326,17 +325,17 @@ class AppError extends Error {
 // Error handling middleware
 const errorHandler = (err, req, res, next) => {
   const { statusCode = 500, message } = err;
-  
+
   logger.error({
     error: err,
     request: req.url,
     method: req.method,
-    ip: req.ip
+    ip: req.ip,
   });
-  
+
   res.status(statusCode).json({
     status: 'error',
-    message: statusCode === 500 ? 'Internal server error' : message
+    message: statusCode === 500 ? 'Internal server error' : message,
   });
 };
 
@@ -363,14 +362,16 @@ const Joi = require('joi');
 const channelSchema = Joi.object({
   name: Joi.string().min(3).max(100).required(),
   description: Joi.string().max(500),
-  youtubeId: Joi.string().pattern(/^UC[\w-]{22}$/).required()
+  youtubeId: Joi.string()
+    .pattern(/^UC[\w-]{22}$/)
+    .required(),
 });
 
 const validateChannel = (req, res, next) => {
   const { error } = channelSchema.validate(req.body);
   if (error) {
-    return res.status(400).json({ 
-      error: error.details[0].message 
+    return res.status(400).json({
+      error: error.details[0].message,
     });
   }
   next();
@@ -400,8 +401,8 @@ CREATE INDEX idx_videos_channel_id ON videos(channel_id);
 CREATE INDEX idx_videos_created_at ON videos(created_at DESC);
 
 -- Foreign keys: fk_table_column_reference
-ALTER TABLE videos 
-  ADD CONSTRAINT fk_videos_channel_id_channels 
+ALTER TABLE videos
+  ADD CONSTRAINT fk_videos_channel_id_channels
   FOREIGN KEY (channel_id) REFERENCES channels(id);
 ```
 
@@ -409,15 +410,10 @@ ALTER TABLE videos
 
 ```javascript
 // ✅ Good - Parameterized queries
-const user = await db.query(
-  'SELECT * FROM users WHERE email = $1',
-  [email]
-);
+const user = await db.query('SELECT * FROM users WHERE email = $1', [email]);
 
 // ❌ Bad - SQL injection vulnerable
-const user = await db.query(
-  `SELECT * FROM users WHERE email = '${email}'`
-);
+const user = await db.query(`SELECT * FROM users WHERE email = '${email}'`);
 
 // ✅ Good - Transaction handling
 const client = await pool.connect();
@@ -445,16 +441,16 @@ describe('UserService', () => {
     it('should create a new user with valid data', async () => {
       // Arrange
       const userData = { name: 'John', email: 'john@example.com' };
-      
+
       // Act
       const user = await userService.createUser(userData);
-      
+
       // Assert
       expect(user).toHaveProperty('id');
       expect(user.name).toBe(userData.name);
       expect(user.email).toBe(userData.email);
     });
-    
+
     it('should throw error for duplicate email', async () => {
       // Test implementation
     });
@@ -463,6 +459,7 @@ describe('UserService', () => {
 ```
 
 ### Test Coverage Requirements
+
 - Unit tests: 80% coverage minimum
 - Integration tests: Critical paths covered
 - E2E tests: Main user journeys
@@ -508,6 +505,7 @@ counter++;
 ```
 
 ### Types
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes

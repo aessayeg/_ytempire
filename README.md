@@ -15,6 +15,7 @@
 Get YTEmpire running on your machine in under 5 minutes with our automated setup.
 
 ### Prerequisites Checklist
+
 - [ ] Docker Desktop installed and running (v20.10+)
 - [ ] Git installed (v2.30+)
 - [ ] 8GB RAM minimum (16GB recommended)
@@ -36,6 +37,7 @@ cd ytempire
 ```
 
 🎉 **That's it!** YTEmpire is now running at:
+
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5000
 - **pgAdmin**: http://localhost:8080 (admin@example.com / admin)
@@ -82,14 +84,14 @@ YTEmpire is a microservices-based platform for YouTube channel management and an
 
 ### Core Components
 
-| Component | Technology | Purpose | Port |
-|-----------|------------|---------|------|
-| Frontend | React/Next.js | User interface | 3000 |
-| Backend API | Node.js/Express | Business logic | 5000 |
-| Database | PostgreSQL 15 | Data persistence | 5432 |
-| Cache | Redis 7 | Session & API caching | 6379 |
-| Proxy | Nginx | Load balancing & SSL | 80/443 |
-| Admin | pgAdmin 4 | Database management | 8080 |
+| Component   | Technology      | Purpose               | Port   |
+| ----------- | --------------- | --------------------- | ------ |
+| Frontend    | React/Next.js   | User interface        | 3000   |
+| Backend API | Node.js/Express | Business logic        | 5000   |
+| Database    | PostgreSQL 15   | Data persistence      | 5432   |
+| Cache       | Redis 7         | Session & API caching | 6379   |
+| Proxy       | Nginx           | Load balancing & SSL  | 80/443 |
+| Admin       | pgAdmin 4       | Database management   | 8080   |
 
 ## 🗄️ Database Architecture
 
@@ -164,29 +166,32 @@ npm run lint           # Run linters
 
 ### Quick Fixes
 
-| Issue | Solution |
-|-------|----------|
-| Port already in use | `docker-compose down` then `docker-compose up -d` |
+| Issue                      | Solution                                                      |
+| -------------------------- | ------------------------------------------------------------- |
+| Port already in use        | `docker-compose down` then `docker-compose up -d`             |
 | Database connection failed | Check PostgreSQL container: `docker logs ytempire-postgresql` |
-| Frontend 404 errors | Rebuild frontend: `docker-compose restart frontend` |
-| Permission denied | Run: `chmod +x scripts/*.sh` |
+| Frontend 404 errors        | Rebuild frontend: `docker-compose restart frontend`           |
+| Permission denied          | Run: `chmod +x scripts/*.sh`                                  |
 
 For detailed troubleshooting, see [Troubleshooting Guide](docs/troubleshooting/common-issues.md).
 
 ## 📚 Documentation
 
 ### For Developers
+
 - [Architecture Overview](docs/architecture/system-overview.md)
 - [API Documentation](docs/architecture/api-documentation.md)
 - [Database Schema](docs/architecture/database-schema.md)
 - [Security Architecture](docs/architecture/security-architecture.md)
 
 ### For DevOps
+
 - [Deployment Guide](docs/DEPLOYMENT.md)
 - [Docker Configuration](docs/docker/README.md)
 - [Kubernetes Setup](docs/kubernetes/README.md)
 
 ### For Contributors
+
 - [Contributing Guidelines](docs/CONTRIBUTING.md)
 - [Code Standards](docs/development/coding-standards.md)
 - [Git Workflow](docs/development/git-workflow.md)
@@ -211,12 +216,12 @@ git push origin feature/your-feature
 
 ## 📊 Project Status
 
-| Component | Status | Coverage | Performance |
-|-----------|--------|----------|-------------|
-| Backend API | ✅ Stable | 85% | <200ms avg |
-| Frontend | 🚧 Development | 78% | 95/100 Lighthouse |
-| Database | ✅ Stable | N/A | <1ms queries |
-| Redis Cache | ✅ Stable | N/A | >95% hit rate |
+| Component   | Status         | Coverage | Performance       |
+| ----------- | -------------- | -------- | ----------------- |
+| Backend API | ✅ Stable      | 85%      | <200ms avg        |
+| Frontend    | 🚧 Development | 78%      | 95/100 Lighthouse |
+| Database    | ✅ Stable      | N/A      | <1ms queries      |
+| Redis Cache | ✅ Stable      | N/A      | >95% hit rate     |
 
 ## 🔐 Security
 

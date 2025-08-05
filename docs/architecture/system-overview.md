@@ -5,6 +5,7 @@
 YTEmpire is a microservices-based YouTube analytics and content management platform built with scalability, maintainability, and performance in mind. The architecture follows cloud-native principles with containerized services, API-first design, and separation of concerns.
 
 ## Table of Contents
+
 - [Architecture Principles](#architecture-principles)
 - [System Components](#system-components)
 - [Data Flow](#data-flow)
@@ -16,6 +17,7 @@ YTEmpire is a microservices-based YouTube analytics and content management platf
 ## Architecture Principles
 
 ### Core Principles
+
 1. **Microservices Architecture**: Independent, loosely coupled services
 2. **API-First Design**: RESTful APIs with OpenAPI documentation
 3. **Container-Based Deployment**: Docker containers for all services
@@ -24,6 +26,7 @@ YTEmpire is a microservices-based YouTube analytics and content management platf
 6. **Security by Design**: Authentication, authorization, and encryption built-in
 
 ### Design Patterns
+
 - **API Gateway Pattern**: Nginx as reverse proxy
 - **Database Sharding**: Partitioned analytics tables
 - **Cache-Aside Pattern**: Redis for performance optimization
@@ -74,9 +77,11 @@ YTEmpire is a microservices-based YouTube analytics and content management platf
 ### Component Descriptions
 
 #### 1. Frontend Layer
+
 **Technology**: React with Next.js  
 **Purpose**: User interface and client-side logic  
 **Key Features**:
+
 - Server-side rendering (SSR) for SEO
 - Progressive Web App (PWA) capabilities
 - Real-time updates via WebSockets
@@ -84,9 +89,11 @@ YTEmpire is a microservices-based YouTube analytics and content management platf
 - Component-based architecture
 
 #### 2. API Gateway (Nginx)
+
 **Technology**: Nginx  
 **Purpose**: Request routing and load balancing  
 **Key Features**:
+
 - SSL/TLS termination
 - Request/response caching
 - Rate limiting
@@ -95,9 +102,11 @@ YTEmpire is a microservices-based YouTube analytics and content management platf
 - WebSocket proxy
 
 #### 3. Backend API Layer
+
 **Technology**: Node.js with Express  
 **Purpose**: Business logic and API services  
 **Key Features**:
+
 - RESTful API endpoints
 - JWT authentication
 - Request validation
@@ -106,9 +115,11 @@ YTEmpire is a microservices-based YouTube analytics and content management platf
 - WebSocket server for real-time updates
 
 #### 4. Database Layer
+
 **Technology**: PostgreSQL 15  
 **Purpose**: Persistent data storage  
 **Key Features**:
+
 - Multi-schema architecture
 - ACID compliance
 - Time-series data partitioning
@@ -117,9 +128,11 @@ YTEmpire is a microservices-based YouTube analytics and content management platf
 - Automated backups
 
 #### 5. Cache Layer
+
 **Technology**: Redis 7  
 **Purpose**: Performance optimization  
 **Key Features**:
+
 - Session storage
 - API response caching
 - Rate limiting counters
@@ -128,7 +141,9 @@ YTEmpire is a microservices-based YouTube analytics and content management platf
 - Queue management
 
 #### 6. External Services
+
 **Integrations**:
+
 - YouTube Data API v3
 - YouTube Analytics API
 - Google OAuth 2.0
@@ -179,11 +194,13 @@ sequenceDiagram
 ### Data Processing Flow
 
 1. **Data Ingestion**
+
    - YouTube API polling
    - Webhook listeners
    - User uploads
 
 2. **Processing Pipeline**
+
    - Validation
    - Transformation
    - Enrichment
@@ -198,36 +215,39 @@ sequenceDiagram
 ## Technology Stack
 
 ### Frontend Technologies
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 18.x | UI Framework |
-| Next.js | 13.x | React Framework |
-| TypeScript | 5.x | Type Safety |
-| Tailwind CSS | 3.x | Styling |
-| Redux Toolkit | 1.9.x | State Management |
-| Socket.io Client | 4.x | WebSockets |
-| Chart.js | 4.x | Data Visualization |
+
+| Technology       | Version | Purpose            |
+| ---------------- | ------- | ------------------ |
+| React            | 18.x    | UI Framework       |
+| Next.js          | 13.x    | React Framework    |
+| TypeScript       | 5.x     | Type Safety        |
+| Tailwind CSS     | 3.x     | Styling            |
+| Redux Toolkit    | 1.9.x   | State Management   |
+| Socket.io Client | 4.x     | WebSockets         |
+| Chart.js         | 4.x     | Data Visualization |
 
 ### Backend Technologies
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Node.js | 18 LTS | Runtime |
-| Express | 4.x | Web Framework |
-| TypeScript | 5.x | Type Safety |
-| Sequelize | 6.x | ORM |
-| Socket.io | 4.x | WebSockets |
-| Bull | 4.x | Job Queue |
-| Winston | 3.x | Logging |
+
+| Technology | Version | Purpose       |
+| ---------- | ------- | ------------- |
+| Node.js    | 18 LTS  | Runtime       |
+| Express    | 4.x     | Web Framework |
+| TypeScript | 5.x     | Type Safety   |
+| Sequelize  | 6.x     | ORM           |
+| Socket.io  | 4.x     | WebSockets    |
+| Bull       | 4.x     | Job Queue     |
+| Winston    | 3.x     | Logging       |
 
 ### Infrastructure Technologies
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Docker | 20.10+ | Containerization |
-| Docker Compose | 2.x | Orchestration |
-| PostgreSQL | 15 | Database |
-| Redis | 7 | Cache/Queue |
-| Nginx | 1.24 | Proxy/LB |
-| pgAdmin | 4 | DB Management |
+
+| Technology     | Version | Purpose          |
+| -------------- | ------- | ---------------- |
+| Docker         | 20.10+  | Containerization |
+| Docker Compose | 2.x     | Orchestration    |
+| PostgreSQL     | 15      | Database         |
+| Redis          | 7       | Cache/Queue      |
+| Nginx          | 1.24    | Proxy/LB         |
+| pgAdmin        | 4       | DB Management    |
 
 ## Service Architecture
 
@@ -236,6 +256,7 @@ sequenceDiagram
 #### Core Services
 
 1. **Authentication Service**
+
    - User registration/login
    - JWT token management
    - OAuth integration
@@ -243,24 +264,28 @@ sequenceDiagram
    - Session management
 
 2. **Channel Service**
+
    - Channel CRUD operations
    - Channel synchronization
    - Ownership management
    - Settings configuration
 
 3. **Content Service**
+
    - Video management
    - Playlist operations
    - Content scheduling
    - Metadata management
 
 4. **Analytics Service**
+
    - Data aggregation
    - Report generation
    - Real-time metrics
    - Historical analysis
 
 5. **Campaign Service**
+
    - Campaign creation
    - Performance tracking
    - A/B testing
@@ -279,7 +304,7 @@ Communication Patterns:
   Synchronous:
     - REST APIs for CRUD operations
     - GraphQL for complex queries (future)
-  
+
   Asynchronous:
     - Redis Pub/Sub for events
     - Bull queues for jobs
@@ -330,7 +355,7 @@ CREATE TABLE analytics.video_analytics (
 ) PARTITION BY RANGE (date);
 
 -- Monthly partitions
-CREATE TABLE analytics.video_analytics_2025_01 
+CREATE TABLE analytics.video_analytics_2025_01
     PARTITION OF analytics.video_analytics
     FOR VALUES FROM ('2025-01-01') TO ('2025-02-01');
 ```
@@ -340,12 +365,14 @@ CREATE TABLE analytics.video_analytics_2025_01
 ### Security Layers
 
 1. **Network Security**
+
    - Cloudflare DDoS protection
    - SSL/TLS encryption
    - Firewall rules
    - Private subnets
 
 2. **Application Security**
+
    - JWT authentication
    - Role-based access control (RBAC)
    - Input validation
@@ -392,17 +419,17 @@ Scaling Approach:
     - Multiple container instances
     - CDN for static assets
     - Edge caching
-  
+
   Backend:
     - Stateless API servers
     - Load balancer distribution
     - Auto-scaling based on CPU/memory
-  
+
   Database:
     - Read replicas
     - Connection pooling
     - Query optimization
-  
+
   Cache:
     - Redis Cluster
     - Partition by key space
@@ -411,12 +438,14 @@ Scaling Approach:
 ### Performance Optimization
 
 1. **Caching Strategy**
+
    - CDN for static assets
    - Redis for API responses
    - Browser caching headers
    - Database query caching
 
 2. **Database Optimization**
+
    - Indexed columns
    - Materialized views
    - Query optimization
@@ -478,18 +507,21 @@ GET /health/deps    # Dependency health
 ## Deployment Architecture
 
 ### Development Environment
+
 - Docker Compose for local development
 - Hot reloading for rapid iteration
 - Local database with seed data
 - MailHog for email testing
 
 ### Staging Environment
+
 - Kubernetes cluster
 - Replica of production
 - Automated testing
 - Performance profiling
 
 ### Production Environment
+
 - Kubernetes on AWS/GCP
 - Multi-region deployment
 - Auto-scaling groups
@@ -499,6 +531,7 @@ GET /health/deps    # Dependency health
 ## Future Enhancements
 
 ### Planned Improvements
+
 1. **GraphQL API** - For flexible queries
 2. **Microservices Mesh** - Service-to-service communication
 3. **Event Sourcing** - Audit trail and replay
@@ -511,6 +544,7 @@ GET /health/deps    # Dependency health
 ## Conclusion
 
 The YTEmpire architecture is designed to be:
+
 - **Scalable**: Horizontal scaling capability
 - **Maintainable**: Clean separation of concerns
 - **Secure**: Multiple security layers

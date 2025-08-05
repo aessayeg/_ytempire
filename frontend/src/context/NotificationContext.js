@@ -9,12 +9,8 @@ const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   // TODO: Implement context state and methods
-  
-  return (
-    <NotificationContext.Provider value={{}}>
-      {children}
-    </NotificationContext.Provider>
-  );
+
+  return <NotificationContext.Provider value={{}}>{children}</NotificationContext.Provider>;
 };
 
 export const useNotificationContext = () => {

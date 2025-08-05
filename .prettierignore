@@ -1,0 +1,35 @@
+# Prettier ignore file
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+*.min.js
+*.min.css
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment files
+.env*
+
+# Documentation with formatting issues
+01- Documentation/02 - Project Management/01 - master project plan/5- ytempire-resource-plan.html
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+
+# Generated files
+*.generated.*

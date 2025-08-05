@@ -1,1 +1,13 @@
-{"Servers": {"1": {"Name": "YTEmpire PostgreSQL","Group": "Servers","Host": "postgresql","Port": 5432,"Username": "ytempire_user","SSLMode": "prefer","MaintenanceDB": "ytempire_dev"}}}
+{
+  "Servers": {
+    "1": {
+      "Name": "YTEmpire PostgreSQL",
+      "Group": "Servers",
+      "Host": "postgresql",
+      "Port": 5432,
+      "Username": "ytempire_user",
+      "SSLMode": "prefer",
+      "MaintenanceDB": "ytempire_dev"
+    }
+  }
+}

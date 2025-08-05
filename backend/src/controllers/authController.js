@@ -4,7 +4,7 @@
  */
 
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
+// const crypto = require('crypto'); // TODO: Use for password reset tokens
 const { User, Profile, Session } = require('../models');
 const { Op } = require('sequelize');
 
@@ -17,8 +17,8 @@ exports.register = async (req, res, next) => {
 
     // Validate input
     if (!email || !username || !password) {
-      return res.status(400).json({ 
-        error: 'Email, username and password are required' 
+      return res.status(400).json({
+        error: 'Email, username and password are required',
       });
     }
 
@@ -26,13 +26,13 @@ exports.register = async (req, res, next) => {
     console.log('Checking for existing user with email:', email, 'or username:', username);
     const existingUser = await User.findOne({
       where: {
-        [Op.or]: [{ email }, { username }]
-      }
+        [Op.or]: [{ email }, { username }],
+      },
     });
 
     if (existingUser) {
-      return res.status(409).json({ 
-        error: 'User with this email or username already exists' 
+      return res.status(409).json({
+        error: 'User with this email or username already exists',
       });
     }
 
@@ -41,31 +41,29 @@ exports.register = async (req, res, next) => {
       email,
       username,
       password_hash: password,
-      account_type: accountType
+      account_type: accountType,
     });
 
     // Create default profile
     await Profile.create({
       account_id: user.account_id,
-      display_name: username
+      display_name: username,
     });
 
     // Create session
-    const token = jwt.sign(
-      { userId: user.account_id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRE || '7d' }
-    );
+    const token = jwt.sign({ userId: user.account_id, email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE || '7d',
+    });
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    const session = await Session.create({
+    const _session = await Session.create({
       account_id: user.account_id,
       session_token: token,
       ip_address: req.ip,
       user_agent: req.headers['user-agent'],
-      expires_at: expiresAt
+      expires_at: expiresAt,
     });
 
     res.status(201).json({
@@ -74,8 +72,8 @@ exports.register = async (req, res, next) => {
       data: {
         user: user.toJSON(),
         token,
-        expiresAt
-      }
+        expiresAt,
+      },
     });
   } catch (error) {
     console.error('Registration error:', error.message);
@@ -93,20 +91,22 @@ exports.login = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ 
-        error: 'Email and password are required' 
+      return res.status(400).json({
+        error: 'Email and password are required',
       });
     }
 
     // Find user by email or username
     const user = await User.findOne({
       where: {
-        [Op.or]: [{ email }, { username: email }]
+        [Op.or]: [{ email }, { username: email }],
       },
-      include: [{
-        model: Profile,
-        as: 'profile'
-      }]
+      include: [
+        {
+          model: Profile,
+          as: 'profile',
+        },
+      ],
     });
 
     if (!user) {
@@ -121,27 +121,25 @@ exports.login = async (req, res, next) => {
 
     // Check account status
     if (user.account_status !== 'active') {
-      return res.status(403).json({ 
-        error: `Account is ${user.account_status}` 
+      return res.status(403).json({
+        error: `Account is ${user.account_status}`,
       });
     }
 
     // Create session
-    const token = jwt.sign(
-      { userId: user.account_id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRE || '7d' }
-    );
+    const token = jwt.sign({ userId: user.account_id, email: user.email }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE || '7d',
+    });
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    const session = await Session.create({
+    const _session = await Session.create({
       account_id: user.account_id,
       session_token: token,
       ip_address: req.ip,
       user_agent: req.headers['user-agent'],
-      expires_at: expiresAt
+      expires_at: expiresAt,
     });
 
     // Update last login
@@ -155,8 +153,8 @@ exports.login = async (req, res, next) => {
       data: {
         user: user.toJSON(),
         token,
-        expiresAt
-      }
+        expiresAt,
+      },
     });
   } catch (error) {
     next(error);
@@ -175,7 +173,7 @@ exports.logout = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'Logout successful'
+      message: 'Logout successful',
     });
   } catch (error) {
     next(error);
@@ -188,15 +186,17 @@ exports.logout = async (req, res, next) => {
 exports.me = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.user.account_id, {
-      include: [{
-        model: Profile,
-        as: 'profile'
-      }]
+      include: [
+        {
+          model: Profile,
+          as: 'profile',
+        },
+      ],
     });
 
     res.json({
       success: true,
-      data: user.toJSON()
+      data: user.toJSON(),
     });
   } catch (error) {
     next(error);
@@ -227,8 +227,8 @@ exports.refresh = async (req, res, next) => {
       where: {
         session_token: oldToken,
         account_id: decoded.userId,
-        is_active: true
-      }
+        is_active: true,
+      },
     });
 
     if (!session) {
@@ -236,11 +236,9 @@ exports.refresh = async (req, res, next) => {
     }
 
     // Generate new token
-    const newToken = jwt.sign(
-      { userId: session.account_id },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRE || '7d' }
-    );
+    const newToken = jwt.sign({ userId: session.account_id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE || '7d',
+    });
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
@@ -254,8 +252,8 @@ exports.refresh = async (req, res, next) => {
       success: true,
       data: {
         token: newToken,
-        expiresAt
-      }
+        expiresAt,
+      },
     });
   } catch (error) {
     next(error);

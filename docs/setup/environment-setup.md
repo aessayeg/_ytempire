@@ -3,6 +3,7 @@
 Complete step-by-step guide to setting up the YTEmpire development environment.
 
 ## Table of Contents
+
 - [Quick Setup](#quick-setup)
 - [Repository Setup](#repository-setup)
 - [Docker Environment](#docker-environment)
@@ -35,18 +36,21 @@ curl http://localhost:5000/health
 ### 1. Clone the Repository
 
 #### Using SSH (Recommended)
+
 ```bash
 git clone git@github.com:yourusername/ytempire.git
 cd ytempire
 ```
 
 #### Using HTTPS
+
 ```bash
 git clone https://github.com/yourusername/ytempire.git
 cd ytempire
 ```
 
 ### 2. Verify Repository Structure
+
 ```bash
 # Check directory structure
 ls -la
@@ -61,6 +65,7 @@ ls -la
 ```
 
 ### 3. Set File Permissions
+
 ```bash
 # Make scripts executable
 chmod +x scripts/*.sh
@@ -84,16 +89,17 @@ YTEmpire uses multiple Docker Compose files:
 - `docker-compose.prod.yml` - Production configuration
 
 #### Review Main Configuration
+
 ```yaml
 # docker-compose.yml structure
 services:
-  frontend:     # React application
-  backend:      # Node.js API
-  postgresql:   # Database
-  redis:        # Cache
-  nginx:        # Reverse proxy
-  pgadmin:      # Database admin
-  mailhog:      # Email testing
+  frontend: # React application
+  backend: # Node.js API
+  postgresql: # Database
+  redis: # Cache
+  nginx: # Reverse proxy
+  pgadmin: # Database admin
+  mailhog: # Email testing
 ```
 
 ### 2. Docker Network Configuration
@@ -127,7 +133,9 @@ docker volume inspect postgres_data
 ### 1. PostgreSQL Configuration
 
 #### Custom PostgreSQL Configuration
+
 Create `database/postgresql.conf`:
+
 ```conf
 # Performance Tuning
 shared_buffers = 256MB
@@ -143,6 +151,7 @@ max_connections = 100
 ```
 
 #### Initialize Database
+
 ```bash
 # Database will auto-initialize on first run
 # Manual initialization (if needed)
@@ -153,7 +162,9 @@ docker exec ytempire-postgresql psql -U ytempire_user -d ytempire_dev -f /docker
 ### 2. Redis Configuration
 
 #### Custom Redis Configuration
+
 Edit `redis/redis.conf`:
+
 ```conf
 # Memory Management
 maxmemory 256mb
@@ -174,6 +185,7 @@ timeout 300
 ### 3. Nginx Configuration
 
 The Nginx configuration is located in `nginx/nginx.conf`:
+
 ```nginx
 upstream frontend {
     server frontend:3000;
@@ -277,6 +289,7 @@ git status .env
 ### 3. Service-Specific Environment Files
 
 Create additional environment files if needed:
+
 - `.env.frontend` - Frontend-specific variables
 - `.env.backend` - Backend-specific variables
 - `.env.test` - Testing environment
@@ -286,11 +299,13 @@ Create additional environment files if needed:
 ### 1. Initial Setup Script
 
 Run the automated setup script:
+
 ```bash
 ./scripts/setup.sh
 ```
 
 This script will:
+
 - Check prerequisites
 - Create necessary directories
 - Initialize database
@@ -342,6 +357,7 @@ curl -I http://localhost
 ### 1. Automated Validation Script
 
 Create `scripts/validate-environment.sh`:
+
 ```bash
 #!/bin/bash
 
@@ -445,6 +461,7 @@ docker-compose logs -f --tail=100
 ### Common Issues and Solutions
 
 #### 1. Port Already in Use
+
 ```bash
 # Find process using port
 lsof -i :5000
@@ -455,6 +472,7 @@ kill -9 <PID>
 ```
 
 #### 2. Database Connection Failed
+
 ```bash
 # Check PostgreSQL logs
 docker logs ytempire-postgresql
@@ -468,6 +486,7 @@ docker-compose up -d postgresql
 ```
 
 #### 3. Frontend Build Errors
+
 ```bash
 # Rebuild frontend
 docker-compose build --no-cache frontend
@@ -478,6 +497,7 @@ docker logs ytempire-frontend
 ```
 
 #### 4. Permission Denied Errors
+
 ```bash
 # Fix script permissions
 chmod +x scripts/*.sh
@@ -487,6 +507,7 @@ sudo chmod 666 /var/run/docker.sock
 ```
 
 #### 5. Out of Disk Space
+
 ```bash
 # Clean up Docker
 docker system prune -a --volumes
@@ -499,6 +520,7 @@ truncate -s 0 $(docker inspect --format='{{.LogPath}}' ytempire-backend)
 ```
 
 ### Reset Everything
+
 If you need to start fresh:
 
 ```bash

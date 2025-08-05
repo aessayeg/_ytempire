@@ -19,13 +19,13 @@ router.get('/db', async (req, res) => {
       success: true,
       message: 'Database connection successful',
       database: sequelize.config.database,
-      host: sequelize.config.host
+      host: sequelize.config.host,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Database connection failed',
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -40,20 +40,20 @@ router.get('/users', async (req, res) => {
     const count = await User.count();
     const users = await User.findAll({
       limit: 5,
-      attributes: ['account_id', 'email', 'username', 'created_at']
+      attributes: ['account_id', 'email', 'username', 'created_at'],
     });
-    
+
     res.json({
       success: true,
       count,
-      users
+      users,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'User query failed',
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
   }
 });
@@ -66,16 +66,16 @@ router.get('/users', async (req, res) => {
 router.get('/raw', async (req, res) => {
   try {
     const [results] = await sequelize.query('SELECT * FROM users.accounts LIMIT 5');
-    
+
     res.json({
       success: true,
-      results
+      results,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: 'Raw query failed',
-      error: error.message
+      error: error.message,
     });
   }
 });

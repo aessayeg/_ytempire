@@ -9,7 +9,7 @@ class AIService {
   }
 
   // TODO: Implement service methods
-  
+
   async generateContent() {
     // Implementation goes here
   }

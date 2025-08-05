@@ -9,7 +9,7 @@ class AuthService {
   }
 
   // TODO: Implement service methods
-  
+
   async authenticate() {
     // Implementation goes here
   }

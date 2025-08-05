@@ -7,6 +7,7 @@ This document summarizes the database infrastructure updates made to align with 
 ### Major Changes Implemented
 
 #### 1. Schema Reorganization
+
 - **Old Structure**: Single `ytempire` schema with basic tables
 - **New Structure**: Multi-schema architecture:
   - `users` - User management and authentication
@@ -18,13 +19,15 @@ This document summarizes the database infrastructure updates made to align with 
 #### 2. Table Structure Updates
 
 ##### Users Domain
+
 - **Old**: Simple `users` table
-- **New**: 
+- **New**:
   - `users.accounts` - Core account data
   - `users.profiles` - Extended profile information
   - `users.sessions` - Session management
 
 ##### Content Domain
+
 - **Old**: Basic `channels` and `videos` tables
 - **New**:
   - `content.channels` - Enhanced with YouTube-specific fields
@@ -33,6 +36,7 @@ This document summarizes the database infrastructure updates made to align with 
   - `content.playlist_videos` - Playlist-video relationships
 
 ##### Analytics Domain
+
 - **Old**: Simple `analytics` table
 - **New**:
   - `analytics.channel_analytics` - Channel-level metrics (partitioned)
@@ -60,6 +64,7 @@ This document summarizes the database infrastructure updates made to align with 
 ### Files Changed/Added
 
 #### New Files Created
+
 - `database/schema/01-extensions.sql` - PostgreSQL extensions
 - `database/schema/02-schemas.sql` - Schema creation
 - `database/schema/03-users-schema.sql` - Users tables
@@ -80,11 +85,13 @@ This document summarizes the database infrastructure updates made to align with 
 - `.env.database.example` - Environment template
 
 #### Files Updated
+
 - `database/init/01-init-db.sh` - Updated for new schema
 - `docker-compose.db.yml` - Updated with proper volumes
 - `database/README.md` - Updated documentation
 
 #### Files Removed
+
 - `database/migrations/*.js` - Old JavaScript migrations
 - `database/seeders/` - Old seeder directory
 - `database/schemas/` - Old JSON schema files
@@ -95,16 +102,19 @@ This document summarizes the database infrastructure updates made to align with 
 For existing installations:
 
 1. **Backup existing data**:
+
    ```bash
    pg_dump -Fc ytempire_dev > backup_before_migration.dump
    ```
 
 2. **Run migration script**:
+
    ```bash
    psql -U ytempire_user -d ytempire_dev -f database/migrations/migrate-to-new-schema.sql
    ```
 
 3. **Verify migration**:
+
    ```sql
    SELECT COUNT(*) FROM users.accounts;
    SELECT COUNT(*) FROM content.channels;
@@ -117,6 +127,7 @@ For existing installations:
 
 1. **Table Names**: All tables now prefixed with schema names
 2. **Column Changes**:
+
    - `users.role` → `users.accounts.account_type`
    - `users.is_active` → `users.accounts.account_status`
    - `channels.name` → `content.channels.channel_name`
@@ -163,6 +174,7 @@ If issues arise, the old schema can be restored:
 ### Support
 
 For questions or issues:
+
 - Review `docs/DATABASE_SCHEMA.md` for detailed schema reference
 - Check `database/README.md` for operational procedures
 - Run tests: `python tests/database/run_tests.py`

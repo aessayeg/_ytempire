@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production-approval
-    
+
     steps:
       - name: Request Approval
         run: |
@@ -53,11 +53,11 @@ jobs:
     name: Pre-Production Validation
     runs-on: ubuntu-latest
     needs: [production-approval]
-    
+
     outputs:
       deploy_version: ${{ steps.version.outputs.version }}
       rollback_version: ${{ steps.rollback.outputs.version }}
-      
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -117,7 +117,7 @@ jobs:
     environment:
       name: production
       url: https://ytempire.com
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -129,12 +129,12 @@ jobs:
           echo "Creating production database backup..."
           BACKUP_NAME="ytempire_prod_backup_$(date +%Y%m%d_%H%M%S).sql"
           BACKUP_PATH="/backups/$BACKUP_NAME"
-          
+
           # Create backup with verification
           # pg_dump $DATABASE_URL > $BACKUP_PATH
           # gzip $BACKUP_PATH
           # aws s3 cp ${BACKUP_PATH}.gz s3://ytempire-backups/production/
-          
+
           echo "Backup created and uploaded: $BACKUP_NAME"
           echo "backup_name=$BACKUP_NAME" >> $GITHUB_ENV
 
@@ -168,7 +168,7 @@ jobs:
     environment:
       name: production
       url: https://ytempire.com
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -207,7 +207,7 @@ jobs:
             -t ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:${{ steps.deploy_version.outputs.version }} \
             -t ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:latest \
             ./backend
-          
+
           # Build frontend image
           docker build \
             --target production \
@@ -230,38 +230,38 @@ jobs:
           DEPLOY_VERSION: ${{ steps.deploy_version.outputs.version }}
         run: |
           echo "Deploying to Green environment..."
-          
+
           # Deploy backend to green
           # ssh deploy@green.ytempire.com << EOF
           #   docker-compose -f docker-compose.prod.yml pull
           #   docker-compose -f docker-compose.prod.yml up -d --no-deps backend-green
           #   docker-compose -f docker-compose.prod.yml up -d --no-deps frontend-green
           # EOF
-          
+
           echo "Green deployment completed"
 
       - name: Run Green Environment Tests
         run: |
           echo "Testing Green environment..."
-          
+
           # Health checks
           # curl -f https://green.ytempire.com/health || exit 1
           # curl -f https://green.ytempire.com/api/health || exit 1
-          
+
           # Run smoke tests
           # npm run test:smoke -- --url=https://green.ytempire.com
-          
+
           echo "Green environment tests passed"
 
       - name: Switch Traffic to Green
         run: |
           echo "Switching production traffic to Green environment..."
-          
+
           # Update load balancer configuration
           # aws elbv2 modify-target-group-attributes \
           #   --target-group-arn ${{ secrets.PROD_TARGET_GROUP_ARN }} \
           #   --attributes Key=stickiness.enabled,Value=true
-          
+
           # Gradual traffic shift
           # for weight in 10 25 50 75 90 100; do
           #   echo "Shifting ${weight}% traffic to Green"
@@ -277,30 +277,30 @@ jobs:
           #     exit 1
           #   fi
           # done
-          
+
           echo "Traffic successfully switched to Green"
 
       - name: Verify Production
         run: |
           echo "Verifying production deployment..."
-          
+
           # Verify endpoints
           for endpoint in "/" "/api/health" "/api/v1/channels"; do
             echo "Testing endpoint: $endpoint"
             # curl -f https://ytempire.com$endpoint || exit 1
           done
-          
+
           echo "Production verification completed"
 
       - name: Decommission Blue Environment
         run: |
           echo "Decommissioning Blue environment..."
-          
+
           # Keep blue environment for quick rollback (24 hours)
           # ssh deploy@blue.ytempire.com << EOF
           #   docker-compose -f docker-compose.prod.yml stop backend-blue frontend-blue
           # EOF
-          
+
           echo "Blue environment decommissioned (kept for rollback)"
 
   canary-deployment:
@@ -311,7 +311,7 @@ jobs:
     environment:
       name: production
       url: https://ytempire.com
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -320,7 +320,7 @@ jobs:
         run: |
           echo "Deploying canary version..."
           echo "Starting with 5% traffic to canary"
-          
+
           # Progressive canary rollout
           for percentage in 5 10 25 50 75 100; do
             echo "Routing ${percentage}% traffic to canary"
@@ -340,7 +340,7 @@ jobs:
             #   exit 1
             # fi
           done
-          
+
           echo "Canary deployment completed successfully"
 
   post-deployment-validation:
@@ -348,7 +348,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [blue-green-deployment, canary-deployment]
     if: always() && (needs.blue-green-deployment.result == 'success' || needs.canary-deployment.result == 'success')
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -357,19 +357,19 @@ jobs:
         run: |
           echo "# Production Test Report" > test-report.md
           echo "## Test Execution: $(date)" >> test-report.md
-          
+
           # API Tests
           echo "### API Tests" >> test-report.md
           # newman run tests/postman/production-tests.json \
           #   --environment tests/postman/production-environment.json \
           #   --reporters cli,json
           echo "- Status: ✅ Passed" >> test-report.md
-          
+
           # Performance Tests
           echo "### Performance Tests" >> test-report.md
           # artillery run tests/load/production-load-test.yml
           echo "- Status: ✅ Passed" >> test-report.md
-          
+
           # Security Tests
           echo "### Security Tests" >> test-report.md
           # zap-cli quick-scan --self-contained https://ytempire.com
@@ -378,12 +378,12 @@ jobs:
       - name: Monitor Application Metrics
         run: |
           echo "Monitoring production metrics..."
-          
+
           # Check key metrics
           # RESPONSE_TIME=$(curl -s https://api.ytempire.com/metrics | jq '.response_time_p95')
           # ERROR_RATE=$(curl -s https://api.ytempire.com/metrics | jq '.error_rate')
           # THROUGHPUT=$(curl -s https://api.ytempire.com/metrics | jq '.requests_per_second')
-          
+
           echo "## Production Metrics" >> test-report.md
           echo "- Response Time (P95): N/A" >> test-report.md
           echo "- Error Rate: N/A" >> test-report.md
@@ -420,22 +420,22 @@ jobs:
     if: failure()
     environment:
       name: production
-    
+
     steps:
       - name: Initiate Rollback
         run: |
           echo "🔴 INITIATING PRODUCTION ROLLBACK"
           echo "Deployment failed, rolling back to previous version"
-          
+
           # Switch traffic back to blue environment
           # aws elbv2 modify-rule \
           #   --rule-arn ${{ secrets.PROD_LB_RULE_ARN }} \
           #   --actions Type=forward,TargetGroupArn=${{ secrets.BLUE_TARGET_GROUP_ARN }},Weight=100
-          
+
           # Or use Kubernetes rollback
           # kubectl rollout undo deployment/backend
           # kubectl rollout undo deployment/frontend
-          
+
           echo "Rollback completed"
 
       - name: Notify Rollback
@@ -463,7 +463,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [post-deployment-validation]
     if: always()
-    
+
     steps:
       - name: Determine Status
         id: status
@@ -481,7 +481,7 @@ jobs:
       - name: Send Notification
         run: |
           echo "${{ steps.status.outputs.emoji }} Production Deployment ${{ steps.status.outputs.status }}"
-          
+
           # Send to multiple channels
           # Slack notification
           # curl -X POST ${{ secrets.SLACK_WEBHOOK }} \

@@ -1,9 +1,11 @@
 # YTEmpire Database Schema
 
 ## Overview
+
 This document provides a high-level overview of the database schema for the YTEmpire platform. For detailed schema documentation, see [DATABASE_SCHEMA.md](../DATABASE_SCHEMA.md).
 
 ## Database Design Principles
+
 - Multi-schema PostgreSQL architecture for organization
 - Time-series partitioning for analytics data
 - Optimized indexes for query performance
@@ -13,6 +15,7 @@ This document provides a high-level overview of the database schema for the YTEm
 ## Schema Organization
 
 ### PostgreSQL Schemas
+
 - **users** - User management and authentication
 - **content** - YouTube content metadata
 - **analytics** - Performance metrics (partitioned)
@@ -20,6 +23,7 @@ This document provides a high-level overview of the database schema for the YTEm
 - **system** - System configuration
 
 ### Key Tables
+
 - `users.accounts` - User accounts with roles
 - `users.profiles` - Extended user profiles
 - `content.channels` - YouTube channels
@@ -28,6 +32,7 @@ This document provides a high-level overview of the database schema for the YTEm
 - `analytics.video_analytics` - Video metrics (partitioned by month)
 
 ### Redis Cache Structure
+
 - `yt:channel:{id}` - Channel metadata cache
 - `yt:video:{id}` - Video metadata cache
 - `yt:analytics:{type}:{id}:{period}` - Analytics cache

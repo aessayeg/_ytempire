@@ -2,7 +2,7 @@ name: Database Migrations
 
 on:
   push:
-    paths: 
+    paths:
       - 'database/migrations/**'
       - 'backend/models/**'
       - 'backend/migrations/**'
@@ -45,11 +45,11 @@ jobs:
   validate-migrations:
     name: Validate Migration Files
     runs-on: ubuntu-latest
-    
+
     outputs:
       migrations_valid: ${{ steps.validation.outputs.valid }}
       migrations_count: ${{ steps.validation.outputs.count }}
-      
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -70,12 +70,12 @@ jobs:
         id: validation
         run: |
           echo "Validating migration files..."
-          
+
           # Check for migration files
           MIGRATION_COUNT=$(find database/migrations -name "*.sql" -o -name "*.js" | wc -l)
           echo "Found $MIGRATION_COUNT migration files"
           echo "count=$MIGRATION_COUNT" >> $GITHUB_OUTPUT
-          
+
           # Validate SQL syntax
           for file in database/migrations/*.sql; do
             if [ -f "$file" ]; then
@@ -88,19 +88,19 @@ jobs:
               }
             fi
           done
-          
+
           echo "valid=true" >> $GITHUB_OUTPUT
           echo "All migrations validated successfully"
 
       - name: Check Migration Order
         run: |
           echo "Checking migration order..."
-          
+
           # Ensure migrations are properly numbered
           ls -1 database/migrations/*.sql 2>/dev/null | sort -V | while read file; do
             basename "$file"
           done > migration-order.txt
-          
+
           echo "Migration order:"
           cat migration-order.txt
 
@@ -128,7 +128,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [validate-migrations]
     if: needs.validate-migrations.outputs.migrations_valid == 'true'
-    
+
     services:
       postgres:
         image: postgres:15
@@ -159,7 +159,7 @@ jobs:
           CREATE SCHEMA IF NOT EXISTS analytics;
           CREATE SCHEMA IF NOT EXISTS campaigns;
           CREATE SCHEMA IF NOT EXISTS system;
-          
+
           -- Set search path
           SET search_path TO users, content, analytics, campaigns, system, public;
           EOF
@@ -169,7 +169,7 @@ jobs:
           PGPASSWORD: test_password
         run: |
           echo "Applying current production schema..."
-          
+
           # Apply base schema
           if [ -f database/schema/base.sql ]; then
             psql -h localhost -U ytempire_test -d ytempire_analysis < database/schema/base.sql
@@ -183,7 +183,7 @@ jobs:
           echo "## Environment: ${{ github.event.inputs.environment || 'development' }}" >> impact-analysis.md
           echo "## Analysis Date: $(date)" >> impact-analysis.md
           echo "" >> impact-analysis.md
-          
+
           # Analyze each migration
           for migration in database/migrations/*.sql; do
             if [ -f "$migration" ]; then
@@ -217,10 +217,10 @@ jobs:
           PGPASSWORD: test_password
         run: |
           echo "## Performance Impact Assessment" >> impact-analysis.md
-          
+
           # Test migration performance on sample data
           START_TIME=$(date +%s)
-          
+
           for migration in database/migrations/*.sql; do
             if [ -f "$migration" ]; then
               # Run EXPLAIN on migration queries
@@ -232,10 +232,10 @@ jobs:
               EOF
             fi
           done
-          
+
           END_TIME=$(date +%s)
           DURATION=$((END_TIME - START_TIME))
-          
+
           echo "- Total execution time: ${DURATION}s" >> impact-analysis.md
           echo "- Average per migration: $((DURATION / ${{ needs.validate-migrations.outputs.migrations_count }}))s" >> impact-analysis.md
 
@@ -252,7 +252,7 @@ jobs:
     if: github.event.inputs.environment != '' && github.event.inputs.dry_run != 'true'
     environment:
       name: ${{ github.event.inputs.environment }}
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -267,12 +267,12 @@ jobs:
           DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', github.event.inputs.environment)] }}
         run: |
           echo "Creating database backup for ${{ github.event.inputs.environment }}..."
-          
+
           BACKUP_NAME="ytempire_${{ github.event.inputs.environment }}_$(date +%Y%m%d_%H%M%S).sql"
-          
+
           # Create compressed backup
           # pg_dump $DATABASE_URL --verbose --no-owner --no-acl | gzip > /tmp/$BACKUP_NAME.gz
-          
+
           echo "Backup created: $BACKUP_NAME.gz"
           echo "backup_name=$BACKUP_NAME" >> $GITHUB_ENV
 
@@ -311,7 +311,7 @@ jobs:
     if: github.event.inputs.dry_run != 'true'
     environment:
       name: ${{ github.event.inputs.environment }}
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -333,9 +333,9 @@ jobs:
           MIGRATION_TYPE: ${{ github.event.inputs.migration_type }}
         run: |
           echo "Executing migrations (${{ env.MIGRATION_TYPE }}) on ${{ github.event.inputs.environment }}..."
-          
+
           cd backend
-          
+
           case "${{ env.MIGRATION_TYPE }}" in
             up)
               echo "Running pending migrations..."
@@ -354,7 +354,7 @@ jobs:
               # npm run migrate:create -- --name "${{ github.event.inputs.migration_name }}"
               ;;
           esac
-          
+
           echo "Migration execution completed"
 
       - name: Verify Database State
@@ -363,10 +363,10 @@ jobs:
           PGPASSWORD: ${{ secrets[format('{0}_DB_PASSWORD', github.event.inputs.environment)] }}
         run: |
           echo "Verifying database state..."
-          
+
           # Check all schemas exist
           psql $DATABASE_URL -c "\dn" > schemas.txt
-          
+
           # Check all tables exist
           psql $DATABASE_URL -c "
             SELECT schemaname, tablename 
@@ -374,16 +374,16 @@ jobs:
             WHERE schemaname IN ('users', 'content', 'analytics', 'campaigns', 'system')
             ORDER BY schemaname, tablename;
           " > tables.txt
-          
+
           # Verify critical tables
           EXPECTED_TABLES=17
           ACTUAL_TABLES=$(cat tables.txt | grep -E "(users|content|analytics|campaigns|system)" | wc -l)
-          
+
           if [ "$ACTUAL_TABLES" -lt "$EXPECTED_TABLES" ]; then
             echo "::error::Expected $EXPECTED_TABLES tables but found $ACTUAL_TABLES"
             exit 1
           fi
-          
+
           echo "Database verification completed successfully"
 
       - name: Run Post-Migration Tests
@@ -391,28 +391,28 @@ jobs:
           DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', github.event.inputs.environment)] }}
         run: |
           echo "Running post-migration tests..."
-          
+
           # Test critical queries
           psql $DATABASE_URL <<EOF
           -- Test users schema
           SELECT COUNT(*) FROM users.accounts;
           SELECT COUNT(*) FROM users.profiles;
           SELECT COUNT(*) FROM users.auth_tokens;
-          
+
           -- Test content schema
           SELECT COUNT(*) FROM content.channels;
           SELECT COUNT(*) FROM content.videos;
           SELECT COUNT(*) FROM content.playlists;
-          
+
           -- Test analytics schema
           SELECT COUNT(*) FROM analytics.views;
           SELECT COUNT(*) FROM analytics.engagement;
-          
+
           -- Test system schema
           SELECT COUNT(*) FROM system.audit_logs;
           SELECT COUNT(*) FROM system.migrations;
           EOF
-          
+
           echo "Post-migration tests completed"
 
       - name: Generate Migration Report
@@ -443,7 +443,7 @@ jobs:
     if: failure() && github.event.inputs.dry_run != 'true'
     environment:
       name: ${{ github.event.inputs.environment }}
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -454,11 +454,11 @@ jobs:
         run: |
           echo "🔴 INITIATING DATABASE ROLLBACK"
           echo "Migration failed, rolling back changes..."
-          
+
           # Rollback migration
           cd backend
           # npm run migrate:down
-          
+
           echo "Rollback completed"
 
       - name: Restore from Backup if Critical
@@ -485,7 +485,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [execute-migrations]
     if: always()
-    
+
     steps:
       - name: Determine Status
         id: status
@@ -511,7 +511,7 @@ jobs:
           echo "Type: ${{ github.event.inputs.migration_type }}"
           echo "Dry Run: ${{ github.event.inputs.dry_run }}"
           echo "Executed by: ${{ github.actor }}"
-          
+
           # Send Slack notification
           # curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
           #   -H 'Content-Type: application/json' \

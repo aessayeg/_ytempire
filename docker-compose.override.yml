@@ -10,7 +10,7 @@ services:
       - HTTP_USER=admin
       - HTTP_PASSWORD=admin
     ports:
-      - "8081:8081"
+      - '8081:8081'
     networks:
       - ytempire-network
     depends_on:
@@ -30,7 +30,7 @@ services:
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:
-      - "9090:9090"
+      - '9090:9090'
     networks:
       - ytempire-network
 
@@ -48,7 +48,7 @@ services:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
-      - "3001:3000"
+      - '3001:3000'
     networks:
       - ytempire-network
     depends_on:
@@ -60,9 +60,9 @@ services:
     container_name: ytempire-postgres-exporter
     restart: unless-stopped
     environment:
-      DATA_SOURCE_NAME: "postgresql://ytempire_user:ytempire_pass@postgresql:5432/ytempire_dev?sslmode=disable"
+      DATA_SOURCE_NAME: 'postgresql://ytempire_user:ytempire_pass@postgresql:5432/ytempire_dev?sslmode=disable'
     ports:
-      - "9187:9187"
+      - '9187:9187'
     networks:
       - ytempire-network
     depends_on:
@@ -74,9 +74,9 @@ services:
     container_name: ytempire-redis-exporter
     restart: unless-stopped
     environment:
-      REDIS_ADDR: "redis://redis:6379"
+      REDIS_ADDR: 'redis://redis:6379'
     ports:
-      - "9121:9121"
+      - '9121:9121'
     networks:
       - ytempire-network
     depends_on:
@@ -96,7 +96,7 @@ services:
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     ports:
-      - "9100:9100"
+      - '9100:9100'
     networks:
       - ytempire-network
 
@@ -108,11 +108,11 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     ports:
-      - "9200:9200"
+      - '9200:9200'
     networks:
       - ytempire-network
 
@@ -124,7 +124,7 @@ services:
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     ports:
-      - "5601:5601"
+      - '5601:5601'
     networks:
       - ytempire-network
     depends_on:

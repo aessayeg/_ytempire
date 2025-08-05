@@ -23,10 +23,12 @@ To use the cleaner `.local` domain names, you need to configure your Windows hos
 ### Step 1: Run the Setup Script
 
 1. Open Command Prompt as Administrator:
+
    - Press `Win + X`
    - Select "Windows Terminal (Admin)" or "Command Prompt (Admin)"
 
 2. Navigate to the project directory:
+
    ```cmd
    cd C:\Users\PC\projects\my_projects\_ytempire
    ```
@@ -85,11 +87,13 @@ The nginx reverse proxy has been configured to handle all these domains and rout
 ### If services are not accessible:
 
 1. **Check containers are running**:
+
    ```bash
    docker ps
    ```
 
 2. **Check nginx logs**:
+
    ```bash
    docker logs ytempire-nginx
    ```
@@ -102,6 +106,7 @@ The nginx reverse proxy has been configured to handle all these domains and rout
 ## Service Credentials
 
 ### pgAdmin
+
 - **Email**: `admin@ytempire.com`
 - **Password**: `admin123`
 - **Database Connection**:
@@ -112,7 +117,8 @@ The nginx reverse proxy has been configured to handle all these domains and rout
   - Database: `ytempire_dev`
 
 ### Test User Accounts (in database)
-- **Admin**: 
+
+- **Admin**:
   - Email: `admin@ytempire.com`
   - Username: `admin`
   - Password: `password123`

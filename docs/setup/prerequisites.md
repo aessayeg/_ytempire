@@ -3,6 +3,7 @@
 This guide covers all prerequisites and system requirements needed to run YTEmpire MVP successfully.
 
 ## Table of Contents
+
 - [Hardware Requirements](#hardware-requirements)
 - [Software Prerequisites](#software-prerequisites)
 - [Account Requirements](#account-requirements)
@@ -13,43 +14,50 @@ This guide covers all prerequisites and system requirements needed to run YTEmpi
 ## Hardware Requirements
 
 ### Minimum Requirements
+
 - **CPU**: 4 cores (x86_64 architecture)
 - **RAM**: 8GB
 - **Storage**: 20GB free space (SSD recommended)
 - **Network**: Stable internet connection (10 Mbps+)
 
 ### Recommended Requirements
+
 - **CPU**: 8+ cores
 - **RAM**: 16GB
 - **Storage**: 50GB SSD
 - **Network**: 25+ Mbps connection
 
 ### Resource Allocation by Service
-| Service | RAM Usage | CPU Usage | Disk Space |
-|---------|-----------|-----------|------------|
-| PostgreSQL | 512MB-1GB | 1 core | 5GB |
-| Redis | 256MB | 0.5 core | 1GB |
-| Backend API | 512MB | 1 core | 500MB |
-| Frontend | 512MB | 1 core | 500MB |
-| Nginx | 128MB | 0.5 core | 100MB |
-| Docker overhead | 1GB | 0.5 core | 10GB |
+
+| Service         | RAM Usage | CPU Usage | Disk Space |
+| --------------- | --------- | --------- | ---------- |
+| PostgreSQL      | 512MB-1GB | 1 core    | 5GB        |
+| Redis           | 256MB     | 0.5 core  | 1GB        |
+| Backend API     | 512MB     | 1 core    | 500MB      |
+| Frontend        | 512MB     | 1 core    | 500MB      |
+| Nginx           | 128MB     | 0.5 core  | 100MB      |
+| Docker overhead | 1GB       | 0.5 core  | 10GB       |
 
 ## Software Prerequisites
 
 ### Operating System Support
+
 YTEmpire supports the following operating systems:
 
 #### macOS
+
 - macOS 11 (Big Sur) or later
 - Apple Silicon (M1/M2) or Intel processors
 
 #### Linux
+
 - Ubuntu 20.04 LTS or later
 - Debian 10 or later
 - CentOS/RHEL 8 or later
 - Fedora 34 or later
 
 #### Windows
+
 - Windows 10 Pro/Enterprise (version 2004 or later)
 - Windows 11
 - WSL2 enabled and configured
@@ -57,11 +65,13 @@ YTEmpire supports the following operating systems:
 ### Required Software
 
 #### 1. Docker Desktop
+
 **Version**: 20.10 or later
 
 ##### Installation:
 
 **macOS/Windows:**
+
 ```bash
 # Download from Docker website
 open https://www.docker.com/products/docker-desktop
@@ -72,6 +82,7 @@ docker-compose --version
 ```
 
 **Linux:**
+
 ```bash
 # Install Docker Engine
 curl -fsSL https://get.docker.com -o get-docker.sh
@@ -91,6 +102,7 @@ docker-compose --version
 ```
 
 #### 2. Git
+
 **Version**: 2.30 or later
 
 ```bash
@@ -109,6 +121,7 @@ git --version
 ```
 
 #### 3. VS Code (Recommended)
+
 **Version**: Latest stable
 
 ```bash
@@ -126,6 +139,7 @@ winget install Microsoft.VisualStudioCode
 ```
 
 #### 4. Node.js (Optional for local development)
+
 **Version**: 18 LTS or later
 
 ```bash
@@ -140,6 +154,7 @@ npm --version
 ```
 
 #### 5. Python (Optional for scripts)
+
 **Version**: 3.8 or later
 
 ```bash
@@ -160,6 +175,7 @@ pip3 --version
 ## Account Requirements
 
 ### 1. GitHub Account
+
 - Required for repository access
 - SSH key configured (recommended)
 
@@ -177,6 +193,7 @@ cat ~/.ssh/id_ed25519.pub
 ```
 
 ### 2. Google Cloud Console Account
+
 Required for YouTube API access:
 
 1. Visit [Google Cloud Console](https://console.cloud.google.com/)
@@ -187,6 +204,7 @@ Required for YouTube API access:
 6. Download credentials JSON
 
 ### 3. Docker Hub Account (Optional)
+
 - Only required if using private Docker images
 - Sign up at [hub.docker.com](https://hub.docker.com/)
 
@@ -198,19 +216,21 @@ docker login
 ## Network Requirements
 
 ### Port Availability
+
 Ensure the following ports are available:
 
-| Port | Service | Check Command |
-|------|---------|---------------|
-| 3000 | Frontend | `lsof -i :3000` or `netstat -an \| grep 3000` |
+| Port | Service     | Check Command                                 |
+| ---- | ----------- | --------------------------------------------- |
+| 3000 | Frontend    | `lsof -i :3000` or `netstat -an \| grep 3000` |
 | 5000 | Backend API | `lsof -i :5000` or `netstat -an \| grep 5000` |
-| 5432 | PostgreSQL | `lsof -i :5432` or `netstat -an \| grep 5432` |
-| 6379 | Redis | `lsof -i :6379` or `netstat -an \| grep 6379` |
-| 80 | Nginx HTTP | `lsof -i :80` or `netstat -an \| grep 80` |
-| 443 | Nginx HTTPS | `lsof -i :443` or `netstat -an \| grep 443` |
-| 8080 | pgAdmin | `lsof -i :8080` or `netstat -an \| grep 8080` |
+| 5432 | PostgreSQL  | `lsof -i :5432` or `netstat -an \| grep 5432` |
+| 6379 | Redis       | `lsof -i :6379` or `netstat -an \| grep 6379` |
+| 80   | Nginx HTTP  | `lsof -i :80` or `netstat -an \| grep 80`     |
+| 443  | Nginx HTTPS | `lsof -i :443` or `netstat -an \| grep 443`   |
+| 8080 | pgAdmin     | `lsof -i :8080` or `netstat -an \| grep 8080` |
 
 ### Firewall Configuration
+
 ```bash
 # macOS
 # Check firewall status
@@ -227,7 +247,9 @@ netsh advfirewall show allprofiles
 ```
 
 ### External API Access
+
 Ensure access to:
+
 - YouTube API endpoints: `https://www.googleapis.com`
 - Docker Hub: `https://hub.docker.com`
 - npm registry: `https://registry.npmjs.org`
@@ -238,6 +260,7 @@ Ensure access to:
 ### 1. Docker Configuration
 
 #### Docker Desktop Settings (GUI):
+
 1. Open Docker Desktop
 2. Go to Settings/Preferences
 3. Configure:
@@ -250,6 +273,7 @@ Ensure access to:
    - **Network**: Use default settings
 
 #### Docker Daemon Configuration:
+
 ```json
 {
   "builder": {
@@ -281,6 +305,7 @@ mkdir -p uploads temp logs backups
 ```
 
 ### 3. Environment Variables
+
 Create `.env` file from template:
 
 ```bash
@@ -292,6 +317,7 @@ nano .env
 ```
 
 Required environment variables:
+
 ```env
 # Database
 POSTGRES_USER=ytempire_user
@@ -318,6 +344,7 @@ CLIENT_URL=http://localhost:3000
 ## Verification Steps
 
 ### 1. System Check Script
+
 Create and run verification script:
 
 ```bash
@@ -375,6 +402,7 @@ echo "✅ Prerequisites check complete!"
 ```
 
 ### 2. Docker Test
+
 ```bash
 # Test Docker installation
 docker run hello-world
@@ -387,6 +415,7 @@ docker system info
 ```
 
 ### 3. Network Test
+
 ```bash
 # Test external connectivity
 curl -I https://www.googleapis.com
@@ -402,6 +431,7 @@ nslookup googleapis.com
 ### Docker Issues
 
 #### Docker daemon not running
+
 ```bash
 # macOS/Windows
 # Open Docker Desktop application
@@ -412,6 +442,7 @@ sudo systemctl enable docker
 ```
 
 #### Permission denied errors
+
 ```bash
 # Linux
 sudo usermod -aG docker $USER
@@ -424,6 +455,7 @@ newgrp docker
 ### Port Conflicts
 
 #### Find and kill processes using ports
+
 ```bash
 # Find process using port
 lsof -i :PORT_NUMBER
@@ -437,6 +469,7 @@ kill -9 PID
 ### WSL2 Issues (Windows)
 
 #### Enable WSL2
+
 ```powershell
 # Run as Administrator
 wsl --install
@@ -447,7 +480,9 @@ wsl --install -d Ubuntu-20.04
 ```
 
 #### Configure WSL2 resources
+
 Create `%USERPROFILE%\.wslconfig`:
+
 ```ini
 [wsl2]
 memory=8GB
@@ -458,6 +493,7 @@ swap=2GB
 ## Next Steps
 
 Once all prerequisites are met:
+
 1. Continue to [Environment Setup](environment-setup.md)
 2. Configure your [VS Code environment](vscode-setup.md)
 3. Initialize the [database](database-setup.md)
@@ -465,6 +501,7 @@ Once all prerequisites are met:
 ## Getting Help
 
 If you encounter issues:
+
 1. Check the [Troubleshooting Guide](../troubleshooting/common-issues.md)
 2. Search existing [GitHub Issues](https://github.com/yourusername/ytempire/issues)
 3. Create a new issue with:

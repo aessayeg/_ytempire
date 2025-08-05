@@ -6,7 +6,7 @@ services:
     container_name: ytempire-postgresql
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_DB: ytempire_dev
       POSTGRES_USER: postgres
@@ -20,7 +20,7 @@ services:
       - ./backups:/backups
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d ytempire_dev"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d ytempire_dev']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -32,7 +32,7 @@ services:
     container_name: ytempire-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
       - ./database/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
@@ -40,7 +40,7 @@ services:
       - ./database/redis/cache-helpers.lua:/docker-entrypoint-initdb.d/cache-helpers.lua:ro
     command: redis-server /usr/local/etc/redis/redis.conf
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -52,7 +52,7 @@ services:
     container_name: ytempire-pgadmin
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - '8080:80'
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@ytempire.com
       PGADMIN_DEFAULT_PASSWORD: admin123
@@ -72,7 +72,7 @@ services:
     container_name: ytempire-redis-commander
     restart: unless-stopped
     ports:
-      - "8081:8081"
+      - '8081:8081'
     environment:
       REDIS_HOSTS: local:redis:6379
       HTTP_USER: admin

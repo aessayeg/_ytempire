@@ -20,14 +20,14 @@ exports.authenticateToken = async (req, res, next) => {
 
     // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     // Check if session exists and is active
     const session = await Session.findOne({
       where: {
         session_token: token,
         account_id: decoded.userId,
-        is_active: true
-      }
+        is_active: true,
+      },
     });
 
     if (!session) {
@@ -44,10 +44,12 @@ exports.authenticateToken = async (req, res, next) => {
     // Get user details
     const user = await User.findByPk(decoded.userId, {
       attributes: { exclude: ['password_hash'] },
-      include: [{
-        model: require('../models').Profile,
-        as: 'profile'
-      }]
+      include: [
+        {
+          model: require('../models').Profile,
+          as: 'profile',
+        },
+      ],
     });
 
     if (!user) {
@@ -86,10 +88,10 @@ exports.authorizeRole = (...allowedRoles) => {
     }
 
     if (!allowedRoles.includes(req.user.account_type)) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Insufficient permissions',
         required: allowedRoles,
-        current: req.user.account_type
+        current: req.user.account_type,
       });
     }
 
@@ -110,20 +112,20 @@ exports.optionalAuth = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     const session = await Session.findOne({
       where: {
         session_token: token,
         account_id: decoded.userId,
-        is_active: true
-      }
+        is_active: true,
+      },
     });
 
     if (session && new Date() <= new Date(session.expires_at)) {
       const user = await User.findByPk(decoded.userId, {
-        attributes: { exclude: ['password_hash'] }
+        attributes: { exclude: ['password_hash'] },
       });
-      
+
       if (user && user.account_status === 'active') {
         req.user = user;
         req.session = session;
@@ -132,6 +134,6 @@ exports.optionalAuth = async (req, res, next) => {
   } catch (error) {
     // Ignore errors for optional auth
   }
-  
+
   next();
 };

@@ -9,12 +9,8 @@ const ChannelContext = createContext();
 
 export const ChannelProvider = ({ children }) => {
   // TODO: Implement context state and methods
-  
-  return (
-    <ChannelContext.Provider value={{}}>
-      {children}
-    </ChannelContext.Provider>
-  );
+
+  return <ChannelContext.Provider value={{}}>{children}</ChannelContext.Provider>;
 };
 
 export const useChannelContext = () => {

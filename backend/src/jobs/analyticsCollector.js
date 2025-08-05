@@ -9,8 +9,8 @@ const Bull = require('bull');
 const jobQueue = new Bull('analyticsCollector', {
   redis: {
     port: process.env.REDIS_PORT || 6379,
-    host: process.env.REDIS_HOST || 'localhost'
-  }
+    host: process.env.REDIS_HOST || 'localhost',
+  },
 });
 
 // TODO: Define job processor

@@ -9,12 +9,8 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   // TODO: Implement context state and methods
-  
-  return (
-    <AuthContext.Provider value={{}}>
-      {children}
-    </AuthContext.Provider>
-  );
+
+  return <AuthContext.Provider value={{}}>{children}</AuthContext.Provider>;
 };
 
 export const useAuthContext = () => {

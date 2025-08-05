@@ -4,7 +4,7 @@ on:
   push:
     branches: [develop]
   workflow_run:
-    workflows: ["YTEmpire CI Pipeline"]
+    workflows: ['YTEmpire CI Pipeline']
     branches: [develop]
     types: [completed]
   workflow_dispatch:
@@ -28,10 +28,10 @@ jobs:
     name: Pre-Deployment Validation
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' || github.event.inputs.skip_tests == 'true' }}
-    
+
     outputs:
       deploy_version: ${{ steps.version.outputs.version }}
-      
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -60,12 +60,12 @@ jobs:
             echo "::error::docker-compose.yml not found"
             exit 1
           fi
-          
+
           if [ ! -f "backend/package.json" ]; then
             echo "::error::backend/package.json not found"
             exit 1
           fi
-          
+
           if [ ! -f "frontend/package.json" ]; then
             echo "::error::frontend/package.json not found"
             exit 1
@@ -84,7 +84,7 @@ jobs:
     environment:
       name: development
       url: https://dev.ytempire.local
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -146,7 +146,7 @@ jobs:
     environment:
       name: development
       url: https://dev.ytempire.local/api
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -178,7 +178,7 @@ jobs:
           DEPLOY_VERSION: ${{ needs.pre-deployment-checks.outputs.deploy_version }}
         run: |
           echo "Deploying backend version: $DEPLOY_VERSION"
-          
+
           # SSH deployment command would go here
           # ssh ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << EOF
           #   docker pull ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:$DEPLOY_VERSION
@@ -191,7 +191,7 @@ jobs:
           #     --env-file /opt/ytempire/dev/.env \
           #     ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:$DEPLOY_VERSION
           # EOF
-          
+
           echo "Backend deployment completed"
 
       - name: Health Check
@@ -207,7 +207,7 @@ jobs:
     environment:
       name: development
       url: https://dev.ytempire.local
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -242,7 +242,7 @@ jobs:
           DEPLOY_VERSION: ${{ needs.pre-deployment-checks.outputs.deploy_version }}
         run: |
           echo "Deploying frontend version: $DEPLOY_VERSION"
-          
+
           # SSH deployment command would go here
           # ssh ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << EOF
           #   docker pull ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:$DEPLOY_VERSION
@@ -255,7 +255,7 @@ jobs:
           #     --env-file /opt/ytempire/dev/.env \
           #     ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:$DEPLOY_VERSION
           # EOF
-          
+
           echo "Frontend deployment completed"
 
       - name: Health Check
@@ -268,7 +268,7 @@ jobs:
     name: Post-Deployment Validation
     runs-on: ubuntu-latest
     needs: [deploy-frontend]
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -303,7 +303,7 @@ jobs:
       - name: Performance Validation
         run: |
           echo "Running performance validation..."
-          
+
           # Test API response times
           for endpoint in "/health" "/api/v1/status" "/api/v1/channels"; do
             echo "Testing endpoint: $endpoint"
@@ -336,7 +336,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [post-deployment-tests]
     if: always()
-    
+
     steps:
       - name: Determine Status
         id: status
@@ -354,7 +354,7 @@ jobs:
           echo "${{ steps.status.outputs.emoji }} Development Deployment ${{ steps.status.outputs.status }}"
           echo "Version: ${{ needs.pre-deployment-checks.outputs.deploy_version }}"
           echo "Deployed by: ${{ github.actor }}"
-          
+
           # Slack/Discord notification would go here
           # curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
           #   -H 'Content-Type: application/json' \
@@ -385,7 +385,7 @@ jobs:
               required_contexts: [],
               production_environment: false
             });
-            
+
             await github.rest.repos.createDeploymentStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,

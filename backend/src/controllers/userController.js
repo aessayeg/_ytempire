@@ -19,7 +19,7 @@ exports.getAll = async (req, res, next) => {
     if (search) {
       where[Op.or] = [
         { email: { [Op.iLike]: `%${search}%` } },
-        { username: { [Op.iLike]: `%${search}%` } }
+        { username: { [Op.iLike]: `%${search}%` } },
       ];
     }
     if (accountType) where.account_type = accountType;
@@ -30,12 +30,14 @@ exports.getAll = async (req, res, next) => {
       limit: parseInt(limit),
       offset: parseInt(offset),
       attributes: { exclude: ['password_hash'] },
-      include: [{
-        model: Profile,
-        as: 'profile',
-        attributes: ['display_name', 'avatar_url']
-      }],
-      order: [['created_at', 'DESC']]
+      include: [
+        {
+          model: Profile,
+          as: 'profile',
+          attributes: ['display_name', 'avatar_url'],
+        },
+      ],
+      order: [['created_at', 'DESC']],
     });
 
     res.json({
@@ -46,9 +48,9 @@ exports.getAll = async (req, res, next) => {
           total: count,
           page: parseInt(page),
           limit: parseInt(limit),
-          pages: Math.ceil(count / limit)
-        }
-      }
+          pages: Math.ceil(count / limit),
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -65,14 +67,14 @@ exports.getById = async (req, res, next) => {
       include: [
         {
           model: Profile,
-          as: 'profile'
+          as: 'profile',
         },
         {
           model: Channel,
           as: 'channels',
-          attributes: ['channel_id', 'channel_name', 'youtube_channel_id', 'subscriber_count']
-        }
-      ]
+          attributes: ['channel_id', 'channel_name', 'youtube_channel_id', 'subscriber_count'],
+        },
+      ],
     });
 
     if (!user) {
@@ -81,7 +83,7 @@ exports.getById = async (req, res, next) => {
 
     res.json({
       success: true,
-      data: user
+      data: user,
     });
   } catch (error) {
     next(error);
@@ -94,7 +96,7 @@ exports.getById = async (req, res, next) => {
 exports.update = async (req, res, next) => {
   try {
     const userId = req.params.id;
-    
+
     // Only allow users to update their own profile unless admin
     if (req.user.account_id !== userId && req.user.account_type !== 'admin') {
       return res.status(403).json({ error: 'Unauthorized to update this profile' });
@@ -109,12 +111,12 @@ exports.update = async (req, res, next) => {
       timezone,
       language,
       companyName,
-      websiteUrl
+      websiteUrl,
     } = req.body;
 
     // Update profile
     const profile = await Profile.findOne({
-      where: { account_id: userId }
+      where: { account_id: userId },
     });
 
     if (!profile) {
@@ -130,22 +132,24 @@ exports.update = async (req, res, next) => {
       timezone: timezone || profile.timezone,
       language: language || profile.language,
       company_name: companyName !== undefined ? companyName : profile.company_name,
-      website_url: websiteUrl !== undefined ? websiteUrl : profile.website_url
+      website_url: websiteUrl !== undefined ? websiteUrl : profile.website_url,
     });
 
     // Get updated user with profile
     const updatedUser = await User.findByPk(userId, {
       attributes: { exclude: ['password_hash'] },
-      include: [{
-        model: Profile,
-        as: 'profile'
-      }]
+      include: [
+        {
+          model: Profile,
+          as: 'profile',
+        },
+      ],
     });
 
     res.json({
       success: true,
       message: 'Profile updated successfully',
-      data: updatedUser
+      data: updatedUser,
     });
   } catch (error) {
     next(error);
@@ -158,11 +162,7 @@ exports.update = async (req, res, next) => {
 exports.updateSettings = async (req, res, next) => {
   try {
     const userId = req.user.account_id;
-    const {
-      email,
-      username,
-      twoFactorEnabled
-    } = req.body;
+    const { email, username, twoFactorEnabled } = req.body;
 
     const user = await User.findByPk(userId);
 
@@ -185,23 +185,26 @@ exports.updateSettings = async (req, res, next) => {
     await user.update({
       email: email || user.email,
       username: username || user.username,
-      two_factor_enabled: twoFactorEnabled !== undefined ? twoFactorEnabled : user.two_factor_enabled
+      two_factor_enabled:
+        twoFactorEnabled !== undefined ? twoFactorEnabled : user.two_factor_enabled,
     });
 
     // Profile preferences removed - not in current schema
 
     const updatedUser = await User.findByPk(userId, {
       attributes: { exclude: ['password_hash'] },
-      include: [{
-        model: Profile,
-        as: 'profile'
-      }]
+      include: [
+        {
+          model: Profile,
+          as: 'profile',
+        },
+      ],
     });
 
     res.json({
       success: true,
       message: 'Settings updated successfully',
-      data: updatedUser
+      data: updatedUser,
     });
   } catch (error) {
     next(error);
@@ -230,7 +233,7 @@ exports.delete = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'User account suspended successfully'
+      message: 'User account suspended successfully',
     });
   } catch (error) {
     next(error);

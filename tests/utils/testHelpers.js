@@ -22,7 +22,7 @@ async function waitForService(url, maxRetries = 30, delay = 2000) {
       if (i === maxRetries - 1) {
         throw new Error(`Service at ${url} failed to start after ${maxRetries} attempts`);
       }
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
   return false;
@@ -45,26 +45,26 @@ async function checkDocker() {
  */
 async function startServices() {
   console.log('Starting Docker Compose services...');
-  
+
   // Stop any existing services
   await execAsync('docker-compose down -v').catch(() => {});
-  
+
   // Start services
   await execAsync('docker-compose up -d --build');
-  
+
   // Wait for services to be ready
   console.log('Waiting for services to be ready...');
-  await new Promise(resolve => setTimeout(resolve, 10000));
-  
+  await new Promise((resolve) => setTimeout(resolve, 10000));
+
   // Wait for specific services
   const services = [
     { name: 'Frontend', url: 'http://localhost:3000' },
     { name: 'Backend', url: 'http://localhost:5000/health' },
     { name: 'Nginx', url: 'http://localhost/health' },
     { name: 'pgAdmin', url: 'http://localhost:8080' },
-    { name: 'MailHog', url: 'http://localhost:8025' }
+    { name: 'MailHog', url: 'http://localhost:8025' },
   ];
-  
+
   for (const service of services) {
     console.log(`Waiting for ${service.name}...`);
     await waitForService(service.url);
@@ -96,9 +96,7 @@ async function getContainerLogs(containerName) {
  * Execute command in container
  */
 async function execInContainer(containerName, command) {
-  const { stdout, stderr } = await execAsync(
-    `docker-compose exec -T ${containerName} ${command}`
-  );
+  const { stdout, stderr } = await execAsync(`docker-compose exec -T ${containerName} ${command}`);
   return { stdout, stderr };
 }
 
@@ -130,7 +128,7 @@ async function waitForPostgres(maxRetries = 30) {
       if (i === maxRetries - 1) {
         throw new Error('PostgreSQL failed to become ready');
       }
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 }
@@ -147,7 +145,7 @@ async function waitForRedis(maxRetries = 30) {
       if (i === maxRetries - 1) {
         throw new Error('Redis failed to become ready');
       }
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 }
@@ -158,26 +156,26 @@ async function waitForRedis(maxRetries = 30) {
 async function createTestUser(email, password = 'password123') {
   const { Client } = require('pg');
   const bcrypt = require('bcryptjs');
-  
+
   const client = new Client({
     host: 'localhost',
     port: 5432,
     user: 'ytempire_user',
     password: 'ytempire_pass',
-    database: 'ytempire_dev'
+    database: 'ytempire_dev',
   });
-  
+
   await client.connect();
-  
+
   const passwordHash = await bcrypt.hash(password, 10);
-  
+
   const result = await client.query(
     'INSERT INTO users (email, username, password_hash, first_name, last_name) VALUES ($1, $2, $3, $4, $5) RETURNING *',
     [email, email.split('@')[0], passwordHash, 'Test', 'User']
   );
-  
+
   await client.end();
-  
+
   return result.rows[0];
 }
 
@@ -186,22 +184,20 @@ async function createTestUser(email, password = 'password123') {
  */
 async function cleanTestData() {
   const { Client } = require('pg');
-  
+
   const client = new Client({
     host: 'localhost',
     port: 5432,
     user: 'ytempire_user',
     password: 'ytempire_pass',
-    database: 'ytempire_dev'
+    database: 'ytempire_dev',
   });
-  
+
   await client.connect();
-  
+
   // Delete test users (except seeded ones)
-  await client.query(
-    "DELETE FROM users WHERE email LIKE 'test-%' OR email LIKE '%-test@%'"
-  );
-  
+  await client.query('DELETE FROM users WHERE email LIKE \'test-%\' OR email LIKE \'%-test@%\'');
+
   await client.end();
 }
 
@@ -216,5 +212,5 @@ module.exports = {
   waitForPostgres,
   waitForRedis,
   createTestUser,
-  cleanTestData
+  cleanTestData,
 };

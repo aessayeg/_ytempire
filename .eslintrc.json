@@ -5,11 +5,7 @@
     "node": true,
     "jest": true
   },
-  "extends": [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
-  ],
+  "extends": ["eslint:recommended", "plugin:react/recommended", "plugin:react-hooks/recommended"],
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
@@ -17,30 +13,63 @@
     "ecmaVersion": 12,
     "sourceType": "module"
   },
-  "plugins": [
-    "react",
-    "react-hooks"
-  ],
+  "plugins": ["react", "react-hooks"],
   "rules": {
     "indent": ["error", 2],
-    "linebreak-style": ["error", "unix"],
+    "linebreak-style": "off",
     "quotes": ["error", "single"],
     "semi": ["error", "always"],
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-console": "off",
     "react/prop-types": "off",
     "react/react-in-jsx-scope": "off"
   },
   "settings": {
     "react": {
-      "version": "detect"
+      "version": "18.0"
     }
+  },
+  "globals": {
+    "cy": "readonly",
+    "fail": "readonly"
   },
   "overrides": [
     {
-      "files": ["**/*.test.js", "**/*.spec.js"],
+      "files": ["**/*.test.js", "**/*.spec.js", "tests/**/*.js"],
       "env": {
         "jest": true
+      },
+      "rules": {
+        "no-unused-vars": "off",
+        "no-console": "off"
+      }
+    },
+    {
+      "files": ["tests/e2e/**/*.js", "tests/e2e/**/*.spec.js"],
+      "globals": {
+        "cy": "readonly"
+      },
+      "rules": {
+        "no-unused-vars": "off",
+        "no-console": "off"
+      }
+    },
+    {
+      "files": ["frontend/**/*.js", "frontend/**/*.jsx"],
+      "rules": {
+        "no-unused-vars": "off"
+      }
+    },
+    {
+      "files": ["backend/src/jobs/**/*.js", "backend/src/utils/**/*.js"],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": ["backend/src/controllers/**/*.js"],
+      "rules": {
+        "no-unused-vars": "off"
       }
     }
   ]

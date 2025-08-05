@@ -5,11 +5,14 @@
 
 const mongoose = require('mongoose');
 
-const automationSchema = new mongoose.Schema({
-  // TODO: Define schema fields
-}, {
-  timestamps: true
-});
+const automationSchema = new mongoose.Schema(
+  {
+    // TODO: Define schema fields
+  },
+  {
+    timestamps: true,
+  }
+);
 
 // TODO: Add model methods and virtuals
 

@@ -1,12 +1,15 @@
 # YTEmpire CI/CD Testing & Linting Setup
 
 ## Overview
+
 This document describes the comprehensive CI/CD pipeline for code linting and testing that has been implemented for the YTEmpire MVP project.
 
 ## ✅ What Has Been Implemented
 
 ### 1. Enhanced CI Workflow (`/.github/workflows/lint-test.yml`)
+
 A comprehensive GitHub Actions workflow that includes:
+
 - **Code Quality & Linting**: ESLint, Prettier, security audits, complexity analysis
 - **Database Schema Validation**: PostgreSQL 15 with all 5 YTEmpire schemas
 - **Unit Testing**: Parallel testing for backend and frontend with coverage reports
@@ -14,6 +17,7 @@ A comprehensive GitHub Actions workflow that includes:
 - **Performance Testing**: Database query benchmarks (<200ms) and Redis operations (<10ms)
 
 **Key Features:**
+
 - ✅ Correct database credentials: `ytempire_user` / `ytempire_pass`
 - ✅ Support for all 5 YTEmpire schemas (users, content, analytics, campaigns, system)
 - ✅ Parallel test execution for faster CI
@@ -23,12 +27,14 @@ A comprehensive GitHub Actions workflow that includes:
 ### 2. Linting Configuration Files
 
 #### ESLint Configuration (`.eslintrc.json`)
+
 - React and React Hooks support
 - Node.js environment configuration
 - Jest testing environment
 - Custom rules for code consistency
 
 #### Prettier Configuration (`.prettierrc.json`)
+
 - 100 character line width
 - 2-space indentation
 - Single quotes for JavaScript
@@ -37,12 +43,14 @@ A comprehensive GitHub Actions workflow that includes:
 ### 3. Testing Framework
 
 #### Jest Configuration (`jest.config.js`)
+
 - Coverage threshold: 85% for lines and statements
 - Support for backend and frontend testing
 - Custom module aliases
 - HTML, JSON, and text coverage reports
 
 #### Test Setup (`tests/setup.js`)
+
 - Global test utilities for generating test data
 - Custom Jest matchers (UUID validation, email validation, range checking)
 - Mock functions for database and Redis connections
@@ -51,6 +59,7 @@ A comprehensive GitHub Actions workflow that includes:
 ### 4. Sample Test Files
 
 #### Unit Tests (`tests/unit/database.test.js`)
+
 - Database schema validation tests
 - User operations testing
 - Channel operations testing
@@ -59,6 +68,7 @@ A comprehensive GitHub Actions workflow that includes:
 - Engagement metrics calculations
 
 #### Integration Tests (`tests/integration/api.test.js`)
+
 - API health check testing
 - Authentication endpoint testing
 - CORS configuration validation
@@ -115,11 +125,13 @@ npm audit
 ### GitHub Actions Workflow
 
 The CI pipeline automatically runs on:
+
 - Push to `main`, `develop`, or `feature/*` branches
 - Pull requests to `main` or `develop`
 - Manual workflow dispatch with test type selection
 
 Workflow can be triggered manually with options:
+
 - `all` - Run all tests (default)
 - `lint-only` - Run only linting checks
 - `unit-only` - Run only unit tests
@@ -129,12 +141,14 @@ Workflow can be triggered manually with options:
 ## 📊 Success Criteria
 
 ### Code Quality Standards
+
 - ✅ ESLint checks pass
 - ✅ Prettier formatting validated
 - ✅ Security audit passes for high-severity issues
 - ✅ Code complexity within acceptable limits
 
 ### Testing Standards
+
 - ✅ Unit test coverage >85%
 - ✅ All integration tests pass
 - ✅ Database operations <200ms
@@ -142,6 +156,7 @@ Workflow can be triggered manually with options:
 - ✅ API health checks pass
 
 ### CI Pipeline Performance
+
 - ✅ Linting phase: <3 minutes
 - ✅ Unit testing: <5 minutes
 - ✅ Integration testing: <8 minutes
@@ -150,6 +165,7 @@ Workflow can be triggered manually with options:
 ## 🔧 Configuration Details
 
 ### Database Configuration
+
 - **Database**: PostgreSQL 15
 - **User**: `ytempire_user`
 - **Password**: `ytempire_pass`
@@ -157,11 +173,13 @@ Workflow can be triggered manually with options:
 - **Schemas**: users, content, analytics, campaigns, system
 
 ### Redis Configuration
+
 - **Host**: localhost
 - **Port**: 6379
 - **URL**: `redis://localhost:6379`
 
 ### Node.js Configuration
+
 - **Version**: 18
 - **Package Manager**: npm
 - **Test Framework**: Jest
@@ -193,15 +211,18 @@ ytempire/
 ### Common Issues
 
 1. **Database Connection Errors**
+
    - Ensure PostgreSQL is running
    - Verify credentials: `ytempire_user` / `ytempire_pass`
    - Check if all schemas are created
 
 2. **Redis Connection Errors**
+
    - Ensure Redis is running
    - Verify connection URL: `redis://localhost:6379`
 
 3. **Test Timeouts**
+
    - Increase Jest timeout in `tests/setup.js`
    - Check if Docker services are running
 
@@ -212,16 +233,19 @@ ytempire/
 ## 🔄 Next Steps
 
 1. **Implement Missing API Endpoints**
+
    - Complete authentication endpoints
    - Add channel management APIs
    - Implement analytics endpoints
 
 2. **Add More Test Coverage**
+
    - Write tests for all API endpoints
    - Add frontend component tests
    - Implement E2E tests
 
 3. **Performance Optimization**
+
    - Optimize slow database queries
    - Implement caching strategies
    - Add query optimization
@@ -242,6 +266,7 @@ ytempire/
 ## 🤝 Contributing
 
 When contributing to the YTEmpire project:
+
 1. Ensure all tests pass locally before pushing
 2. Maintain test coverage above 85%
 3. Follow ESLint and Prettier configurations

@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'lint-only' || github.event.inputs.test_type == ''
-    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -137,7 +137,7 @@ jobs:
     timeout-minutes: 10
     needs: [code-quality]
     if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'integration-only' || github.event.inputs.test_type == ''
-    
+
     services:
       postgres:
         image: postgres:15
@@ -193,14 +193,14 @@ jobs:
           CREATE SCHEMA IF NOT EXISTS analytics;
           CREATE SCHEMA IF NOT EXISTS campaigns;
           CREATE SCHEMA IF NOT EXISTS system;
-          
+
           -- Grant permissions
           GRANT ALL ON SCHEMA users TO ${{ env.POSTGRES_USER }};
           GRANT ALL ON SCHEMA content TO ${{ env.POSTGRES_USER }};
           GRANT ALL ON SCHEMA analytics TO ${{ env.POSTGRES_USER }};
           GRANT ALL ON SCHEMA campaigns TO ${{ env.POSTGRES_USER }};
           GRANT ALL ON SCHEMA system TO ${{ env.POSTGRES_USER }};
-          
+
           -- List created schemas
           SELECT schema_name FROM information_schema.schemata 
           WHERE schema_name IN ('users', 'content', 'analytics', 'campaigns', 'system')
@@ -228,7 +228,7 @@ jobs:
           -- Check schema count
           SELECT COUNT(*) as schema_count FROM information_schema.schemata 
           WHERE schema_name IN ('users', 'content', 'analytics', 'campaigns', 'system');
-          
+
           -- Check tables in each schema
           SELECT 
             schemaname,
@@ -281,11 +281,11 @@ jobs:
     timeout-minutes: 15
     needs: [database-setup]
     if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'unit-only' || github.event.inputs.test_type == ''
-    
+
     strategy:
       matrix:
         service: [backend, frontend]
-    
+
     services:
       postgres:
         image: postgres:15
@@ -380,7 +380,7 @@ jobs:
     timeout-minutes: 20
     needs: [unit-testing]
     if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'integration-only' || github.event.inputs.test_type == ''
-    
+
     services:
       postgres:
         image: postgres:15
@@ -481,7 +481,7 @@ jobs:
           const client = new Client({
             connectionString: process.env.DATABASE_URL
           });
-          
+
           async function testDatabase() {
             try {
               await client.connect();
@@ -503,7 +503,7 @@ jobs:
               process.exit(1);
             }
           }
-          
+
           testDatabase();
           "
 
@@ -515,7 +515,7 @@ jobs:
           const client = redis.createClient({
             url: process.env.REDIS_URL
           });
-          
+
           async function testRedis() {
             try {
               await client.connect();
@@ -533,7 +533,7 @@ jobs:
               process.exit(1);
             }
           }
-          
+
           testRedis();
           "
 
@@ -552,7 +552,7 @@ jobs:
     timeout-minutes: 15
     needs: [integration-testing]
     if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'performance-only' || github.event_name == 'push'
-    
+
     services:
       postgres:
         image: postgres:15
@@ -593,7 +593,7 @@ jobs:
           const client = new Client({
             connectionString: process.env.DATABASE_URL
           });
-          
+
           async function performanceTest() {
             try {
               await client.connect();
@@ -625,7 +625,7 @@ jobs:
               process.exit(1);
             }
           }
-          
+
           performanceTest();
           "
 
@@ -637,7 +637,7 @@ jobs:
           const client = redis.createClient({
             url: process.env.REDIS_URL
           });
-          
+
           async function performanceTest() {
             try {
               await client.connect();
@@ -670,7 +670,7 @@ jobs:
               process.exit(1);
             }
           }
-          
+
           performanceTest();
           "
 
@@ -696,7 +696,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [code-quality, database-setup, unit-testing, integration-testing, performance-testing]
     if: always()
-    
+
     steps:
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
@@ -708,7 +708,7 @@ jobs:
           echo "# YTEmpire CI Test Summary" > test-summary.md
           echo "## Test Execution: $(date)" >> test-summary.md
           echo "" >> test-summary.md
-          
+
           echo "### Job Results" >> test-summary.md
           echo "- Code Quality: ${{ needs.code-quality.result }}" >> test-summary.md
           echo "- Database Setup: ${{ needs.database-setup.result }}" >> test-summary.md
@@ -716,14 +716,14 @@ jobs:
           echo "- Integration Testing: ${{ needs.integration-testing.result }}" >> test-summary.md
           echo "- Performance Testing: ${{ needs.performance-testing.result }}" >> test-summary.md
           echo "" >> test-summary.md
-          
+
           echo "### Test Configuration" >> test-summary.md
           echo "- Node Version: ${{ env.NODE_VERSION }}" >> test-summary.md
           echo "- Database: PostgreSQL 15" >> test-summary.md
           echo "- Cache: Redis 7" >> test-summary.md
           echo "- Database User: ytempire_user" >> test-summary.md
           echo "" >> test-summary.md
-          
+
           echo "### Artifacts Generated" >> test-summary.md
           ls -la test-artifacts/ | tail -n +2 >> test-summary.md
 
@@ -740,7 +740,7 @@ jobs:
           script: |
             const fs = require('fs');
             const summary = fs.readFileSync('test-summary.md', 'utf8');
-            
+
             // Create a comment with test results
             github.rest.issues.createComment({
               issue_number: context.issue.number,

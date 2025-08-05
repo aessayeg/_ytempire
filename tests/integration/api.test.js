@@ -16,7 +16,7 @@ describe('API Integration', () => {
 
   beforeAll(async () => {
     // Wait for services to be ready
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   });
 
   test('Backend API responds to health check', async () => {
@@ -34,7 +34,7 @@ describe('API Integration', () => {
         username: `testuser${Date.now()}`,
         password: 'Test123!@#',
         firstName: 'Test',
-        lastName: 'User'
+        lastName: 'User',
       });
     } catch (error) {
       // Registration might fail if not implemented, but endpoint should exist
@@ -45,9 +45,9 @@ describe('API Integration', () => {
     try {
       const loginResponse = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         email: 'test@ytempire.local',
-        password: 'password123'
+        password: 'password123',
       });
-      
+
       if (loginResponse.status === 200) {
         authToken = loginResponse.data.token;
       }
@@ -60,10 +60,10 @@ describe('API Integration', () => {
   test('CORS is configured correctly', async () => {
     const response = await axios.get(`${API_BASE_URL}/health`, {
       headers: {
-        'Origin': 'http://localhost:3000'
-      }
+        Origin: 'http://localhost:3000',
+      },
     });
-    
+
     // Check CORS headers
     const headers = response.headers;
     expect(headers['access-control-allow-origin']).toBeTruthy();
@@ -73,20 +73,20 @@ describe('API Integration', () => {
     // Create test file
     const testFilePath = path.join(__dirname, 'test-upload.txt');
     fs.writeFileSync(testFilePath, 'Test file content');
-    
+
     try {
       const form = new FormData();
       form.append('file', fs.createReadStream(testFilePath));
-      
+
       const response = await axios.post(`${API_BASE_URL}/api/upload`, form, {
         headers: {
           ...form.getHeaders(),
-          ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+          ...(authToken && { Authorization: `Bearer ${authToken}` }),
         },
         maxContentLength: Infinity,
-        maxBodyLength: Infinity
+        maxBodyLength: Infinity,
       });
-      
+
       // If upload is implemented
       if (response.status === 200) {
         expect(response.data).toHaveProperty('filename');
@@ -118,16 +118,14 @@ describe('API Integration', () => {
     // Make multiple rapid requests
     const requests = [];
     for (let i = 0; i < 150; i++) {
-      requests.push(
-        axios.get(`${API_BASE_URL}/health`).catch(err => err.response)
-      );
+      requests.push(axios.get(`${API_BASE_URL}/health`).catch((err) => err.response));
     }
-    
+
     const responses = await Promise.all(requests);
-    
+
     // Check if any requests were rate limited
-    const rateLimited = responses.filter(r => r && r.status === 429);
-    
+    const rateLimited = responses.filter((r) => r && r.status === 429);
+
     // Rate limiting might not kick in for health endpoint
     // but the mechanism should be in place
     expect(responses.length).toBe(150);
@@ -144,10 +142,10 @@ describe('API Integration', () => {
     try {
       await axios.get(`${API_BASE_URL}/socket.io/`, {
         headers: {
-          'Upgrade': 'websocket',
-          'Connection': 'Upgrade'
+          Upgrade: 'websocket',
+          Connection: 'Upgrade',
         },
-        validateStatus: () => true
+        validateStatus: () => true,
       });
     } catch (error) {
       // Socket.io returns specific error for non-websocket requests
@@ -167,8 +165,8 @@ describe('API Integration', () => {
     try {
       await axios.post(`${API_BASE_URL}/api/auth/login`, 'invalid json', {
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
     } catch (error) {
       expect([400, 500]).toContain(error.response.status);
@@ -179,9 +177,9 @@ describe('API Integration', () => {
     // Test an endpoint that requires database access
     try {
       const response = await axios.get(`${API_BASE_URL}/api/users/profile`, {
-        headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
       });
-      
+
       // If authenticated and endpoint exists
       if (response.status === 200) {
         expect(response.data).toHaveProperty('user');
@@ -196,7 +194,7 @@ describe('API Integration', () => {
     // Test email endpoint
     try {
       await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, {
-        email: 'test@example.com'
+        email: 'test@example.com',
       });
     } catch (error) {
       // Endpoint might not be implemented
@@ -213,8 +211,8 @@ describe('API Integration', () => {
     // Test JSON content type
     const jsonResponse = await axios.get(`${API_BASE_URL}/health`, {
       headers: {
-        'Accept': 'application/json'
-      }
+        Accept: 'application/json',
+      },
     });
     expect(jsonResponse.headers['content-type']).toContain('application/json');
   });
@@ -222,13 +220,13 @@ describe('API Integration', () => {
   test('API handles large payloads correctly', async () => {
     // Create large payload (1MB)
     const largeData = {
-      data: 'x'.repeat(1024 * 1024)
+      data: 'x'.repeat(1024 * 1024),
     };
-    
+
     try {
       await axios.post(`${API_BASE_URL}/api/test/large-payload`, largeData, {
         maxContentLength: Infinity,
-        maxBodyLength: Infinity
+        maxBodyLength: Infinity,
       });
     } catch (error) {
       // Endpoint might not exist, but should handle large payloads

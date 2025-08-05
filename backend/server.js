@@ -22,7 +22,7 @@ const userRoutes = require('./src/routes/users');
 const testRoutes = require('./src/routes/test');
 // const channelRoutes = require('./src/routes/channels');
 // const videoRoutes = require('./src/routes/videos');
-// const contentRoutes = require('./src/routes/content');  
+// const contentRoutes = require('./src/routes/content');
 // const analyticsRoutes = require('./src/routes/analytics');
 // const automationRoutes = require('./src/routes/automation');
 
@@ -35,8 +35,8 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
     origin: process.env.CLIENT_URL || 'http://localhost:3000',
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
 // Middleware
@@ -45,10 +45,12 @@ app.use(helmet());
 // Trust proxy - specifically trust our nginx container
 app.set('trust proxy', ['172.20.0.0/16', 'loopback']);
 
-app.use(cors({
-  origin: process.env.CLIENT_URL,
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  })
+);
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -56,7 +58,7 @@ app.use(express.urlencoded({ extended: true }));
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 100, // limit each IP to 100 requests per windowMs
 });
 app.use('/api/', limiter);
 
@@ -81,11 +83,11 @@ app.use(errorHandler);
 // WebSocket handling
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
-  
+
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
   });
-  
+
   // TODO: Implement WebSocket events
 });
 
@@ -94,7 +96,7 @@ const initializeDatabase = async () => {
   try {
     // Test database connection
     await testConnection();
-    
+
     // Don't sync models - tables are already created in PostgreSQL
     // In production, use migrations for schema changes
     console.log('✓ Database models loaded (sync disabled - using existing schema)');
@@ -111,7 +113,7 @@ const startServer = async () => {
   try {
     // Initialize database first
     await initializeDatabase();
-    
+
     // Then start the HTTP server
     httpServer.listen(PORT, () => {
       console.log(`✓ Server running on port ${PORT}`);

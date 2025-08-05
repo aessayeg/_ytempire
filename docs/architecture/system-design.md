@@ -1,22 +1,27 @@
 # YTEmpire System Design
 
 ## Overview
+
 This document describes the high-level architecture and system design of the YTEmpire platform.
 
 ## Architecture Overview
 
 ### System Components
+
 1. **Frontend (Client)**
+
    - React/Next.js SPA
    - Responsive web design
    - Progressive Web App (PWA)
 
 2. **Backend API**
+
    - Node.js/Express REST API
    - GraphQL endpoint (future)
    - WebSocket for real-time updates
 
 3. **Database Layer**
+
    - MongoDB (primary database)
    - Redis (caching & sessions)
    - S3 (media storage)
@@ -28,6 +33,7 @@ This document describes the high-level architecture and system design of the YTE
    - Analytics (Google Analytics)
 
 ### Architecture Diagram
+
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │   Web Client    │     │  Mobile Client  │     │   Admin Panel   │
@@ -65,24 +71,28 @@ This document describes the high-level architecture and system design of the YTE
 ## Design Principles
 
 ### Scalability
+
 - Horizontal scaling with load balancers
 - Microservices architecture
 - Database sharding
 - CDN for static assets
 
 ### Reliability
+
 - High availability (99.9% uptime)
 - Automatic failover
 - Data replication
 - Regular backups
 
 ### Performance
+
 - Response time < 200ms
 - Caching strategy
 - Database indexing
 - Code optimization
 
 ### Security
+
 - Defense in depth
 - Principle of least privilege
 - Regular security audits
@@ -91,6 +101,7 @@ This document describes the high-level architecture and system design of the YTE
 ## Data Flow
 
 ### User Authentication Flow
+
 1. User submits credentials
 2. API validates credentials
 3. JWT token generated
@@ -98,6 +109,7 @@ This document describes the high-level architecture and system design of the YTE
 5. Token sent with requests
 
 ### Video Upload Flow
+
 1. User initiates upload
 2. Pre-signed URL generated
 3. Direct upload to S3
@@ -108,6 +120,7 @@ This document describes the high-level architecture and system design of the YTE
 ## Technology Stack
 
 ### Frontend
+
 - React 18+
 - Next.js 13+
 - TypeScript
@@ -115,6 +128,7 @@ This document describes the high-level architecture and system design of the YTE
 - Redux Toolkit
 
 ### Backend
+
 - Node.js 18+
 - Express.js
 - MongoDB 5+
@@ -122,12 +136,14 @@ This document describes the high-level architecture and system design of the YTE
 - Bull (job queue)
 
 ### Infrastructure
+
 - AWS/GCP/Azure
 - Docker & Kubernetes
 - GitHub Actions
 - Terraform
 
 ## TODO
+
 - [ ] Complete implementation
 - [ ] Add detailed component diagrams
 - [ ] Add sequence diagrams

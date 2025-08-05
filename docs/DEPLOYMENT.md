@@ -1,9 +1,11 @@
 # YTEmpire Deployment Guide
 
 ## Overview
+
 This guide covers deployment procedures for the YTEmpire platform across different environments.
 
 ## Prerequisites
+
 - Node.js 16+
 - Docker & Docker Compose
 - MongoDB Atlas account (for production)
@@ -14,6 +16,7 @@ This guide covers deployment procedures for the YTEmpire platform across differe
 ## Deployment Environments
 
 ### Development
+
 Local development environment setup.
 
 ```bash
@@ -29,6 +32,7 @@ npm run dev
 ```
 
 ### Staging
+
 Pre-production testing environment.
 
 ```bash
@@ -40,6 +44,7 @@ npm run deploy:staging
 ### Production
 
 #### Using Docker Compose
+
 ```bash
 # Build images
 docker-compose build
@@ -51,6 +56,7 @@ docker-compose up -d
 #### Manual Deployment
 
 ##### Backend (Heroku)
+
 ```bash
 # Login to Heroku
 heroku login
@@ -67,6 +73,7 @@ git push heroku main
 ```
 
 ##### Frontend (Vercel)
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -77,22 +84,27 @@ vercel --prod
 ```
 
 ## Environment Variables
+
 Configure all required environment variables before deployment:
+
 - Copy `.env.example` to `.env`
 - Update values for your environment
 - Ensure all secrets are properly secured
 
 ## SSL/TLS Configuration
+
 - Use Let's Encrypt for SSL certificates
 - Configure nginx for HTTPS
 - Enable HSTS headers
 
 ## Monitoring
+
 - Set up application monitoring (New Relic, DataDog)
 - Configure error tracking (Sentry)
 - Enable performance monitoring
 
 ## TODO
+
 - [ ] Complete implementation
 - [ ] Add CI/CD pipeline details
 - [ ] Add rollback procedures

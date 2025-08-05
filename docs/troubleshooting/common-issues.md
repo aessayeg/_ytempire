@@ -3,6 +3,7 @@
 This guide covers the most common issues encountered when setting up and running YTEmpire, with step-by-step solutions.
 
 ## Table of Contents
+
 - [Docker Issues](#docker-issues)
 - [Database Issues](#database-issues)
 - [Service Connection Issues](#service-connection-issues)
@@ -17,6 +18,7 @@ This guide covers the most common issues encountered when setting up and running
 ### Issue: Docker Daemon Not Running
 
 **Symptoms:**
+
 ```
 Cannot connect to the Docker daemon at unix:///var/run/docker.sock
 ```
@@ -24,11 +26,13 @@ Cannot connect to the Docker daemon at unix:///var/run/docker.sock
 **Solutions:**
 
 **macOS/Windows:**
+
 1. Open Docker Desktop application
 2. Wait for Docker to start (whale icon in system tray)
 3. Verify: `docker version`
 
 **Linux:**
+
 ```bash
 # Start Docker service
 sudo systemctl start docker
@@ -47,6 +51,7 @@ newgrp docker
 ### Issue: Port Already in Use
 
 **Symptoms:**
+
 ```
 Error: bind: address already in use
 ```
@@ -74,6 +79,7 @@ docker-compose down --volumes --remove-orphans
 ### Issue: Out of Disk Space
 
 **Symptoms:**
+
 ```
 No space left on device
 ```
@@ -103,6 +109,7 @@ docker system df
 ### Issue: Permission Denied
 
 **Symptoms:**
+
 ```
 permission denied while trying to connect to the Docker daemon socket
 ```
@@ -126,6 +133,7 @@ chmod +x scripts/*.sh
 ### Issue: PostgreSQL Connection Failed
 
 **Symptoms:**
+
 ```
 FATAL: password authentication failed for user "ytempire_user"
 could not connect to server: Connection refused
@@ -155,6 +163,7 @@ docker exec ytempire-postgresql psql -U ytempire_user -d ytempire_dev -c "SELECT
 ### Issue: Database Migrations Failed
 
 **Symptoms:**
+
 ```
 Error: relation "users.accounts" does not exist
 ```
@@ -177,6 +186,7 @@ docker-compose exec postgresql psql -U ytempire_user -d ytempire_dev < database/
 ### Issue: pgAdmin Cannot Connect
 
 **Symptoms:**
+
 ```
 Unable to connect to server: timeout expired
 ```
@@ -210,6 +220,7 @@ cat pgadmin/servers.json
 ### Issue: Backend Cannot Connect to Database
 
 **Symptoms:**
+
 ```
 Error: connect ECONNREFUSED 127.0.0.1:5432
 ```
@@ -235,6 +246,7 @@ docker-compose restart backend
 ### Issue: Redis Connection Failed
 
 **Symptoms:**
+
 ```
 Error: Redis connection to redis:6379 failed
 ```
@@ -263,6 +275,7 @@ docker exec ytempire-redis redis-cli FLUSHALL
 ### Issue: Frontend Shows 404 Error
 
 **Symptoms:**
+
 - Blank page or 404 error when accessing http://localhost:3000
 
 **Solutions:**
@@ -286,6 +299,7 @@ docker-compose restart frontend
 ### Issue: Hot Reload Not Working
 
 **Symptoms:**
+
 - Changes not reflected without manual refresh
 
 **Solutions:**
@@ -308,6 +322,7 @@ docker-compose restart frontend
 ### Issue: API Returns 500 Error
 
 **Symptoms:**
+
 ```
 Internal Server Error
 ```
@@ -331,6 +346,7 @@ docker-compose exec backend npm run dev:debug
 ### Issue: CORS Errors
 
 **Symptoms:**
+
 ```
 Access to XMLHttpRequest blocked by CORS policy
 ```
@@ -340,10 +356,12 @@ Access to XMLHttpRequest blocked by CORS policy
 ```javascript
 // Check backend CORS configuration
 // In backend/src/app.js or server.js
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    credentials: true,
+  })
+);
 ```
 
 ```bash
@@ -359,6 +377,7 @@ docker-compose restart backend
 ### Issue: Slow Database Queries
 
 **Symptoms:**
+
 - API responses taking >1 second
 
 **Solutions:**
@@ -366,9 +385,9 @@ docker-compose restart backend
 ```bash
 # Check slow queries
 docker exec ytempire-postgresql psql -U ytempire_user -d ytempire_dev -c "
-SELECT query, mean_exec_time, calls 
-FROM pg_stat_statements 
-ORDER BY mean_exec_time DESC 
+SELECT query, mean_exec_time, calls
+FROM pg_stat_statements
+ORDER BY mean_exec_time DESC
 LIMIT 10;"
 
 # Add missing indexes
@@ -387,6 +406,7 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;"
 ### Issue: High Memory Usage
 
 **Symptoms:**
+
 - Docker using >8GB RAM
 
 **Solutions:**
@@ -412,6 +432,7 @@ docker-compose up -d
 ### Issue: VS Code Debugging Not Working
 
 **Symptoms:**
+
 - Breakpoints not hitting
 
 **Solutions:**
@@ -434,6 +455,7 @@ docker-compose restart backend
 ### Issue: Environment Variables Not Loading
 
 **Symptoms:**
+
 - undefined environment variables
 
 **Solutions:**
@@ -456,6 +478,7 @@ docker-compose --env-file .env up -d
 ## Quick Diagnostic Commands
 
 ### System Health Check
+
 ```bash
 #!/bin/bash
 # save as check-health.sh
@@ -499,6 +522,7 @@ docker stats --no-stream --format "table {{.Container}}\t{{.MemUsage}}"
 ```
 
 ### Quick Reset
+
 ```bash
 #!/bin/bash
 # save as reset-all.sh
@@ -519,15 +543,18 @@ fi
 If these solutions don't resolve your issue:
 
 1. **Check Logs:**
+
    ```bash
    docker-compose logs > debug.log
    ```
 
 2. **Search Issues:**
+
    - [GitHub Issues](https://github.com/yourusername/ytempire/issues)
 
 3. **Create Issue:**
    Include:
+
    - Error messages
    - `docker-compose ps` output
    - `docker-compose logs` output

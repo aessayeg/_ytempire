@@ -9,7 +9,7 @@ class StorageService {
   }
 
   // TODO: Implement service methods
-  
+
   async uploadFile() {
     // Implementation goes here
   }

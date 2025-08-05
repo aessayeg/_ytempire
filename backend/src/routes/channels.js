@@ -6,7 +6,8 @@
 const express = require('express');
 const router = express.Router();
 const channelController = require('../controllers/channelController');
-const { authenticateToken } = require('../middleware/auth');
+// TODO: Uncomment when authentication is implemented on routes
+// const { authenticateToken } = require('../middleware/auth');
 const { validate } = require('../middleware/validation');
 
 // TODO: Define routes

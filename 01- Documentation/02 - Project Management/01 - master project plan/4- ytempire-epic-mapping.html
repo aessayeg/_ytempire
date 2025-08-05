@@ -1,687 +1,686 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>YTEMPIRE Epic & User Story Map</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #0a0a0a;
-            color: #e0e0e0;
-            margin: 0;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        h1 {
-            color: #00ff88;
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(0,255,136,0.3);
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #888;
-            margin-bottom: 40px;
-            font-size: 1.1em;
-        }
-        
-        .epic-container {
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border: 2px solid #333;
-            transition: all 0.3s ease;
-        }
-        
-        .epic-container:hover {
-            border-color: #00ff88;
-            box-shadow: 0 8px 32px rgba(0,255,136,0.2);
-        }
-        
-        .epic-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #333;
-        }
-        
-        .epic-id {
-            background: #00ff88;
-            color: #000;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-        
-        .epic-title {
-            font-size: 1.8em;
-            color: #fff;
-            flex-grow: 1;
-            margin-left: 20px;
-        }
-        
-        .epic-points {
-            background: #252525;
-            padding: 10px 20px;
-            border-radius: 10px;
-            color: #00ccff;
-            font-weight: bold;
-        }
-        
-        .epic-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .detail-card {
-            background: #222;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #333;
-        }
-        
-        .detail-label {
-            color: #888;
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-        
-        .detail-value {
-            color: #00ccff;
-            font-weight: bold;
-        }
-        
-        .user-stories {
-            margin-top: 25px;
-        }
-        
-        .stories-header {
-            color: #00ff88;
-            font-size: 1.3em;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .stories-header::before {
-            content: "📋";
-            margin-right: 10px;
-            font-size: 1.2em;
-        }
-        
-        .story-card {
-            background: #252525;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #333;
-            transition: all 0.3s ease;
-        }
-        
-        .story-card:hover {
-            transform: translateX(10px);
-            border-color: #00ccff;
-            box-shadow: 0 5px 20px rgba(0,204,255,0.2);
-        }
-        
-        .story-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .story-id {
-            background: #00ccff;
-            color: #000;
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.85em;
-        }
-        
-        .story-priority {
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.85em;
-            text-transform: uppercase;
-        }
-        
-        .priority-high {
-            background: #ff3333;
-            color: #fff;
-        }
-        
-        .priority-medium {
-            background: #ff8800;
-            color: #fff;
-        }
-        
-        .priority-low {
-            background: #00ccff;
-            color: #000;
-        }
-        
-        .story-points {
-            background: #333;
-            padding: 4px 12px;
-            border-radius: 15px;
-            color: #00ff88;
-            font-weight: bold;
-        }
-        
-        .story-content {
-            margin-bottom: 15px;
-        }
-        
-        .story-title {
-            font-size: 1.1em;
-            color: #fff;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        
-        .story-description {
-            color: #ccc;
-            line-height: 1.5;
-            font-style: italic;
-        }
-        
-        .acceptance-criteria {
-            background: #2a2a2a;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-        
-        .criteria-header {
-            color: #00ff88;
-            font-weight: bold;
-            margin-bottom: 10px;
-            font-size: 0.95em;
-        }
-        
-        .criteria-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .criteria-item {
-            padding: 5px 0;
-            color: #ccc;
-            display: flex;
-            align-items: flex-start;
-        }
-        
-        .criteria-item::before {
-            content: "✓";
-            color: #00ff88;
-            margin-right: 10px;
-            font-weight: bold;
-        }
-        
-        .story-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #333;
-        }
-        
-        .story-sprint {
-            background: #1a1a1a;
-            padding: 5px 15px;
-            border-radius: 5px;
-            font-size: 0.9em;
-            color: #888;
-        }
-        
-        .story-dependencies {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .dependency-tag {
-            background: #333;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.85em;
-            color: #ff6b6b;
-        }
-        
-        .velocity-tracker {
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border: 2px solid #00ff88;
-        }
-        
-        .velocity-header {
-            font-size: 1.5em;
-            color: #00ff88;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .velocity-metrics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-        }
-        
-        .velocity-card {
-            background: #252525;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .velocity-value {
-            font-size: 2.5em;
-            color: #00ff88;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .velocity-label {
-            color: #888;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+      body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: #0a0a0a;
+        color: #e0e0e0;
+        margin: 0;
+        padding: 20px;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        color: #00ff88;
+        text-align: center;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #888;
+        margin-bottom: 40px;
+        font-size: 1.1em;
+      }
+
+      .epic-container {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        border: 2px solid #333;
+        transition: all 0.3s ease;
+      }
+
+      .epic-container:hover {
+        border-color: #00ff88;
+        box-shadow: 0 8px 32px rgba(0, 255, 136, 0.2);
+      }
+
+      .epic-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #333;
+      }
+
+      .epic-id {
+        background: #00ff88;
+        color: #000;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9em;
+      }
+
+      .epic-title {
+        font-size: 1.8em;
+        color: #fff;
+        flex-grow: 1;
+        margin-left: 20px;
+      }
+
+      .epic-points {
+        background: #252525;
+        padding: 10px 20px;
+        border-radius: 10px;
+        color: #00ccff;
+        font-weight: bold;
+      }
+
+      .epic-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .detail-card {
+        background: #222;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #333;
+      }
+
+      .detail-label {
+        color: #888;
+        font-size: 0.85em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+      }
+
+      .detail-value {
+        color: #00ccff;
+        font-weight: bold;
+      }
+
+      .user-stories {
+        margin-top: 25px;
+      }
+
+      .stories-header {
+        color: #00ff88;
+        font-size: 1.3em;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+      }
+
+      .stories-header::before {
+        content: '📋';
+        margin-right: 10px;
+        font-size: 1.2em;
+      }
+
+      .story-card {
+        background: #252525;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #333;
+        transition: all 0.3s ease;
+      }
+
+      .story-card:hover {
+        transform: translateX(10px);
+        border-color: #00ccff;
+        box-shadow: 0 5px 20px rgba(0, 204, 255, 0.2);
+      }
+
+      .story-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .story-id {
+        background: #00ccff;
+        color: #000;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 0.85em;
+      }
+
+      .story-priority {
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 0.85em;
+        text-transform: uppercase;
+      }
+
+      .priority-high {
+        background: #ff3333;
+        color: #fff;
+      }
+
+      .priority-medium {
+        background: #ff8800;
+        color: #fff;
+      }
+
+      .priority-low {
+        background: #00ccff;
+        color: #000;
+      }
+
+      .story-points {
+        background: #333;
+        padding: 4px 12px;
+        border-radius: 15px;
+        color: #00ff88;
+        font-weight: bold;
+      }
+
+      .story-content {
+        margin-bottom: 15px;
+      }
+
+      .story-title {
+        font-size: 1.1em;
+        color: #fff;
+        margin-bottom: 10px;
+        font-weight: bold;
+      }
+
+      .story-description {
+        color: #ccc;
+        line-height: 1.5;
+        font-style: italic;
+      }
+
+      .acceptance-criteria {
+        background: #2a2a2a;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+      }
+
+      .criteria-header {
+        color: #00ff88;
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 0.95em;
+      }
+
+      .criteria-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .criteria-item {
+        padding: 5px 0;
+        color: #ccc;
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .criteria-item::before {
+        content: '✓';
+        color: #00ff88;
+        margin-right: 10px;
+        font-weight: bold;
+      }
+
+      .story-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #333;
+      }
+
+      .story-sprint {
+        background: #1a1a1a;
+        padding: 5px 15px;
+        border-radius: 5px;
+        font-size: 0.9em;
+        color: #888;
+      }
+
+      .story-dependencies {
+        display: flex;
+        gap: 10px;
+      }
+
+      .dependency-tag {
+        background: #333;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.85em;
+        color: #ff6b6b;
+      }
+
+      .velocity-tracker {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 30px;
+        border: 2px solid #00ff88;
+      }
+
+      .velocity-header {
+        font-size: 1.5em;
+        color: #00ff88;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .velocity-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+      }
+
+      .velocity-card {
+        background: #252525;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .velocity-value {
+        font-size: 2.5em;
+        color: #00ff88;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .velocity-label {
+        color: #888;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>YTEMPIRE Epic & User Story Map</h1>
-        <p class="subtitle">Comprehensive Agile Requirements Breakdown</p>
-        
-        <!-- Velocity Tracker -->
-        <div class="velocity-tracker">
-            <div class="velocity-header">Team Velocity Metrics</div>
-            <div class="velocity-metrics">
-                <div class="velocity-card">
-                    <div class="velocity-value">140</div>
-                    <div class="velocity-label">Points/Sprint</div>
-                </div>
-                <div class="velocity-card">
-                    <div class="velocity-value">85%</div>
-                    <div class="velocity-label">Completion Rate</div>
-                </div>
-                <div class="velocity-card">
-                    <div class="velocity-value">2.5</div>
-                    <div class="velocity-label">Sprint Buffer</div>
-                </div>
-                <div class="velocity-card">
-                    <div class="velocity-value">5,040</div>
-                    <div class="velocity-label">Total Points</div>
-                </div>
-            </div>
+      <h1>YTEMPIRE Epic & User Story Map</h1>
+      <p class="subtitle">Comprehensive Agile Requirements Breakdown</p>
+
+      <!-- Velocity Tracker -->
+      <div class="velocity-tracker">
+        <div class="velocity-header">Team Velocity Metrics</div>
+        <div class="velocity-metrics">
+          <div class="velocity-card">
+            <div class="velocity-value">140</div>
+            <div class="velocity-label">Points/Sprint</div>
+          </div>
+          <div class="velocity-card">
+            <div class="velocity-value">85%</div>
+            <div class="velocity-label">Completion Rate</div>
+          </div>
+          <div class="velocity-card">
+            <div class="velocity-value">2.5</div>
+            <div class="velocity-label">Sprint Buffer</div>
+          </div>
+          <div class="velocity-card">
+            <div class="velocity-value">5,040</div>
+            <div class="velocity-label">Total Points</div>
+          </div>
         </div>
-        
-        <!-- Epic 1: Content Generation AI -->
-        <div class="epic-container">
-            <div class="epic-header">
-                <span class="epic-id">EPIC-001</span>
-                <span class="epic-title">AI-Powered Content Generation Engine</span>
-                <span class="epic-points">800 Points</span>
-            </div>
-            
-            <div class="epic-details">
-                <div class="detail-card">
-                    <div class="detail-label">Owner</div>
-                    <div class="detail-value">AI Team Lead</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Sprints</div>
-                    <div class="detail-value">S7-S14</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Priority</div>
-                    <div class="detail-value">Critical Path</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Dependencies</div>
-                    <div class="detail-value">Infrastructure</div>
-                </div>
-            </div>
-            
-            <div class="user-stories">
-                <div class="stories-header">User Stories</div>
-                
-                <div class="story-card">
-                    <div class="story-header">
-                        <span class="story-id">US-001</span>
-                        <span class="story-priority priority-high">HIGH</span>
-                        <span class="story-points">21 Points</span>
-                    </div>
-                    <div class="story-content">
-                        <div class="story-title">LLM Integration for Script Generation</div>
-                        <div class="story-description">
-                            As a content creator, I want the system to generate high-quality video scripts automatically
-                            so that I can produce content at scale without manual writing.
-                        </div>
-                    </div>
-                    <div class="acceptance-criteria">
-                        <div class="criteria-header">Acceptance Criteria:</div>
-                        <ul class="criteria-list">
-                            <li class="criteria-item">GPT-4 API successfully integrated with rate limiting</li>
-                            <li class="criteria-item">Scripts generated in under 10 seconds</li>
-                            <li class="criteria-item">Quality score above 85% based on evaluation metrics</li>
-                            <li class="criteria-item">Support for 10+ content categories</li>
-                            <li class="criteria-item">Automatic fact-checking and validation</li>
-                        </ul>
-                    </div>
-                    <div class="story-footer">
-                        <span class="story-sprint">Sprint 7-8</span>
-                        <div class="story-dependencies">
-                            <span class="dependency-tag">API Gateway</span>
-                            <span class="dependency-tag">Auth System</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="story-card">
-                    <div class="story-header">
-                        <span class="story-id">US-002</span>
-                        <span class="story-priority priority-high">HIGH</span>
-                        <span class="story-points">13 Points</span>
-                    </div>
-                    <div class="story-content">
-                        <div class="story-title">Prompt Engineering System</div>
-                        <div class="story-description">
-                            As a system operator, I want to manage and optimize prompts dynamically
-                            so that content quality continuously improves based on performance data.
-                        </div>
-                    </div>
-                    <div class="acceptance-criteria">
-                        <div class="criteria-header">Acceptance Criteria:</div>
-                        <ul class="criteria-list">
-                            <li class="criteria-item">Prompt template management interface</li>
-                            <li class="criteria-item">A/B testing framework for prompts</li>
-                            <li class="criteria-item">Performance tracking per prompt variant</li>
-                            <li class="criteria-item">Automatic optimization based on metrics</li>
-                        </ul>
-                    </div>
-                    <div class="story-footer">
-                        <span class="story-sprint">Sprint 8</span>
-                        <div class="story-dependencies">
-                            <span class="dependency-tag">LLM Integration</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="story-card">
-                    <div class="story-header">
-                        <span class="story-id">US-003</span>
-                        <span class="story-priority priority-medium">MEDIUM</span>
-                        <span class="story-points">8 Points</span>
-                    </div>
-                    <div class="story-content">
-                        <div class="story-title">Multi-Language Content Support</div>
-                        <div class="story-description">
-                            As a global content creator, I want to generate content in multiple languages
-                            so that I can reach international audiences without translation delays.
-                        </div>
-                    </div>
-                    <div class="acceptance-criteria">
-                        <div class="criteria-header">Acceptance Criteria:</div>
-                        <ul class="criteria-list">
-                            <li class="criteria-item">Support for 10+ major languages</li>
-                            <li class="criteria-item">Cultural context awareness in content</li>
-                            <li class="criteria-item">Automatic language detection for trends</li>
-                            <li class="criteria-item">Translation quality score > 90%</li>
-                        </ul>
-                    </div>
-                    <div class="story-footer">
-                        <span class="story-sprint">Sprint 9</span>
-                        <div class="story-dependencies">
-                            <span class="dependency-tag">Script Gen</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      </div>
+
+      <!-- Epic 1: Content Generation AI -->
+      <div class="epic-container">
+        <div class="epic-header">
+          <span class="epic-id">EPIC-001</span>
+          <span class="epic-title">AI-Powered Content Generation Engine</span>
+          <span class="epic-points">800 Points</span>
         </div>
-        
-        <!-- Epic 2: Video Production Pipeline -->
-        <div class="epic-container">
-            <div class="epic-header">
-                <span class="epic-id">EPIC-002</span>
-                <span class="epic-title">Automated Video Production Pipeline</span>
-                <span class="epic-points">650 Points</span>
-            </div>
-            
-            <div class="epic-details">
-                <div class="detail-card">
-                    <div class="detail-label">Owner</div>
-                    <div class="detail-value">Media Team Lead</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Sprints</div>
-                    <div class="detail-value">S9-S16</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Priority</div>
-                    <div class="detail-value">Critical Path</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Dependencies</div>
-                    <div class="detail-value">AI Engine</div>
-                </div>
-            </div>
-            
-            <div class="user-stories">
-                <div class="stories-header">User Stories</div>
-                
-                <div class="story-card">
-                    <div class="story-header">
-                        <span class="story-id">US-010</span>
-                        <span class="story-priority priority-high">HIGH</span>
-                        <span class="story-points">21 Points</span>
-                    </div>
-                    <div class="story-content">
-                        <div class="story-title">AI Image Generation Integration</div>
-                        <div class="story-description">
-                            As a content producer, I want AI-generated visuals that match my scripts
-                            so that videos have engaging, relevant imagery without manual design work.
-                        </div>
-                    </div>
-                    <div class="acceptance-criteria">
-                        <div class="criteria-header">Acceptance Criteria:</div>
-                        <ul class="criteria-list">
-                            <li class="criteria-item">DALL-E 3 API integration complete</li>
-                            <li class="criteria-item">Image generation under 15 seconds</li>
-                            <li class="criteria-item">Style consistency across video</li>
-                            <li class="criteria-item">Automatic image optimization for video</li>
-                            <li class="criteria-item">Copyright-safe content generation</li>
-                        </ul>
-                    </div>
-                    <div class="story-footer">
-                        <span class="story-sprint">Sprint 9-10</span>
-                        <div class="story-dependencies">
-                            <span class="dependency-tag">Script Engine</span>
-                            <span class="dependency-tag">Storage Layer</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="story-card">
-                    <div class="story-header">
-                        <span class="story-id">US-011</span>
-                        <span class="story-priority priority-high">HIGH</span>
-                        <span class="story-points">13 Points</span>
-                    </div>
-                    <div class="story-content">
-                        <div class="story-title">Voice Synthesis Pipeline</div>
-                        <div class="story-description">
-                            As a channel manager, I want natural-sounding AI voices for narration
-                            so that videos sound professional without hiring voice actors.
-                        </div>
-                    </div>
-                    <div class="acceptance-criteria">
-                        <div class="criteria-header">Acceptance Criteria:</div>
-                        <ul class="criteria-list">
-                            <li class="criteria-item">ElevenLabs integration functional</li>
-                            <li class="criteria-item">5+ voice options per language</li>
-                            <li class="criteria-item">Emotion and tone control</li>
-                            <li class="criteria-item">Lip-sync compatibility data</li>
-                        </ul>
-                    </div>
-                    <div class="story-footer">
-                        <span class="story-sprint">Sprint 10</span>
-                        <div class="story-dependencies">
-                            <span class="dependency-tag">Audio Pipeline</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+        <div class="epic-details">
+          <div class="detail-card">
+            <div class="detail-label">Owner</div>
+            <div class="detail-value">AI Team Lead</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Sprints</div>
+            <div class="detail-value">S7-S14</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Priority</div>
+            <div class="detail-value">Critical Path</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Dependencies</div>
+            <div class="detail-value">Infrastructure</div>
+          </div>
         </div>
-        
-        <!-- Epic 3: Channel Management -->
-        <div class="epic-container">
-            <div class="epic-header">
-                <span class="epic-id">EPIC-003</span>
-                <span class="epic-title">Multi-Channel Management System</span>
-                <span class="epic-points">500 Points</span>
+
+        <div class="user-stories">
+          <div class="stories-header">User Stories</div>
+
+          <div class="story-card">
+            <div class="story-header">
+              <span class="story-id">US-001</span>
+              <span class="story-priority priority-high">HIGH</span>
+              <span class="story-points">21 Points</span>
             </div>
-            
-            <div class="epic-details">
-                <div class="detail-card">
-                    <div class="detail-label">Owner</div>
-                    <div class="detail-value">Channel Ops Lead</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Sprints</div>
-                    <div class="detail-value">S15-S24</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Priority</div>
-                    <div class="detail-value">High</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Dependencies</div>
-                    <div class="detail-value">Production Pipeline</div>
-                </div>
+            <div class="story-content">
+              <div class="story-title">LLM Integration for Script Generation</div>
+              <div class="story-description">
+                As a content creator, I want the system to generate high-quality video scripts
+                automatically so that I can produce content at scale without manual writing.
+              </div>
             </div>
-            
-            <div class="user-stories">
-                <div class="stories-header">User Stories</div>
-                
-                <div class="story-card">
-                    <div class="story-header">
-                        <span class="story-id">US-020</span>
-                        <span class="story-priority priority-high">HIGH</span>
-                        <span class="story-points">13 Points</span>
-                    </div>
-                    <div class="story-content">
-                        <div class="story-title">Automated Channel Creation</div>
-                        <div class="story-description">
-                            As a business operator, I want to create and configure new channels automatically
-                            so that I can scale to 100+ channels without manual setup.
-                        </div>
-                    </div>
-                    <div class="acceptance-criteria">
-                        <div class="criteria-header">Acceptance Criteria:</div>
-                        <ul class="criteria-list">
-                            <li class="criteria-item">YouTube channel creation API integrated</li>
-                            <li class="criteria-item">Automatic branding application</li>
-                            <li class="criteria-item">Channel settings optimization</li>
-                            <li class="criteria-item">Niche-specific configuration</li>
-                        </ul>
-                    </div>
-                    <div class="story-footer">
-                        <span class="story-sprint">Sprint 17</span>
-                        <div class="story-dependencies">
-                            <span class="dependency-tag">YouTube API</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="acceptance-criteria">
+              <div class="criteria-header">Acceptance Criteria:</div>
+              <ul class="criteria-list">
+                <li class="criteria-item">GPT-4 API successfully integrated with rate limiting</li>
+                <li class="criteria-item">Scripts generated in under 10 seconds</li>
+                <li class="criteria-item">Quality score above 85% based on evaluation metrics</li>
+                <li class="criteria-item">Support for 10+ content categories</li>
+                <li class="criteria-item">Automatic fact-checking and validation</li>
+              </ul>
             </div>
+            <div class="story-footer">
+              <span class="story-sprint">Sprint 7-8</span>
+              <div class="story-dependencies">
+                <span class="dependency-tag">API Gateway</span>
+                <span class="dependency-tag">Auth System</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="story-card">
+            <div class="story-header">
+              <span class="story-id">US-002</span>
+              <span class="story-priority priority-high">HIGH</span>
+              <span class="story-points">13 Points</span>
+            </div>
+            <div class="story-content">
+              <div class="story-title">Prompt Engineering System</div>
+              <div class="story-description">
+                As a system operator, I want to manage and optimize prompts dynamically so that
+                content quality continuously improves based on performance data.
+              </div>
+            </div>
+            <div class="acceptance-criteria">
+              <div class="criteria-header">Acceptance Criteria:</div>
+              <ul class="criteria-list">
+                <li class="criteria-item">Prompt template management interface</li>
+                <li class="criteria-item">A/B testing framework for prompts</li>
+                <li class="criteria-item">Performance tracking per prompt variant</li>
+                <li class="criteria-item">Automatic optimization based on metrics</li>
+              </ul>
+            </div>
+            <div class="story-footer">
+              <span class="story-sprint">Sprint 8</span>
+              <div class="story-dependencies">
+                <span class="dependency-tag">LLM Integration</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="story-card">
+            <div class="story-header">
+              <span class="story-id">US-003</span>
+              <span class="story-priority priority-medium">MEDIUM</span>
+              <span class="story-points">8 Points</span>
+            </div>
+            <div class="story-content">
+              <div class="story-title">Multi-Language Content Support</div>
+              <div class="story-description">
+                As a global content creator, I want to generate content in multiple languages so
+                that I can reach international audiences without translation delays.
+              </div>
+            </div>
+            <div class="acceptance-criteria">
+              <div class="criteria-header">Acceptance Criteria:</div>
+              <ul class="criteria-list">
+                <li class="criteria-item">Support for 10+ major languages</li>
+                <li class="criteria-item">Cultural context awareness in content</li>
+                <li class="criteria-item">Automatic language detection for trends</li>
+                <li class="criteria-item">Translation quality score > 90%</li>
+              </ul>
+            </div>
+            <div class="story-footer">
+              <span class="story-sprint">Sprint 9</span>
+              <div class="story-dependencies">
+                <span class="dependency-tag">Script Gen</span>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <!-- Epic 4: Analytics & Intelligence -->
-        <div class="epic-container">
-            <div class="epic-header">
-                <span class="epic-id">EPIC-004</span>
-                <span class="epic-title">Analytics & Business Intelligence Platform</span>
-                <span class="epic-points">450 Points</span>
-            </div>
-            
-            <div class="epic-details">
-                <div class="detail-card">
-                    <div class="detail-label">Owner</div>
-                    <div class="detail-value">Data Team Lead</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Sprints</div>
-                    <div class="detail-value">S16-S28</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Priority</div>
-                    <div class="detail-value">High</div>
-                </div>
-                <div class="detail-card">
-                    <div class="detail-label">Dependencies</div>
-                    <div class="detail-value">Channel System</div>
-                </div>
-            </div>
-            
-            <div class="user-stories">
-                <div class="stories-header">User Stories</div>
-                
-                <div class="story-card">
-                    <div class="story-header">
-                        <span class="story-id">US-030</span>
-                        <span class="story-priority priority-medium">MEDIUM</span>
-                        <span class="story-points">8 Points</span>
-                    </div>
-                    <div class="story-content">
-                        <div class="story-title">Real-time Performance Dashboard</div>
-                        <div class="story-description">
-                            As an executive, I want real-time visibility into all channel performance
-                            so that I can make data-driven decisions quickly.
-                        </div>
-                    </div>
-                    <div class="acceptance-criteria">
-                        <div class="criteria-header">Acceptance Criteria:</div>
-                        <ul class="criteria-list">
-                            <li class="criteria-item">Dashboard loads in under 3 seconds</li>
-                            <li class="criteria-item">Real-time data updates (5-min delay max)</li>
-                            <li class="criteria-item">Mobile-responsive design</li>
-                            <li class="criteria-item">Customizable KPI widgets</li>
-                        </ul>
-                    </div>
-                    <div class="story-footer">
-                        <span class="story-sprint">Sprint 18</span>
-                        <div class="story-dependencies">
-                            <span class="dependency-tag">Data Pipeline</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      </div>
+
+      <!-- Epic 2: Video Production Pipeline -->
+      <div class="epic-container">
+        <div class="epic-header">
+          <span class="epic-id">EPIC-002</span>
+          <span class="epic-title">Automated Video Production Pipeline</span>
+          <span class="epic-points">650 Points</span>
         </div>
-        
+
+        <div class="epic-details">
+          <div class="detail-card">
+            <div class="detail-label">Owner</div>
+            <div class="detail-value">Media Team Lead</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Sprints</div>
+            <div class="detail-value">S9-S16</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Priority</div>
+            <div class="detail-value">Critical Path</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Dependencies</div>
+            <div class="detail-value">AI Engine</div>
+          </div>
+        </div>
+
+        <div class="user-stories">
+          <div class="stories-header">User Stories</div>
+
+          <div class="story-card">
+            <div class="story-header">
+              <span class="story-id">US-010</span>
+              <span class="story-priority priority-high">HIGH</span>
+              <span class="story-points">21 Points</span>
+            </div>
+            <div class="story-content">
+              <div class="story-title">AI Image Generation Integration</div>
+              <div class="story-description">
+                As a content producer, I want AI-generated visuals that match my scripts so that
+                videos have engaging, relevant imagery without manual design work.
+              </div>
+            </div>
+            <div class="acceptance-criteria">
+              <div class="criteria-header">Acceptance Criteria:</div>
+              <ul class="criteria-list">
+                <li class="criteria-item">DALL-E 3 API integration complete</li>
+                <li class="criteria-item">Image generation under 15 seconds</li>
+                <li class="criteria-item">Style consistency across video</li>
+                <li class="criteria-item">Automatic image optimization for video</li>
+                <li class="criteria-item">Copyright-safe content generation</li>
+              </ul>
+            </div>
+            <div class="story-footer">
+              <span class="story-sprint">Sprint 9-10</span>
+              <div class="story-dependencies">
+                <span class="dependency-tag">Script Engine</span>
+                <span class="dependency-tag">Storage Layer</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="story-card">
+            <div class="story-header">
+              <span class="story-id">US-011</span>
+              <span class="story-priority priority-high">HIGH</span>
+              <span class="story-points">13 Points</span>
+            </div>
+            <div class="story-content">
+              <div class="story-title">Voice Synthesis Pipeline</div>
+              <div class="story-description">
+                As a channel manager, I want natural-sounding AI voices for narration so that videos
+                sound professional without hiring voice actors.
+              </div>
+            </div>
+            <div class="acceptance-criteria">
+              <div class="criteria-header">Acceptance Criteria:</div>
+              <ul class="criteria-list">
+                <li class="criteria-item">ElevenLabs integration functional</li>
+                <li class="criteria-item">5+ voice options per language</li>
+                <li class="criteria-item">Emotion and tone control</li>
+                <li class="criteria-item">Lip-sync compatibility data</li>
+              </ul>
+            </div>
+            <div class="story-footer">
+              <span class="story-sprint">Sprint 10</span>
+              <div class="story-dependencies">
+                <span class="dependency-tag">Audio Pipeline</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Epic 3: Channel Management -->
+      <div class="epic-container">
+        <div class="epic-header">
+          <span class="epic-id">EPIC-003</span>
+          <span class="epic-title">Multi-Channel Management System</span>
+          <span class="epic-points">500 Points</span>
+        </div>
+
+        <div class="epic-details">
+          <div class="detail-card">
+            <div class="detail-label">Owner</div>
+            <div class="detail-value">Channel Ops Lead</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Sprints</div>
+            <div class="detail-value">S15-S24</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Priority</div>
+            <div class="detail-value">High</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Dependencies</div>
+            <div class="detail-value">Production Pipeline</div>
+          </div>
+        </div>
+
+        <div class="user-stories">
+          <div class="stories-header">User Stories</div>
+
+          <div class="story-card">
+            <div class="story-header">
+              <span class="story-id">US-020</span>
+              <span class="story-priority priority-high">HIGH</span>
+              <span class="story-points">13 Points</span>
+            </div>
+            <div class="story-content">
+              <div class="story-title">Automated Channel Creation</div>
+              <div class="story-description">
+                As a business operator, I want to create and configure new channels automatically so
+                that I can scale to 100+ channels without manual setup.
+              </div>
+            </div>
+            <div class="acceptance-criteria">
+              <div class="criteria-header">Acceptance Criteria:</div>
+              <ul class="criteria-list">
+                <li class="criteria-item">YouTube channel creation API integrated</li>
+                <li class="criteria-item">Automatic branding application</li>
+                <li class="criteria-item">Channel settings optimization</li>
+                <li class="criteria-item">Niche-specific configuration</li>
+              </ul>
+            </div>
+            <div class="story-footer">
+              <span class="story-sprint">Sprint 17</span>
+              <div class="story-dependencies">
+                <span class="dependency-tag">YouTube API</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Epic 4: Analytics & Intelligence -->
+      <div class="epic-container">
+        <div class="epic-header">
+          <span class="epic-id">EPIC-004</span>
+          <span class="epic-title">Analytics & Business Intelligence Platform</span>
+          <span class="epic-points">450 Points</span>
+        </div>
+
+        <div class="epic-details">
+          <div class="detail-card">
+            <div class="detail-label">Owner</div>
+            <div class="detail-value">Data Team Lead</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Sprints</div>
+            <div class="detail-value">S16-S28</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Priority</div>
+            <div class="detail-value">High</div>
+          </div>
+          <div class="detail-card">
+            <div class="detail-label">Dependencies</div>
+            <div class="detail-value">Channel System</div>
+          </div>
+        </div>
+
+        <div class="user-stories">
+          <div class="stories-header">User Stories</div>
+
+          <div class="story-card">
+            <div class="story-header">
+              <span class="story-id">US-030</span>
+              <span class="story-priority priority-medium">MEDIUM</span>
+              <span class="story-points">8 Points</span>
+            </div>
+            <div class="story-content">
+              <div class="story-title">Real-time Performance Dashboard</div>
+              <div class="story-description">
+                As an executive, I want real-time visibility into all channel performance so that I
+                can make data-driven decisions quickly.
+              </div>
+            </div>
+            <div class="acceptance-criteria">
+              <div class="criteria-header">Acceptance Criteria:</div>
+              <ul class="criteria-list">
+                <li class="criteria-item">Dashboard loads in under 3 seconds</li>
+                <li class="criteria-item">Real-time data updates (5-min delay max)</li>
+                <li class="criteria-item">Mobile-responsive design</li>
+                <li class="criteria-item">Customizable KPI widgets</li>
+              </ul>
+            </div>
+            <div class="story-footer">
+              <span class="story-sprint">Sprint 18</span>
+              <div class="story-dependencies">
+                <span class="dependency-tag">Data Pipeline</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>
