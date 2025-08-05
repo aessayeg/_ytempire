@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "YTEmpire Development",
+      "Group": "YTEmpire",
+      "Host": "postgresql",
+      "Port": 5432,
+      "MaintenanceDB": "postgres",
+      "Username": "ytempire_user",
+      "SSLMode": "prefer",
+      "PassFile": "/tmp/pgpassfile"
+    }
+  }
+}
