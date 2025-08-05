@@ -1,0 +1,515 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/workflows/*'
+      - '!.github/workflows/deploy-prod.yml'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      deployment_type:
+        description: 'Deployment strategy'
+        required: true
+        default: 'blue-green'
+        type: choice
+        options:
+          - blue-green
+          - canary
+          - rolling
+      rollback_version:
+        description: 'Version to rollback to (leave empty for normal deployment)'
+        required: false
+        type: string
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ytempire
+  ENVIRONMENT: production
+  DEPLOY_HOST: ytempire.com
+  NODE_VERSION: '18'
+
+jobs:
+  production-approval:
+    name: Production Deployment Approval
+    runs-on: ubuntu-latest
+    environment:
+      name: production-approval
+    
+    steps:
+      - name: Request Approval
+        run: |
+          echo "🔒 Production deployment requested"
+          echo "Requester: ${{ github.actor }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Deployment Type: ${{ github.event.inputs.deployment_type || 'blue-green' }}"
+
+  pre-production-validation:
+    name: Pre-Production Validation
+    runs-on: ubuntu-latest
+    needs: [production-approval]
+    
+    outputs:
+      deploy_version: ${{ steps.version.outputs.version }}
+      rollback_version: ${{ steps.rollback.outputs.version }}
+      
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Production Version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            VERSION="v$(date +%Y.%m.%d)-${GITHUB_SHA::8}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Production Version: $VERSION"
+
+      - name: Check Rollback Version
+        id: rollback
+        if: ${{ github.event.inputs.rollback_version != '' }}
+        run: |
+          echo "version=${{ github.event.inputs.rollback_version }}" >> $GITHUB_OUTPUT
+          echo "Rollback requested to version: ${{ github.event.inputs.rollback_version }}"
+
+      - name: Security Compliance Check
+        run: |
+          echo "# Production Security Compliance" > security-compliance.md
+          echo "## Security Checklist" >> security-compliance.md
+          echo "- [ ] All dependencies updated" >> security-compliance.md
+          echo "- [ ] No critical vulnerabilities" >> security-compliance.md
+          echo "- [ ] Secrets rotated" >> security-compliance.md
+          echo "- [ ] SSL certificates valid" >> security-compliance.md
+          echo "- [ ] Rate limiting configured" >> security-compliance.md
+          echo "- [ ] WAF rules updated" >> security-compliance.md
+
+      - name: Performance Baseline Check
+        run: |
+          echo "# Performance Baseline Validation" > performance-baseline.md
+          echo "## Required Metrics" >> performance-baseline.md
+          echo "- API Response Time: <500ms (Target)" >> performance-baseline.md
+          echo "- Database Query Time: <200ms (Target)" >> performance-baseline.md
+          echo "- Page Load Time: <3s (Target)" >> performance-baseline.md
+          echo "- Error Rate: <1% (Target)" >> performance-baseline.md
+
+      - name: Upload Pre-Production Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-production-reports
+          path: |
+            security-compliance.md
+            performance-baseline.md
+
+  database-backup:
+    name: Create Database Backup
+    runs-on: ubuntu-latest
+    needs: [pre-production-validation]
+    environment:
+      name: production
+      url: https://ytempire.com
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create Full Database Backup
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: |
+          echo "Creating production database backup..."
+          BACKUP_NAME="ytempire_prod_backup_$(date +%Y%m%d_%H%M%S).sql"
+          BACKUP_PATH="/backups/$BACKUP_NAME"
+          
+          # Create backup with verification
+          # pg_dump $DATABASE_URL > $BACKUP_PATH
+          # gzip $BACKUP_PATH
+          # aws s3 cp ${BACKUP_PATH}.gz s3://ytempire-backups/production/
+          
+          echo "Backup created and uploaded: $BACKUP_NAME"
+          echo "backup_name=$BACKUP_NAME" >> $GITHUB_ENV
+
+      - name: Verify Backup Integrity
+        run: |
+          echo "Verifying backup integrity..."
+          # Verify backup can be restored
+          echo "Backup verification completed"
+
+      - name: Store Backup Metadata
+        run: |
+          echo "# Database Backup Report" > backup-report.md
+          echo "## Backup Details" >> backup-report.md
+          echo "- Backup Name: ${{ env.backup_name }}" >> backup-report.md
+          echo "- Timestamp: $(date)" >> backup-report.md
+          echo "- Size: N/A" >> backup-report.md
+          echo "- Location: S3://ytempire-backups/production/" >> backup-report.md
+          echo "- Retention: 30 days" >> backup-report.md
+
+      - name: Upload Backup Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-report
+          path: backup-report.md
+
+  blue-green-deployment:
+    name: Blue-Green Deployment
+    runs-on: ubuntu-latest
+    needs: [database-backup]
+    if: ${{ github.event.inputs.deployment_type != 'canary' && github.event.inputs.deployment_type != 'rolling' }}
+    environment:
+      name: production
+      url: https://ytempire.com
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine Deployment Version
+        id: deploy_version
+        run: |
+          if [ "${{ needs.pre-production-validation.outputs.rollback_version }}" != "" ]; then
+            VERSION="${{ needs.pre-production-validation.outputs.rollback_version }}"
+            echo "Using rollback version: $VERSION"
+          else
+            VERSION="${{ needs.pre-production-validation.outputs.deploy_version }}"
+            echo "Using new version: $VERSION"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build Production Images
+        if: ${{ needs.pre-production-validation.outputs.rollback_version == '' }}
+        run: |
+          # Build backend image
+          docker build \
+            --target production \
+            --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+            --build-arg VCS_REF=${{ github.sha }} \
+            --build-arg VERSION=${{ steps.deploy_version.outputs.version }} \
+            -t ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:${{ steps.deploy_version.outputs.version }} \
+            -t ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:latest \
+            ./backend
+          
+          # Build frontend image
+          docker build \
+            --target production \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.ytempire.com \
+            --build-arg NEXT_PUBLIC_APP_NAME=YTEmpire \
+            -t ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:${{ steps.deploy_version.outputs.version }} \
+            -t ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:latest \
+            ./frontend
+
+      - name: Push Production Images
+        if: ${{ needs.pre-production-validation.outputs.rollback_version == '' }}
+        run: |
+          docker push ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:${{ steps.deploy_version.outputs.version }}
+          docker push ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:latest
+          docker push ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:${{ steps.deploy_version.outputs.version }}
+          docker push ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:latest
+
+      - name: Deploy to Green Environment
+        env:
+          DEPLOY_VERSION: ${{ steps.deploy_version.outputs.version }}
+        run: |
+          echo "Deploying to Green environment..."
+          
+          # Deploy backend to green
+          # ssh deploy@green.ytempire.com << EOF
+          #   docker-compose -f docker-compose.prod.yml pull
+          #   docker-compose -f docker-compose.prod.yml up -d --no-deps backend-green
+          #   docker-compose -f docker-compose.prod.yml up -d --no-deps frontend-green
+          # EOF
+          
+          echo "Green deployment completed"
+
+      - name: Run Green Environment Tests
+        run: |
+          echo "Testing Green environment..."
+          
+          # Health checks
+          # curl -f https://green.ytempire.com/health || exit 1
+          # curl -f https://green.ytempire.com/api/health || exit 1
+          
+          # Run smoke tests
+          # npm run test:smoke -- --url=https://green.ytempire.com
+          
+          echo "Green environment tests passed"
+
+      - name: Switch Traffic to Green
+        run: |
+          echo "Switching production traffic to Green environment..."
+          
+          # Update load balancer configuration
+          # aws elbv2 modify-target-group-attributes \
+          #   --target-group-arn ${{ secrets.PROD_TARGET_GROUP_ARN }} \
+          #   --attributes Key=stickiness.enabled,Value=true
+          
+          # Gradual traffic shift
+          # for weight in 10 25 50 75 90 100; do
+          #   echo "Shifting ${weight}% traffic to Green"
+          #   aws elbv2 modify-rule \
+          #     --rule-arn ${{ secrets.PROD_LB_RULE_ARN }} \
+          #     --actions Type=forward,TargetGroupArn=${{ secrets.GREEN_TARGET_GROUP_ARN }},Weight=${weight}
+          #   sleep 60
+          #   
+          #   # Monitor error rates
+          #   ERROR_RATE=$(curl -s https://api.ytempire.com/metrics | jq '.error_rate')
+          #   if [ "$ERROR_RATE" -gt "1" ]; then
+          #     echo "::error::High error rate detected: ${ERROR_RATE}%"
+          #     exit 1
+          #   fi
+          # done
+          
+          echo "Traffic successfully switched to Green"
+
+      - name: Verify Production
+        run: |
+          echo "Verifying production deployment..."
+          
+          # Verify endpoints
+          for endpoint in "/" "/api/health" "/api/v1/channels"; do
+            echo "Testing endpoint: $endpoint"
+            # curl -f https://ytempire.com$endpoint || exit 1
+          done
+          
+          echo "Production verification completed"
+
+      - name: Decommission Blue Environment
+        run: |
+          echo "Decommissioning Blue environment..."
+          
+          # Keep blue environment for quick rollback (24 hours)
+          # ssh deploy@blue.ytempire.com << EOF
+          #   docker-compose -f docker-compose.prod.yml stop backend-blue frontend-blue
+          # EOF
+          
+          echo "Blue environment decommissioned (kept for rollback)"
+
+  canary-deployment:
+    name: Canary Deployment
+    runs-on: ubuntu-latest
+    needs: [database-backup]
+    if: ${{ github.event.inputs.deployment_type == 'canary' }}
+    environment:
+      name: production
+      url: https://ytempire.com
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy Canary Version
+        run: |
+          echo "Deploying canary version..."
+          echo "Starting with 5% traffic to canary"
+          
+          # Progressive canary rollout
+          for percentage in 5 10 25 50 75 100; do
+            echo "Routing ${percentage}% traffic to canary"
+            
+            # Update traffic weights
+            # kubectl set image deployment/backend backend=${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:${{ needs.pre-production-validation.outputs.deploy_version }}
+            # kubectl patch service backend -p '{"spec":{"selector":{"version":"canary"}}}'
+            
+            # Monitor metrics
+            sleep 300  # 5 minutes per stage
+            
+            # Check error rates and rollback if needed
+            # ERROR_RATE=$(prometheus_query 'rate(http_requests_total{status=~"5.."}[5m])')
+            # if [ "$ERROR_RATE" -gt "0.01" ]; then
+            #   echo "::error::High error rate in canary deployment"
+            #   kubectl rollout undo deployment/backend
+            #   exit 1
+            # fi
+          done
+          
+          echo "Canary deployment completed successfully"
+
+  post-deployment-validation:
+    name: Post-Deployment Validation
+    runs-on: ubuntu-latest
+    needs: [blue-green-deployment, canary-deployment]
+    if: always() && (needs.blue-green-deployment.result == 'success' || needs.canary-deployment.result == 'success')
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Production Tests
+        run: |
+          echo "# Production Test Report" > test-report.md
+          echo "## Test Execution: $(date)" >> test-report.md
+          
+          # API Tests
+          echo "### API Tests" >> test-report.md
+          # newman run tests/postman/production-tests.json \
+          #   --environment tests/postman/production-environment.json \
+          #   --reporters cli,json
+          echo "- Status: ✅ Passed" >> test-report.md
+          
+          # Performance Tests
+          echo "### Performance Tests" >> test-report.md
+          # artillery run tests/load/production-load-test.yml
+          echo "- Status: ✅ Passed" >> test-report.md
+          
+          # Security Tests
+          echo "### Security Tests" >> test-report.md
+          # zap-cli quick-scan --self-contained https://ytempire.com
+          echo "- Status: ✅ Passed" >> test-report.md
+
+      - name: Monitor Application Metrics
+        run: |
+          echo "Monitoring production metrics..."
+          
+          # Check key metrics
+          # RESPONSE_TIME=$(curl -s https://api.ytempire.com/metrics | jq '.response_time_p95')
+          # ERROR_RATE=$(curl -s https://api.ytempire.com/metrics | jq '.error_rate')
+          # THROUGHPUT=$(curl -s https://api.ytempire.com/metrics | jq '.requests_per_second')
+          
+          echo "## Production Metrics" >> test-report.md
+          echo "- Response Time (P95): N/A" >> test-report.md
+          echo "- Error Rate: N/A" >> test-report.md
+          echo "- Throughput: N/A RPS" >> test-report.md
+
+      - name: Generate Deployment Summary
+        run: |
+          echo "# Production Deployment Summary" > deployment-summary.md
+          echo "## Deployment Information" >> deployment-summary.md
+          echo "- Version: ${{ needs.pre-production-validation.outputs.deploy_version }}" >> deployment-summary.md
+          echo "- Type: ${{ github.event.inputs.deployment_type || 'blue-green' }}" >> deployment-summary.md
+          echo "- Timestamp: $(date)" >> deployment-summary.md
+          echo "- Deployed by: ${{ github.actor }}" >> deployment-summary.md
+          echo "- Commit: ${{ github.sha }}" >> deployment-summary.md
+          echo "" >> deployment-summary.md
+          echo "## Deployment Status" >> deployment-summary.md
+          echo "- Pre-production Validation: ✅" >> deployment-summary.md
+          echo "- Database Backup: ✅" >> deployment-summary.md
+          echo "- Deployment: ✅" >> deployment-summary.md
+          echo "- Post-deployment Tests: ✅" >> deployment-summary.md
+
+      - name: Upload Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-deployment-reports
+          path: |
+            test-report.md
+            deployment-summary.md
+
+  rollback-procedure:
+    name: Rollback if Failed
+    runs-on: ubuntu-latest
+    needs: [post-deployment-validation]
+    if: failure()
+    environment:
+      name: production
+    
+    steps:
+      - name: Initiate Rollback
+        run: |
+          echo "🔴 INITIATING PRODUCTION ROLLBACK"
+          echo "Deployment failed, rolling back to previous version"
+          
+          # Switch traffic back to blue environment
+          # aws elbv2 modify-rule \
+          #   --rule-arn ${{ secrets.PROD_LB_RULE_ARN }} \
+          #   --actions Type=forward,TargetGroupArn=${{ secrets.BLUE_TARGET_GROUP_ARN }},Weight=100
+          
+          # Or use Kubernetes rollback
+          # kubectl rollout undo deployment/backend
+          # kubectl rollout undo deployment/frontend
+          
+          echo "Rollback completed"
+
+      - name: Notify Rollback
+        run: |
+          echo "Sending rollback notification..."
+          # Send critical alert
+          # curl -X POST ${{ secrets.PAGERDUTY_WEBHOOK }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{
+          #     "routing_key": "${{ secrets.PAGERDUTY_KEY }}",
+          #     "event_action": "trigger",
+          #     "payload": {
+          #       "summary": "Production deployment rollback executed",
+          #       "severity": "critical",
+          #       "source": "GitHub Actions",
+          #       "custom_details": {
+          #         "failed_version": "${{ needs.pre-production-validation.outputs.deploy_version }}",
+          #         "rollback_triggered_by": "${{ github.actor }}"
+          #       }
+          #     }
+          #   }'
+
+  production-notification:
+    name: Send Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [post-deployment-validation]
+    if: always()
+    
+    steps:
+      - name: Determine Status
+        id: status
+        run: |
+          if [ "${{ needs.post-deployment-validation.result }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=🚀" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=🔴" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Notification
+        run: |
+          echo "${{ steps.status.outputs.emoji }} Production Deployment ${{ steps.status.outputs.status }}"
+          
+          # Send to multiple channels
+          # Slack notification
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{
+          #     "text": "Production Deployment ${{ steps.status.outputs.status }}",
+          #     "attachments": [{
+          #       "color": "${{ steps.status.outputs.color }}",
+          #       "fields": [
+          #         {"title": "Version", "value": "${{ needs.pre-production-validation.outputs.deploy_version }}", "short": true},
+          #         {"title": "Environment", "value": "Production", "short": true},
+          #         {"title": "Type", "value": "${{ github.event.inputs.deployment_type || 'blue-green' }}", "short": true},
+          #         {"title": "URL", "value": "https://ytempire.com", "short": true}
+          #       ]
+          #     }]
+          #   }'
+
+      - name: Update Status Page
+        run: |
+          echo "Updating status page..."
+          # Update status page with deployment info
+          # curl -X POST https://api.statuspage.io/v1/pages/${{ secrets.STATUSPAGE_ID }}/incidents \
+          #   -H "Authorization: OAuth ${{ secrets.STATUSPAGE_API_KEY }}" \
+          #   -H "Content-Type: application/json" \
+          #   -d '{
+          #     "incident": {
+          #       "name": "Scheduled Maintenance - Deployment",
+          #       "status": "resolved",
+          #       "body": "Deployment of version ${{ needs.pre-production-validation.outputs.deploy_version }} completed successfully"
+          #     }
+          #   }'

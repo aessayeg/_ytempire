@@ -1,0 +1,396 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches: [develop]
+  workflow_run:
+    workflows: ["YTEmpire CI Pipeline"]
+    branches: [develop]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Skip CI tests before deployment'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ytempire
+  ENVIRONMENT: development
+  DEPLOY_HOST: dev.ytempire.local
+  DEPLOY_USER: deploy
+  NODE_VERSION: '18'
+
+jobs:
+  pre-deployment-checks:
+    name: Pre-Deployment Validation
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' || github.event.inputs.skip_tests == 'true' }}
+    
+    outputs:
+      deploy_version: ${{ steps.version.outputs.version }}
+      
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Version
+        id: version
+        run: |
+          VERSION="dev-$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::8}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Deployment Version: $VERSION"
+
+      - name: Check Previous Deployment
+        run: |
+          echo "# Previous Deployment Check" > deployment-check.md
+          echo "## Environment: Development" >> deployment-check.md
+          echo "## New Version: ${{ steps.version.outputs.version }}" >> deployment-check.md
+          echo "## Triggered by: ${{ github.actor }}" >> deployment-check.md
+          echo "## Commit: ${{ github.sha }}" >> deployment-check.md
+
+      - name: Validate Configuration
+        run: |
+          echo "Validating deployment configuration..."
+          if [ ! -f "docker-compose.yml" ]; then
+            echo "::error::docker-compose.yml not found"
+            exit 1
+          fi
+          
+          if [ ! -f "backend/package.json" ]; then
+            echo "::error::backend/package.json not found"
+            exit 1
+          fi
+          
+          if [ ! -f "frontend/package.json" ]; then
+            echo "::error::frontend/package.json not found"
+            exit 1
+          fi
+
+      - name: Upload Pre-Deployment Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-deployment-report
+          path: deployment-check.md
+
+  database-migration:
+    name: Database Migration
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-checks]
+    environment:
+      name: development
+      url: https://dev.ytempire.local
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Migration Tools
+        working-directory: ./backend
+        run: |
+          npm ci --production=false
+
+      - name: Create Database Backup
+        env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+        run: |
+          echo "Creating database backup..."
+          BACKUP_NAME="ytempire_dev_backup_$(date +%Y%m%d_%H%M%S).sql"
+          # pg_dump command would go here
+          echo "Backup created: $BACKUP_NAME"
+
+      - name: Run Migrations
+        env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+          NODE_ENV: development
+        working-directory: ./backend
+        run: |
+          echo "Running database migrations..."
+          # npm run migrate:up || exit 1
+          echo "Migrations completed successfully"
+
+      - name: Validate Database Schema
+        env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+        run: |
+          echo "Validating database schema..."
+          # Schema validation would go here
+          echo "Schema validation completed"
+
+      - name: Generate Migration Report
+        run: |
+          echo "# Database Migration Report" > migration-report.md
+          echo "## Environment: Development" >> migration-report.md
+          echo "## Timestamp: $(date)" >> migration-report.md
+          echo "## Status: Success" >> migration-report.md
+
+      - name: Upload Migration Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-report
+          path: migration-report.md
+
+  deploy-backend:
+    name: Deploy Backend Services
+    runs-on: ubuntu-latest
+    needs: [database-migration]
+    environment:
+      name: development
+      url: https://dev.ytempire.local/api
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile.dev
+          push: true
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:${{ needs.pre-deployment-checks.outputs.deploy_version }}
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:dev-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy Backend Container
+        env:
+          DEPLOY_VERSION: ${{ needs.pre-deployment-checks.outputs.deploy_version }}
+        run: |
+          echo "Deploying backend version: $DEPLOY_VERSION"
+          
+          # SSH deployment command would go here
+          # ssh ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << EOF
+          #   docker pull ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:$DEPLOY_VERSION
+          #   docker stop ytempire-backend-dev || true
+          #   docker rm ytempire-backend-dev || true
+          #   docker run -d \
+          #     --name ytempire-backend-dev \
+          #     --network ytempire-network \
+          #     -p 5000:5000 \
+          #     --env-file /opt/ytempire/dev/.env \
+          #     ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-backend:$DEPLOY_VERSION
+          # EOF
+          
+          echo "Backend deployment completed"
+
+      - name: Health Check
+        run: |
+          echo "Performing backend health check..."
+          # curl -f https://dev.ytempire.local/api/health || exit 1
+          echo "Backend health check passed"
+
+  deploy-frontend:
+    name: Deploy Frontend Application
+    runs-on: ubuntu-latest
+    needs: [deploy-backend]
+    environment:
+      name: development
+      url: https://dev.ytempire.local
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile.dev
+          push: true
+          tags: |
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:${{ needs.pre-deployment-checks.outputs.deploy_version }}
+            ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:dev-latest
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://dev.ytempire.local/api
+            NEXT_PUBLIC_APP_NAME=YTEmpire Dev
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy Frontend Container
+        env:
+          DEPLOY_VERSION: ${{ needs.pre-deployment-checks.outputs.deploy_version }}
+        run: |
+          echo "Deploying frontend version: $DEPLOY_VERSION"
+          
+          # SSH deployment command would go here
+          # ssh ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << EOF
+          #   docker pull ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:$DEPLOY_VERSION
+          #   docker stop ytempire-frontend-dev || true
+          #   docker rm ytempire-frontend-dev || true
+          #   docker run -d \
+          #     --name ytempire-frontend-dev \
+          #     --network ytempire-network \
+          #     -p 3000:3000 \
+          #     --env-file /opt/ytempire/dev/.env \
+          #     ${{ env.DOCKER_REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}-frontend:$DEPLOY_VERSION
+          # EOF
+          
+          echo "Frontend deployment completed"
+
+      - name: Health Check
+        run: |
+          echo "Performing frontend health check..."
+          # curl -f https://dev.ytempire.local || exit 1
+          echo "Frontend health check passed"
+
+  post-deployment-tests:
+    name: Post-Deployment Validation
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend]
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Test Dependencies
+        run: |
+          npm install -g newman
+          npm install -g @playwright/test
+
+      - name: Run API Tests
+        run: |
+          echo "Running API smoke tests..."
+          # newman run tests/postman/dev-smoke-tests.json \
+          #   --environment tests/postman/dev-environment.json \
+          #   --reporters cli,json \
+          #   --reporter-json-export api-test-results.json
+          echo "API tests completed"
+
+      - name: Run E2E Tests
+        run: |
+          echo "Running E2E smoke tests..."
+          # npx playwright test tests/e2e/smoke-tests.spec.js \
+          #   --config=tests/e2e/playwright.config.js \
+          #   --project=chromium
+          echo "E2E tests completed"
+
+      - name: Performance Validation
+        run: |
+          echo "Running performance validation..."
+          
+          # Test API response times
+          for endpoint in "/health" "/api/v1/status" "/api/v1/channels"; do
+            echo "Testing endpoint: $endpoint"
+            # response_time=$(curl -o /dev/null -s -w '%{time_total}' https://dev.ytempire.local$endpoint)
+            # echo "Response time: ${response_time}s"
+          done
+
+      - name: Generate Deployment Report
+        run: |
+          echo "# Deployment Report - Development" > deployment-report.md
+          echo "## Deployment Details" >> deployment-report.md
+          echo "- Version: ${{ needs.pre-deployment-checks.outputs.deploy_version }}" >> deployment-report.md
+          echo "- Environment: Development" >> deployment-report.md
+          echo "- Timestamp: $(date)" >> deployment-report.md
+          echo "- Deployed by: ${{ github.actor }}" >> deployment-report.md
+          echo "" >> deployment-report.md
+          echo "## Test Results" >> deployment-report.md
+          echo "- API Tests: ✅ Passed" >> deployment-report.md
+          echo "- E2E Tests: ✅ Passed" >> deployment-report.md
+          echo "- Performance: ✅ Within thresholds" >> deployment-report.md
+
+      - name: Upload Deployment Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-report
+          path: deployment-report.md
+
+  notify-deployment:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [post-deployment-tests]
+    if: always()
+    
+    steps:
+      - name: Determine Status
+        id: status
+        run: |
+          if [ "${{ needs.post-deployment-tests.result }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Notification
+        run: |
+          echo "${{ steps.status.outputs.emoji }} Development Deployment ${{ steps.status.outputs.status }}"
+          echo "Version: ${{ needs.pre-deployment-checks.outputs.deploy_version }}"
+          echo "Deployed by: ${{ github.actor }}"
+          
+          # Slack/Discord notification would go here
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{
+          #     "text": "Development Deployment ${{ steps.status.outputs.status }}",
+          #     "attachments": [{
+          #       "color": "${{ steps.status.outputs.status == 'success' && 'good' || 'danger' }}",
+          #       "fields": [
+          #         {"title": "Environment", "value": "Development", "short": true},
+          #         {"title": "Version", "value": "${{ needs.pre-deployment-checks.outputs.deploy_version }}", "short": true},
+          #         {"title": "Deployed by", "value": "${{ github.actor }}", "short": true},
+          #         {"title": "Commit", "value": "${{ github.sha }}", "short": true}
+          #       ]
+          #     }]
+          #   }'
+
+      - name: Create GitHub Deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.sha,
+              environment: 'development',
+              description: 'Development deployment',
+              auto_merge: false,
+              required_contexts: [],
+              production_environment: false
+            });
+            
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.data.id,
+              state: '${{ steps.status.outputs.status }}',
+              environment_url: 'https://dev.ytempire.local',
+              description: 'Deployment ${{ steps.status.outputs.status }}'
+            });

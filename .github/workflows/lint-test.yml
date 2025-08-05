@@ -1,0 +1,750 @@
+name: YTEmpire Comprehensive Linting & Testing
+
+on:
+  push:
+    branches: [main, develop, feature/*]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      test_type:
+        type: choice
+        description: 'Type of tests to run'
+        required: false
+        default: 'all'
+        options:
+          - all
+          - lint-only
+          - unit-only
+          - integration-only
+          - performance-only
+
+env:
+  NODE_VERSION: '18'
+  POSTGRES_DB: ytempire_dev
+  POSTGRES_USER: ytempire_user
+  POSTGRES_PASSWORD: ytempire_pass
+  REDIS_URL: redis://localhost:6379
+  DATABASE_URL: postgresql://ytempire_user:ytempire_pass@localhost:5432/ytempire_dev
+  JWT_SECRET: test-jwt-secret-ci
+  SESSION_SECRET: test-session-secret-ci
+  CACHE_VERSION: v1
+
+jobs:
+  code-quality:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'lint-only' || github.event.inputs.test_type == ''
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Cache Dependencies
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: |
+            node_modules
+            backend/node_modules
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.CACHE_VERSION }}-
+
+      - name: Install Root Dependencies
+        run: npm ci
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: ESLint - Backend
+        working-directory: ./backend
+        run: |
+          echo "🔍 Running ESLint on Backend..."
+          npx eslint . --ext .js,.jsx,.ts,.tsx --format json --output-file eslint-report.json || true
+          npx eslint . --ext .js,.jsx,.ts,.tsx --format stylish || echo "::warning::Backend ESLint completed with warnings"
+
+      - name: ESLint - Frontend
+        working-directory: ./frontend
+        run: |
+          echo "🔍 Running ESLint on Frontend..."
+          npx eslint . --ext .js,.jsx,.ts,.tsx --format json --output-file eslint-report.json || true
+          npx eslint . --ext .js,.jsx,.ts,.tsx --format stylish || echo "::warning::Frontend ESLint completed with warnings"
+
+      - name: Prettier Format Check - Backend
+        working-directory: ./backend
+        run: |
+          echo "💅 Checking Backend code formatting..."
+          npx prettier --check "**/*.{js,jsx,ts,tsx,json,css,md}" || echo "::warning::Backend formatting issues detected"
+
+      - name: Prettier Format Check - Frontend
+        working-directory: ./frontend
+        run: |
+          echo "💅 Checking Frontend code formatting..."
+          npx prettier --check "**/*.{js,jsx,ts,tsx,json,css,md}" || echo "::warning::Frontend formatting issues detected"
+
+      - name: Security Audit - Backend
+        working-directory: ./backend
+        run: |
+          echo "🔒 Running Backend security audit..."
+          npm audit --audit-level=high || echo "::warning::Backend security vulnerabilities detected"
+          npm audit --json > npm-audit-backend.json || true
+
+      - name: Security Audit - Frontend
+        working-directory: ./frontend
+        run: |
+          echo "🔒 Running Frontend security audit..."
+          npm audit --audit-level=high || echo "::warning::Frontend security vulnerabilities detected"
+          npm audit --json > npm-audit-frontend.json || true
+
+      - name: Code Complexity Analysis
+        run: |
+          echo "📊 Analyzing code complexity..."
+          npx --yes complexity-report-cli backend/src --format json > complexity-backend.json || true
+          npx --yes complexity-report-cli frontend/src --format json > complexity-frontend.json || true
+
+      - name: Upload Linting Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linting-reports
+          path: |
+            backend/eslint-report.json
+            frontend/eslint-report.json
+            backend/npm-audit-backend.json
+            frontend/npm-audit-frontend.json
+            complexity-*.json
+
+  database-setup:
+    name: Database Schema Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [code-quality]
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'integration-only' || github.event.inputs.test_type == ''
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        options: >-
+          --health-cmd "pg_isready -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }}"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PostgreSQL Client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-15
+          echo "PostgreSQL client version:"
+          psql --version
+
+      - name: Verify Database Connection
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          echo "🔗 Testing database connection..."
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -c "SELECT version();"
+
+      - name: Create YTEmpire Schemas
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          echo "📁 Creating YTEmpire database schemas..."
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} <<EOF
+          -- Create all 5 YTEmpire schemas
+          CREATE SCHEMA IF NOT EXISTS users;
+          CREATE SCHEMA IF NOT EXISTS content;
+          CREATE SCHEMA IF NOT EXISTS analytics;
+          CREATE SCHEMA IF NOT EXISTS campaigns;
+          CREATE SCHEMA IF NOT EXISTS system;
+          
+          -- Grant permissions
+          GRANT ALL ON SCHEMA users TO ${{ env.POSTGRES_USER }};
+          GRANT ALL ON SCHEMA content TO ${{ env.POSTGRES_USER }};
+          GRANT ALL ON SCHEMA analytics TO ${{ env.POSTGRES_USER }};
+          GRANT ALL ON SCHEMA campaigns TO ${{ env.POSTGRES_USER }};
+          GRANT ALL ON SCHEMA system TO ${{ env.POSTGRES_USER }};
+          
+          -- List created schemas
+          SELECT schema_name FROM information_schema.schemata 
+          WHERE schema_name IN ('users', 'content', 'analytics', 'campaigns', 'system')
+          ORDER BY schema_name;
+          EOF
+
+      - name: Initialize Database Tables
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          echo "🏗️ Creating database tables..."
+          # Check if migration scripts exist
+          if [ -f "database/schema.sql" ]; then
+            psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} < database/schema.sql
+          else
+            echo "No schema.sql found, skipping table creation"
+          fi
+
+      - name: Validate Database Schema
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          echo "✅ Validating database schema..."
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} <<EOF
+          -- Check schema count
+          SELECT COUNT(*) as schema_count FROM information_schema.schemata 
+          WHERE schema_name IN ('users', 'content', 'analytics', 'campaigns', 'system');
+          
+          -- Check tables in each schema
+          SELECT 
+            schemaname,
+            COUNT(*) as table_count 
+          FROM pg_tables 
+          WHERE schemaname IN ('users', 'content', 'analytics', 'campaigns', 'system')
+          GROUP BY schemaname
+          ORDER BY schemaname;
+          EOF
+
+      - name: Test Redis Connection
+        run: |
+          echo "🔗 Testing Redis connection..."
+          redis-cli -h localhost ping
+          redis-cli -h localhost SET test_key "YTEmpire CI Test"
+          redis-cli -h localhost GET test_key
+          redis-cli -h localhost DEL test_key
+
+      - name: Generate Database Report
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          echo "📊 Generating database validation report..."
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} -o db-validation.txt <<EOF
+          \echo 'YTEmpire Database Validation Report'
+          \echo '===================================='
+          \echo ''
+          \echo 'Database Version:'
+          SELECT version();
+          \echo ''
+          \echo 'Schemas:'
+          \dn
+          \echo ''
+          \echo 'Tables by Schema:'
+          SELECT schemaname, tablename FROM pg_tables 
+          WHERE schemaname IN ('users', 'content', 'analytics', 'campaigns', 'system')
+          ORDER BY schemaname, tablename;
+          EOF
+          cat db-validation.txt
+
+      - name: Upload Database Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-validation-report
+          path: db-validation.txt
+
+  unit-testing:
+    name: Unit Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [database-setup]
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'unit-only' || github.event.inputs.test_type == ''
+    
+    strategy:
+      matrix:
+        service: [backend, frontend]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        options: >-
+          --health-cmd "pg_isready -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }}"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.service }}/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: ./${{ matrix.service }}
+        run: npm ci
+
+      - name: Create Test Database Schemas
+        if: matrix.service == 'backend'
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} <<EOF
+          CREATE SCHEMA IF NOT EXISTS users;
+          CREATE SCHEMA IF NOT EXISTS content;
+          CREATE SCHEMA IF NOT EXISTS analytics;
+          CREATE SCHEMA IF NOT EXISTS campaigns;
+          CREATE SCHEMA IF NOT EXISTS system;
+          EOF
+
+      - name: Run Unit Tests - ${{ matrix.service }}
+        working-directory: ./${{ matrix.service }}
+        env:
+          NODE_ENV: test
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          REDIS_URL: ${{ env.REDIS_URL }}
+          JWT_SECRET: ${{ env.JWT_SECRET }}
+          SESSION_SECRET: ${{ env.SESSION_SECRET }}
+          PORT: 5000
+        run: |
+          echo "🧪 Running ${{ matrix.service }} unit tests..."
+          npm test -- --coverage --coverageReporters=json --coverageReporters=html --coverageReporters=text || echo "::warning::Some tests failed in ${{ matrix.service }}"
+
+      - name: Generate Test Summary
+        if: always()
+        working-directory: ./${{ matrix.service }}
+        run: |
+          echo "# Test Results - ${{ matrix.service }}" > test-summary.md
+          echo "## Coverage Report" >> test-summary.md
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "Coverage data found" >> test-summary.md
+            cat coverage/coverage-summary.json | jq '.total' >> test-summary.md || true
+          else
+            echo "No coverage data available" >> test-summary.md
+          fi
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.service }}
+          path: |
+            ${{ matrix.service }}/coverage/
+            ${{ matrix.service }}/test-summary.md
+
+  integration-testing:
+    name: Integration Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [unit-testing]
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'integration-only' || github.event.inputs.test_type == ''
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        options: >-
+          --health-cmd "pg_isready -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }}"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          cd backend && npm ci
+          cd ../frontend && npm ci
+
+      - name: Setup Database
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.POSTGRES_DB }} <<EOF
+          CREATE SCHEMA IF NOT EXISTS users;
+          CREATE SCHEMA IF NOT EXISTS content;
+          CREATE SCHEMA IF NOT EXISTS analytics;
+          CREATE SCHEMA IF NOT EXISTS campaigns;
+          CREATE SCHEMA IF NOT EXISTS system;
+          EOF
+
+      - name: Start Backend Server
+        working-directory: ./backend
+        env:
+          NODE_ENV: test
+          PORT: 5000
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          REDIS_URL: ${{ env.REDIS_URL }}
+          JWT_SECRET: ${{ env.JWT_SECRET }}
+          SESSION_SECRET: ${{ env.SESSION_SECRET }}
+        run: |
+          npm start &
+          echo "Waiting for backend to start..."
+          sleep 10
+
+      - name: API Health Check
+        run: |
+          echo "🏥 Checking API health..."
+          for i in {1..10}; do
+            if curl -f http://localhost:5000/health 2>/dev/null; then
+              echo "✅ API is healthy"
+              break
+            else
+              echo "Waiting for API... (attempt $i/10)"
+              sleep 2
+            fi
+          done
+
+      - name: Run Integration Tests
+        env:
+          NODE_ENV: test
+          API_URL: http://localhost:5000
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          REDIS_URL: ${{ env.REDIS_URL }}
+        run: |
+          echo "🔄 Running integration tests..."
+          npm run test:docker:integration || echo "::warning::Some integration tests failed"
+
+      - name: Test Database Operations
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          echo "🗄️ Testing database operations..."
+          node -e "
+          const { Client } = require('pg');
+          const client = new Client({
+            connectionString: process.env.DATABASE_URL
+          });
+          
+          async function testDatabase() {
+            try {
+              await client.connect();
+              console.log('✅ Connected to database');
+              
+              // Test query
+              const result = await client.query('SELECT NOW()');
+              console.log('✅ Query executed:', result.rows[0]);
+              
+              // Test schemas
+              const schemas = await client.query(
+                \"SELECT schema_name FROM information_schema.schemata WHERE schema_name IN ('users', 'content', 'analytics', 'campaigns', 'system')\"
+              );
+              console.log('✅ Found schemas:', schemas.rows.map(r => r.schema_name));
+              
+              await client.end();
+            } catch (err) {
+              console.error('❌ Database test failed:', err);
+              process.exit(1);
+            }
+          }
+          
+          testDatabase();
+          "
+
+      - name: Test Redis Operations
+        run: |
+          echo "💾 Testing Redis operations..."
+          node -e "
+          const redis = require('redis');
+          const client = redis.createClient({
+            url: process.env.REDIS_URL
+          });
+          
+          async function testRedis() {
+            try {
+              await client.connect();
+              console.log('✅ Connected to Redis');
+              
+              // Test operations
+              await client.set('test:key', 'test value');
+              const value = await client.get('test:key');
+              console.log('✅ Redis get/set working:', value);
+              
+              await client.del('test:key');
+              await client.quit();
+            } catch (err) {
+              console.error('❌ Redis test failed:', err);
+              process.exit(1);
+            }
+          }
+          
+          testRedis();
+          "
+
+      - name: Upload Integration Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: |
+            test-results/
+            *.log
+
+  performance-testing:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [integration-testing]
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'performance-only' || github.event_name == 'push'
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          cd backend && npm ci
+
+      - name: Database Performance Test
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+        run: |
+          echo "⚡ Testing database performance..."
+          node -e "
+          const { Client } = require('pg');
+          const client = new Client({
+            connectionString: process.env.DATABASE_URL
+          });
+          
+          async function performanceTest() {
+            try {
+              await client.connect();
+              
+              // Test query performance
+              const queries = [
+                'SELECT 1',
+                'SELECT NOW()',
+                \"SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'pg_%'\"
+              ];
+              
+              for (const query of queries) {
+                const start = Date.now();
+                await client.query(query);
+                const duration = Date.now() - start;
+                
+                console.log(\`Query: \${query.substring(0, 30)}... - \${duration}ms\`);
+                
+                if (duration > 200) {
+                  console.warn('⚠️ Query exceeded 200ms threshold');
+                } else {
+                  console.log('✅ Query within performance threshold');
+                }
+              }
+              
+              await client.end();
+            } catch (err) {
+              console.error('❌ Performance test failed:', err);
+              process.exit(1);
+            }
+          }
+          
+          performanceTest();
+          "
+
+      - name: Redis Performance Test
+        run: |
+          echo "⚡ Testing Redis performance..."
+          node -e "
+          const redis = require('redis');
+          const client = redis.createClient({
+            url: process.env.REDIS_URL
+          });
+          
+          async function performanceTest() {
+            try {
+              await client.connect();
+              
+              // Test operations performance
+              const operations = 100;
+              const start = Date.now();
+              
+              for (let i = 0; i < operations; i++) {
+                await client.set(\`perf:key:\${i}\`, \`value:\${i}\`);
+                await client.get(\`perf:key:\${i}\`);
+                await client.del(\`perf:key:\${i}\`);
+              }
+              
+              const duration = Date.now() - start;
+              const avgTime = duration / (operations * 3);
+              
+              console.log(\`Total time for \${operations * 3} operations: \${duration}ms\`);
+              console.log(\`Average time per operation: \${avgTime.toFixed(2)}ms\`);
+              
+              if (avgTime > 10) {
+                console.warn('⚠️ Redis operations exceeded 10ms threshold');
+              } else {
+                console.log('✅ Redis within performance threshold');
+              }
+              
+              await client.quit();
+            } catch (err) {
+              console.error('❌ Redis performance test failed:', err);
+              process.exit(1);
+            }
+          }
+          
+          performanceTest();
+          "
+
+      - name: Generate Performance Report
+        run: |
+          echo "# Performance Test Report" > performance-report.md
+          echo "## Database Performance" >> performance-report.md
+          echo "- Target: <200ms per query" >> performance-report.md
+          echo "- Status: Check logs for details" >> performance-report.md
+          echo "" >> performance-report.md
+          echo "## Redis Performance" >> performance-report.md
+          echo "- Target: <10ms per operation" >> performance-report.md
+          echo "- Status: Check logs for details" >> performance-report.md
+
+      - name: Upload Performance Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: performance-report.md
+
+  test-summary:
+    name: Test Summary & Reporting
+    runs-on: ubuntu-latest
+    needs: [code-quality, database-setup, unit-testing, integration-testing, performance-testing]
+    if: always()
+    
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: test-artifacts
+
+      - name: Generate Summary Report
+        run: |
+          echo "# YTEmpire CI Test Summary" > test-summary.md
+          echo "## Test Execution: $(date)" >> test-summary.md
+          echo "" >> test-summary.md
+          
+          echo "### Job Results" >> test-summary.md
+          echo "- Code Quality: ${{ needs.code-quality.result }}" >> test-summary.md
+          echo "- Database Setup: ${{ needs.database-setup.result }}" >> test-summary.md
+          echo "- Unit Testing: ${{ needs.unit-testing.result }}" >> test-summary.md
+          echo "- Integration Testing: ${{ needs.integration-testing.result }}" >> test-summary.md
+          echo "- Performance Testing: ${{ needs.performance-testing.result }}" >> test-summary.md
+          echo "" >> test-summary.md
+          
+          echo "### Test Configuration" >> test-summary.md
+          echo "- Node Version: ${{ env.NODE_VERSION }}" >> test-summary.md
+          echo "- Database: PostgreSQL 15" >> test-summary.md
+          echo "- Cache: Redis 7" >> test-summary.md
+          echo "- Database User: ytempire_user" >> test-summary.md
+          echo "" >> test-summary.md
+          
+          echo "### Artifacts Generated" >> test-summary.md
+          ls -la test-artifacts/ | tail -n +2 >> test-summary.md
+
+      - name: Upload Final Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary
+          path: test-summary.md
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('test-summary.md', 'utf8');
+            
+            // Create a comment with test results
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });

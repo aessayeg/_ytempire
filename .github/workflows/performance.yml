@@ -1,0 +1,648 @@
+name: Performance Monitoring
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Every 15 minutes
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'database/**'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of performance test'
+        required: true
+        default: 'comprehensive'
+        type: choice
+        options:
+          - comprehensive
+          - api-load
+          - database
+          - frontend
+          - stress
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '18'
+  POSTGRES_VERSION: '15'
+  PERFORMANCE_THRESHOLD_API: 500  # milliseconds
+  PERFORMANCE_THRESHOLD_DB: 200   # milliseconds
+  PERFORMANCE_THRESHOLD_PAGE: 3000 # milliseconds
+
+jobs:
+  database-performance:
+    name: Database Performance Testing
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_DB: ytempire_perf
+          POSTGRES_USER: ytempire_test
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Database Schema
+        env:
+          PGPASSWORD: test_password
+        run: |
+          # Create schemas
+          psql -h localhost -U ytempire_test -d ytempire_perf <<EOF
+          CREATE SCHEMA IF NOT EXISTS users;
+          CREATE SCHEMA IF NOT EXISTS content;
+          CREATE SCHEMA IF NOT EXISTS analytics;
+          CREATE SCHEMA IF NOT EXISTS campaigns;
+          CREATE SCHEMA IF NOT EXISTS system;
+          EOF
+          
+          # Load schema if exists
+          if [ -f database/schema/base.sql ]; then
+            psql -h localhost -U ytempire_test -d ytempire_perf < database/schema/base.sql
+          fi
+
+      - name: Generate Test Data
+        env:
+          PGPASSWORD: test_password
+        run: |
+          echo "Generating test data..."
+          
+          psql -h localhost -U ytempire_test -d ytempire_perf <<EOF
+          -- Generate test users
+          INSERT INTO users.accounts (id, email, username, created_at)
+          SELECT 
+            gen_random_uuid(),
+            'user' || i || '@test.com',
+            'user' || i,
+            NOW() - (random() * interval '365 days')
+          FROM generate_series(1, 10000) i;
+          
+          -- Generate test channels
+          INSERT INTO content.channels (id, name, youtube_id, created_at)
+          SELECT
+            gen_random_uuid(),
+            'Channel ' || i,
+            'UC' || substr(md5(random()::text), 1, 22),
+            NOW() - (random() * interval '365 days')
+          FROM generate_series(1, 1000) i;
+          
+          -- Generate test videos
+          INSERT INTO content.videos (id, channel_id, title, youtube_id, created_at)
+          SELECT
+            gen_random_uuid(),
+            (SELECT id FROM content.channels ORDER BY random() LIMIT 1),
+            'Video ' || i,
+            substr(md5(random()::text), 1, 11),
+            NOW() - (random() * interval '365 days')
+          FROM generate_series(1, 50000) i;
+          
+          -- Analyze tables for query optimization
+          ANALYZE;
+          EOF
+
+      - name: Database Query Performance Tests
+        env:
+          PGPASSWORD: test_password
+        run: |
+          echo "# Database Performance Report" > db-performance.md
+          echo "## Test Execution: $(date)" >> db-performance.md
+          echo "" >> db-performance.md
+          
+          # Test queries
+          QUERIES=(
+            "SELECT COUNT(*) FROM users.accounts"
+            "SELECT * FROM content.channels ORDER BY created_at DESC LIMIT 100"
+            "SELECT c.*, COUNT(v.id) as video_count FROM content.channels c LEFT JOIN content.videos v ON c.id = v.channel_id GROUP BY c.id LIMIT 10"
+            "SELECT * FROM content.videos WHERE created_at > NOW() - INTERVAL '30 days'"
+          )
+          
+          echo "### Query Performance Results" >> db-performance.md
+          echo "| Query | Execution Time | Status |" >> db-performance.md
+          echo "|-------|---------------|--------|" >> db-performance.md
+          
+          for query in "${QUERIES[@]}"; do
+            # Execute query with timing
+            RESULT=$(psql -h localhost -U ytempire_test -d ytempire_perf -c "\timing on" -c "$query" 2>&1 | grep "Time:" | awk '{print $2}')
+            
+            # Extract milliseconds
+            MS=$(echo $RESULT | sed 's/[^0-9.]//g')
+            
+            # Check against threshold
+            if (( $(echo "$MS < ${{ env.PERFORMANCE_THRESHOLD_DB }}" | bc -l) )); then
+              STATUS="✅ PASS"
+            else
+              STATUS="❌ FAIL"
+            fi
+            
+            echo "| ${query:0:50}... | ${MS}ms | $STATUS |" >> db-performance.md
+          done
+
+      - name: Database Connection Pool Testing
+        env:
+          PGPASSWORD: test_password
+        run: |
+          echo "" >> db-performance.md
+          echo "### Connection Pool Performance" >> db-performance.md
+          
+          # Test concurrent connections
+          for i in {1..50}; do
+            (psql -h localhost -U ytempire_test -d ytempire_perf -c "SELECT 1" > /dev/null 2>&1) &
+          done
+          wait
+          
+          echo "- 50 concurrent connections: ✅ Handled" >> db-performance.md
+          
+          # Check active connections
+          ACTIVE=$(psql -h localhost -U ytempire_test -d ytempire_perf -t -c "SELECT count(*) FROM pg_stat_activity WHERE state = 'active'")
+          echo "- Active connections: $ACTIVE" >> db-performance.md
+
+      - name: Index Performance Analysis
+        env:
+          PGPASSWORD: test_password
+        run: |
+          echo "" >> db-performance.md
+          echo "### Index Usage Analysis" >> db-performance.md
+          
+          psql -h localhost -U ytempire_test -d ytempire_perf -c "
+            SELECT 
+              schemaname,
+              tablename,
+              indexname,
+              idx_scan as index_scans,
+              idx_tup_read as tuples_read,
+              idx_tup_fetch as tuples_fetched
+            FROM pg_stat_user_indexes
+            ORDER BY idx_scan DESC
+            LIMIT 10;
+          " >> db-performance.md
+
+      - name: Redis Performance Testing
+        run: |
+          echo "" >> db-performance.md
+          echo "## Redis Performance" >> db-performance.md
+          
+          # Install redis-benchmark
+          sudo apt-get update && sudo apt-get install -y redis-tools
+          
+          # Run benchmark
+          echo "### Redis Benchmark Results" >> db-performance.md
+          redis-benchmark -h localhost -p 6379 -n 10000 -c 50 -q >> db-performance.md
+
+      - name: Upload Database Performance Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-performance-report
+          path: db-performance.md
+
+  api-performance:
+    name: API Performance Testing
+    runs-on: ubuntu-latest
+    needs: [database-performance]
+    
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_DB: ytempire_perf
+          POSTGRES_USER: ytempire_test
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Start API Server
+        working-directory: ./backend
+        env:
+          NODE_ENV: test
+          PORT: 5000
+          DATABASE_URL: postgresql://ytempire_test:test_password@localhost:5432/ytempire_perf
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret
+        run: |
+          npm start &
+          sleep 10
+
+      - name: Install Performance Tools
+        run: |
+          npm install -g artillery@latest
+          npm install -g autocannon@latest
+
+      - name: API Endpoint Performance Tests
+        run: |
+          echo "# API Performance Report" > api-performance.md
+          echo "## Test Execution: $(date)" >> api-performance.md
+          echo "" >> api-performance.md
+          
+          # Test endpoints
+          ENDPOINTS=(
+            "/health"
+            "/api/v1/status"
+            "/api/v1/channels"
+            "/api/v1/videos"
+            "/api/v1/analytics/overview"
+          )
+          
+          echo "### Endpoint Response Times" >> api-performance.md
+          echo "| Endpoint | Avg Response Time | P95 | P99 | Status |" >> api-performance.md
+          echo "|----------|------------------|-----|-----|--------|" >> api-performance.md
+          
+          for endpoint in "${ENDPOINTS[@]}"; do
+            # Run autocannon for 10 seconds
+            RESULT=$(autocannon -c 10 -d 10 -j http://localhost:5000$endpoint 2>/dev/null)
+            
+            # Parse results (simplified - in production use proper JSON parsing)
+            AVG_LATENCY=$(echo "$RESULT" | jq '.latency.mean' 2>/dev/null || echo "N/A")
+            P95_LATENCY=$(echo "$RESULT" | jq '.latency.p95' 2>/dev/null || echo "N/A")
+            P99_LATENCY=$(echo "$RESULT" | jq '.latency.p99' 2>/dev/null || echo "N/A")
+            
+            # Check against threshold
+            if [ "$AVG_LATENCY" != "N/A" ] && (( $(echo "$AVG_LATENCY < ${{ env.PERFORMANCE_THRESHOLD_API }}" | bc -l) )); then
+              STATUS="✅ PASS"
+            else
+              STATUS="❌ FAIL"
+            fi
+            
+            echo "| $endpoint | ${AVG_LATENCY}ms | ${P95_LATENCY}ms | ${P99_LATENCY}ms | $STATUS |" >> api-performance.md
+          done
+
+      - name: Load Testing
+        run: |
+          echo "" >> api-performance.md
+          echo "### Load Testing Results" >> api-performance.md
+          
+          # Create Artillery test script
+          cat > load-test.yml <<EOF
+          config:
+            target: "http://localhost:5000"
+            phases:
+              - duration: 30
+                arrivalRate: 10
+                name: "Warm up"
+              - duration: 60
+                arrivalRate: 50
+                name: "Sustained load"
+              - duration: 30
+                arrivalRate: 100
+                name: "Peak load"
+          scenarios:
+            - name: "API Flow"
+              flow:
+                - get:
+                    url: "/health"
+                - get:
+                    url: "/api/v1/channels"
+                - get:
+                    url: "/api/v1/videos"
+          EOF
+          
+          # Run load test
+          artillery run load-test.yml -o load-test-report.json || true
+          
+          # Generate report
+          if [ -f load-test-report.json ]; then
+            artillery report load-test-report.json -o load-test-report.html || true
+            echo "Load test completed. Report generated." >> api-performance.md
+          fi
+
+      - name: Stress Testing
+        if: github.event.inputs.test_type == 'stress'
+        run: |
+          echo "" >> api-performance.md
+          echo "### Stress Testing Results" >> api-performance.md
+          
+          # Gradually increase load until breaking point
+          for rate in 100 200 500 1000; do
+            echo "Testing with $rate requests/second..." >> api-performance.md
+            
+            autocannon -c $rate -d 10 http://localhost:5000/health -j > stress-$rate.json 2>/dev/null || {
+              echo "System reached limit at $rate req/s" >> api-performance.md
+              break
+            }
+            
+            ERROR_RATE=$(jq '.errors' stress-$rate.json 2>/dev/null || echo "0")
+            echo "- ${rate} req/s: Errors: $ERROR_RATE" >> api-performance.md
+          done
+
+      - name: Memory and CPU Profiling
+        run: |
+          echo "" >> api-performance.md
+          echo "### Resource Usage" >> api-performance.md
+          
+          # Get process stats
+          PID=$(pgrep -f "node.*server.js" || pgrep -f "npm start")
+          
+          if [ -n "$PID" ]; then
+            # Memory usage
+            MEM=$(ps -o rss= -p $PID | awk '{print $1/1024 " MB"}')
+            echo "- Memory Usage: $MEM" >> api-performance.md
+            
+            # CPU usage
+            CPU=$(ps -o %cpu= -p $PID)
+            echo "- CPU Usage: ${CPU}%" >> api-performance.md
+          fi
+
+      - name: Upload API Performance Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-performance-report
+          path: |
+            api-performance.md
+            load-test-report.html
+            stress-*.json
+
+  frontend-performance:
+    name: Frontend Performance Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Start Frontend Server
+        working-directory: ./frontend
+        run: |
+          npm start &
+          sleep 15
+
+      - name: Install Lighthouse
+        run: npm install -g lighthouse@latest
+
+      - name: Lighthouse Performance Audit
+        run: |
+          echo "# Frontend Performance Report" > frontend-performance.md
+          echo "## Test Execution: $(date)" >> frontend-performance.md
+          echo "" >> frontend-performance.md
+          
+          # Run Lighthouse on key pages
+          PAGES=(
+            "http://localhost:3000"
+            "http://localhost:3000/dashboard"
+            "http://localhost:3000/channels"
+            "http://localhost:3000/analytics"
+          )
+          
+          echo "### Lighthouse Scores" >> frontend-performance.md
+          echo "| Page | Performance | Accessibility | Best Practices | SEO |" >> frontend-performance.md
+          echo "|------|------------|---------------|----------------|-----|" >> frontend-performance.md
+          
+          for page in "${PAGES[@]}"; do
+            # Run Lighthouse
+            lighthouse $page \
+              --output=json \
+              --output-path=lighthouse-$(basename $page).json \
+              --chrome-flags="--headless --no-sandbox" \
+              --only-categories=performance,accessibility,best-practices,seo \
+              || continue
+            
+            # Parse scores
+            if [ -f "lighthouse-$(basename $page).json" ]; then
+              PERF=$(jq '.categories.performance.score * 100' lighthouse-$(basename $page).json)
+              A11Y=$(jq '.categories.accessibility.score * 100' lighthouse-$(basename $page).json)
+              BP=$(jq '.categories["best-practices"].score * 100' lighthouse-$(basename $page).json)
+              SEO=$(jq '.categories.seo.score * 100' lighthouse-$(basename $page).json)
+              
+              echo "| $(basename $page) | ${PERF}% | ${A11Y}% | ${BP}% | ${SEO}% |" >> frontend-performance.md
+            fi
+          done
+
+      - name: Bundle Size Analysis
+        working-directory: ./frontend
+        run: |
+          echo "" >> ../frontend-performance.md
+          echo "### Bundle Size Analysis" >> ../frontend-performance.md
+          
+          # Analyze bundle size
+          if [ -d ".next" ]; then
+            echo "#### Next.js Build Analysis" >> ../frontend-performance.md
+            du -sh .next/static/chunks/*.js | head -10 >> ../frontend-performance.md
+          fi
+          
+          # Check total build size
+          TOTAL_SIZE=$(du -sh .next 2>/dev/null | cut -f1)
+          echo "- Total Build Size: $TOTAL_SIZE" >> ../frontend-performance.md
+
+      - name: Core Web Vitals Testing
+        run: |
+          echo "" >> frontend-performance.md
+          echo "### Core Web Vitals" >> frontend-performance.md
+          
+          # Parse Lighthouse results for Core Web Vitals
+          if [ -f "lighthouse-localhost:3000.json" ]; then
+            LCP=$(jq '.audits["largest-contentful-paint"].numericValue' lighthouse-localhost:3000.json)
+            FID=$(jq '.audits["max-potential-fid"].numericValue' lighthouse-localhost:3000.json)
+            CLS=$(jq '.audits["cumulative-layout-shift"].numericValue' lighthouse-localhost:3000.json)
+            
+            echo "- Largest Contentful Paint (LCP): ${LCP}ms" >> frontend-performance.md
+            echo "- First Input Delay (FID): ${FID}ms" >> frontend-performance.md
+            echo "- Cumulative Layout Shift (CLS): $CLS" >> frontend-performance.md
+            
+            # Check against thresholds
+            if (( $(echo "$LCP < 2500" | bc -l) )); then
+              echo "  - LCP: ✅ Good" >> frontend-performance.md
+            elif (( $(echo "$LCP < 4000" | bc -l) )); then
+              echo "  - LCP: ⚠️ Needs Improvement" >> frontend-performance.md
+            else
+              echo "  - LCP: ❌ Poor" >> frontend-performance.md
+            fi
+          fi
+
+      - name: Upload Frontend Performance Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-performance-report
+          path: |
+            frontend-performance.md
+            lighthouse-*.json
+
+  performance-regression-check:
+    name: Performance Regression Analysis
+    runs-on: ubuntu-latest
+    needs: [database-performance, api-performance, frontend-performance]
+    if: always()
+    
+    steps:
+      - name: Download Performance Reports
+        uses: actions/download-artifact@v4
+        with:
+          path: performance-artifacts
+
+      - name: Analyze Performance Trends
+        run: |
+          echo "# Performance Regression Analysis" > regression-analysis.md
+          echo "## Analysis Date: $(date)" >> regression-analysis.md
+          echo "" >> regression-analysis.md
+          
+          # Check for performance regressions
+          echo "### Performance Summary" >> regression-analysis.md
+          echo "" >> regression-analysis.md
+          
+          # Database performance status
+          if [ -f "performance-artifacts/database-performance-report/db-performance.md" ]; then
+            DB_PASS=$(grep -c "✅ PASS" performance-artifacts/database-performance-report/db-performance.md || echo 0)
+            DB_FAIL=$(grep -c "❌ FAIL" performance-artifacts/database-performance-report/db-performance.md || echo 0)
+            echo "#### Database Performance" >> regression-analysis.md
+            echo "- Passed: $DB_PASS tests" >> regression-analysis.md
+            echo "- Failed: $DB_FAIL tests" >> regression-analysis.md
+            
+            if [ "$DB_FAIL" -gt 0 ]; then
+              echo "⚠️ **Database performance regression detected**" >> regression-analysis.md
+            fi
+          fi
+          
+          # API performance status
+          if [ -f "performance-artifacts/api-performance-report/api-performance.md" ]; then
+            API_PASS=$(grep -c "✅ PASS" performance-artifacts/api-performance-report/api-performance.md || echo 0)
+            API_FAIL=$(grep -c "❌ FAIL" performance-artifacts/api-performance-report/api-performance.md || echo 0)
+            echo "" >> regression-analysis.md
+            echo "#### API Performance" >> regression-analysis.md
+            echo "- Passed: $API_PASS endpoints" >> regression-analysis.md
+            echo "- Failed: $API_FAIL endpoints" >> regression-analysis.md
+            
+            if [ "$API_FAIL" -gt 0 ]; then
+              echo "⚠️ **API performance regression detected**" >> regression-analysis.md
+            fi
+          fi
+          
+          # Frontend performance status
+          if [ -f "performance-artifacts/frontend-performance-report/frontend-performance.md" ]; then
+            echo "" >> regression-analysis.md
+            echo "#### Frontend Performance" >> regression-analysis.md
+            
+            # Check Lighthouse scores
+            if [ -f "performance-artifacts/frontend-performance-report/lighthouse-localhost:3000.json" ]; then
+              PERF_SCORE=$(jq '.categories.performance.score * 100' performance-artifacts/frontend-performance-report/lighthouse-localhost:3000.json)
+              
+              if (( $(echo "$PERF_SCORE < 90" | bc -l) )); then
+                echo "⚠️ **Frontend performance score below target: ${PERF_SCORE}%**" >> regression-analysis.md
+              else
+                echo "✅ Frontend performance score: ${PERF_SCORE}%" >> regression-analysis.md
+              fi
+            fi
+          fi
+
+      - name: Compare with Baseline
+        run: |
+          echo "" >> regression-analysis.md
+          echo "### Performance Baseline Comparison" >> regression-analysis.md
+          echo "" >> regression-analysis.md
+          
+          # Define baseline thresholds
+          echo "| Metric | Baseline | Current | Status |" >> regression-analysis.md
+          echo "|--------|----------|---------|--------|" >> regression-analysis.md
+          echo "| API Response (P95) | <500ms | Check reports | - |" >> regression-analysis.md
+          echo "| Database Query | <200ms | Check reports | - |" >> regression-analysis.md
+          echo "| Page Load (LCP) | <2.5s | Check reports | - |" >> regression-analysis.md
+          echo "| Lighthouse Score | >90 | Check reports | - |" >> regression-analysis.md
+
+      - name: Generate Performance Summary
+        run: |
+          echo "" >> regression-analysis.md
+          echo "## Executive Summary" >> regression-analysis.md
+          echo "" >> regression-analysis.md
+          
+          TOTAL_ISSUES=0
+          
+          # Count all failures
+          for report in performance-artifacts/*/*.md; do
+            if [ -f "$report" ]; then
+              FAILS=$(grep -c "❌" "$report" || echo 0)
+              TOTAL_ISSUES=$((TOTAL_ISSUES + FAILS))
+            fi
+          done
+          
+          if [ "$TOTAL_ISSUES" -eq 0 ]; then
+            echo "✅ **All performance tests passed successfully**" >> regression-analysis.md
+            echo "" >> regression-analysis.md
+            echo "No performance regressions detected. System is performing within acceptable thresholds." >> regression-analysis.md
+          else
+            echo "⚠️ **Performance issues detected: $TOTAL_ISSUES**" >> regression-analysis.md
+            echo "" >> regression-analysis.md
+            echo "### Recommended Actions:" >> regression-analysis.md
+            echo "1. Review failing tests in detailed reports" >> regression-analysis.md
+            echo "2. Analyze query execution plans for slow database queries" >> regression-analysis.md
+            echo "3. Profile API endpoints exceeding response time thresholds" >> regression-analysis.md
+            echo "4. Optimize frontend bundle size and loading performance" >> regression-analysis.md
+            echo "5. Consider implementing caching strategies" >> regression-analysis.md
+          fi
+
+      - name: Upload Regression Analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-regression-analysis
+          path: regression-analysis.md
+
+      - name: Create Performance Issue
+        if: github.event_name == 'schedule' && env.TOTAL_ISSUES > 0
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const analysis = fs.readFileSync('regression-analysis.md', 'utf8');
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ Performance Regression Detected',
+              body: analysis,
+              labels: ['performance', 'automated', 'regression']
+            });

@@ -50,3 +50,5 @@ venv/
 *.tmp
 *.temp
 .cache/
+
+frontend/nul

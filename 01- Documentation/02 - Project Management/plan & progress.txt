@@ -1,6 +1,6 @@
 SPRINT 1:
 
-	US-002-01	As a developer, I want a standardized local development environment so that I can develop and test code consistently across the team.
+OK	US-002-01	As a developer, I want a standardized local development environment so that I can develop and test code consistently across the team.
 		DevOps Eng			Create Docker Compose configuration for local development
 		DevOps Eng			Set up local Kubernetes cluster configuration
 		Backend Eng			Configure PostgreSQL and Redis for local development
@@ -17,4 +17,28 @@ SPRINT 1:
 		Platform Lead		Configure branch protection and merge requirements	
 		
 	US-003-02	As a QA engineer, I want automated testing frameworks integrated into CI/CD so that code quality is maintained and regressions are caught early.
+		QA Engineer			Set up pytest framework and configuration
+		QA Engineer			Create integration test framework structure
+		Backend Eng			Configure code coverage tools (coverage.py)
+		DevOps Eng			Integrate test reporting with GitHub PR comments
+		QA Engineer			Create sample tests and documentation
 		
+		
+		
+		
+TODO:
+  1. Configure GitHub Secrets in your repository settings:
+    - GITHUB_TOKEN (automatically provided)
+    - DEV_DATABASE_URL, PROD_DATABASE_URL
+    - SLACK_WEBHOOK, PAGERDUTY_KEY
+    - NVD_API_KEY for vulnerability database
+  2. Enable GitHub Actions in repository settings
+  3. Create environments in GitHub:
+    - development
+    - staging
+    - production (with required reviewers)
+    - production-approval (for deployment gates)
+  4. Test the pipelines:
+  git checkout -b feature/test-ci
+  git push origin feature/test-ci
+  # Create PR to trigger CI pipeline

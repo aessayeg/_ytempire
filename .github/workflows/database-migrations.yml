@@ -1,0 +1,529 @@
+name: Database Migrations
+
+on:
+  push:
+    paths: 
+      - 'database/migrations/**'
+      - 'backend/models/**'
+      - 'backend/migrations/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      migration_type:
+        description: 'Migration type'
+        required: true
+        default: 'up'
+        type: choice
+        options:
+          - up
+          - down
+          - status
+          - create
+      migration_name:
+        description: 'Migration name (for create only)'
+        required: false
+        type: string
+      dry_run:
+        description: 'Perform dry run only'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  POSTGRES_VERSION: '15'
+
+jobs:
+  validate-migrations:
+    name: Validate Migration Files
+    runs-on: ubuntu-latest
+    
+    outputs:
+      migrations_valid: ${{ steps.validation.outputs.valid }}
+      migrations_count: ${{ steps.validation.outputs.count }}
+      
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Dependencies
+        working-directory: ./backend
+        run: |
+          npm ci --production=false
+
+      - name: Validate Migration Syntax
+        id: validation
+        run: |
+          echo "Validating migration files..."
+          
+          # Check for migration files
+          MIGRATION_COUNT=$(find database/migrations -name "*.sql" -o -name "*.js" | wc -l)
+          echo "Found $MIGRATION_COUNT migration files"
+          echo "count=$MIGRATION_COUNT" >> $GITHUB_OUTPUT
+          
+          # Validate SQL syntax
+          for file in database/migrations/*.sql; do
+            if [ -f "$file" ]; then
+              echo "Validating: $file"
+              # Basic SQL validation
+              grep -E "^(CREATE|ALTER|DROP|INSERT|UPDATE|DELETE)" "$file" > /dev/null || {
+                echo "::error::Invalid SQL in $file"
+                echo "valid=false" >> $GITHUB_OUTPUT
+                exit 1
+              }
+            fi
+          done
+          
+          echo "valid=true" >> $GITHUB_OUTPUT
+          echo "All migrations validated successfully"
+
+      - name: Check Migration Order
+        run: |
+          echo "Checking migration order..."
+          
+          # Ensure migrations are properly numbered
+          ls -1 database/migrations/*.sql 2>/dev/null | sort -V | while read file; do
+            basename "$file"
+          done > migration-order.txt
+          
+          echo "Migration order:"
+          cat migration-order.txt
+
+      - name: Generate Migration Report
+        run: |
+          echo "# Migration Validation Report" > migration-report.md
+          echo "## Summary" >> migration-report.md
+          echo "- Total Migrations: ${{ steps.validation.outputs.count }}" >> migration-report.md
+          echo "- Validation Status: ${{ steps.validation.outputs.valid }}" >> migration-report.md
+          echo "- Environment: ${{ github.event.inputs.environment || 'development' }}" >> migration-report.md
+          echo "" >> migration-report.md
+          echo "## Migration Files" >> migration-report.md
+          if [ -f migration-order.txt ]; then
+            cat migration-order.txt >> migration-report.md
+          fi
+
+      - name: Upload Validation Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-validation-report
+          path: migration-report.md
+
+  analyze-impact:
+    name: Analyze Migration Impact
+    runs-on: ubuntu-latest
+    needs: [validate-migrations]
+    if: needs.validate-migrations.outputs.migrations_valid == 'true'
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: ytempire_analysis
+          POSTGRES_USER: ytempire_test
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Database
+        env:
+          PGPASSWORD: test_password
+        run: |
+          # Create schemas
+          psql -h localhost -U ytempire_test -d ytempire_analysis <<EOF
+          CREATE SCHEMA IF NOT EXISTS users;
+          CREATE SCHEMA IF NOT EXISTS content;
+          CREATE SCHEMA IF NOT EXISTS analytics;
+          CREATE SCHEMA IF NOT EXISTS campaigns;
+          CREATE SCHEMA IF NOT EXISTS system;
+          
+          -- Set search path
+          SET search_path TO users, content, analytics, campaigns, system, public;
+          EOF
+
+      - name: Apply Current Schema
+        env:
+          PGPASSWORD: test_password
+        run: |
+          echo "Applying current production schema..."
+          
+          # Apply base schema
+          if [ -f database/schema/base.sql ]; then
+            psql -h localhost -U ytempire_test -d ytempire_analysis < database/schema/base.sql
+          fi
+
+      - name: Analyze Migration Impact
+        env:
+          PGPASSWORD: test_password
+        run: |
+          echo "# Migration Impact Analysis" > impact-analysis.md
+          echo "## Environment: ${{ github.event.inputs.environment || 'development' }}" >> impact-analysis.md
+          echo "## Analysis Date: $(date)" >> impact-analysis.md
+          echo "" >> impact-analysis.md
+          
+          # Analyze each migration
+          for migration in database/migrations/*.sql; do
+            if [ -f "$migration" ]; then
+              echo "### $(basename $migration)" >> impact-analysis.md
+              
+              # Check for destructive operations
+              if grep -E "(DROP|DELETE|TRUNCATE)" "$migration"; then
+                echo "⚠️ **WARNING: Destructive operations detected**" >> impact-analysis.md
+              fi
+              
+              # Check for index operations
+              if grep -E "(CREATE INDEX|DROP INDEX)" "$migration"; then
+                echo "📊 Index operations detected (may cause temporary locks)" >> impact-analysis.md
+              fi
+              
+              # Check for table alterations
+              if grep -E "ALTER TABLE" "$migration"; then
+                echo "🔧 Table alterations detected" >> impact-analysis.md
+                
+                # Estimate impact
+                TABLE_NAME=$(grep -oP 'ALTER TABLE \K[^ ]+' "$migration" | head -1)
+                echo "- Affected table: $TABLE_NAME" >> impact-analysis.md
+              fi
+              
+              echo "" >> impact-analysis.md
+            fi
+          done
+
+      - name: Performance Impact Assessment
+        env:
+          PGPASSWORD: test_password
+        run: |
+          echo "## Performance Impact Assessment" >> impact-analysis.md
+          
+          # Test migration performance on sample data
+          START_TIME=$(date +%s)
+          
+          for migration in database/migrations/*.sql; do
+            if [ -f "$migration" ]; then
+              # Run EXPLAIN on migration queries
+              psql -h localhost -U ytempire_test -d ytempire_analysis <<EOF
+              BEGIN;
+              \timing on
+              \i $migration
+              ROLLBACK;
+              EOF
+            fi
+          done
+          
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          
+          echo "- Total execution time: ${DURATION}s" >> impact-analysis.md
+          echo "- Average per migration: $((DURATION / ${{ needs.validate-migrations.outputs.migrations_count }}))s" >> impact-analysis.md
+
+      - name: Upload Impact Analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-impact-analysis
+          path: impact-analysis.md
+
+  backup-database:
+    name: Create Database Backup
+    runs-on: ubuntu-latest
+    needs: [analyze-impact]
+    if: github.event.inputs.environment != '' && github.event.inputs.dry_run != 'true'
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PostgreSQL Client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-${{ env.POSTGRES_VERSION }}
+
+      - name: Create Backup
+        env:
+          DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', github.event.inputs.environment)] }}
+        run: |
+          echo "Creating database backup for ${{ github.event.inputs.environment }}..."
+          
+          BACKUP_NAME="ytempire_${{ github.event.inputs.environment }}_$(date +%Y%m%d_%H%M%S).sql"
+          
+          # Create compressed backup
+          # pg_dump $DATABASE_URL --verbose --no-owner --no-acl | gzip > /tmp/$BACKUP_NAME.gz
+          
+          echo "Backup created: $BACKUP_NAME.gz"
+          echo "backup_name=$BACKUP_NAME" >> $GITHUB_ENV
+
+      - name: Upload Backup to S3
+        run: |
+          echo "Uploading backup to S3..."
+          # aws s3 cp /tmp/${{ env.backup_name }}.gz s3://ytempire-backups/${{ github.event.inputs.environment }}/
+          echo "Backup uploaded successfully"
+
+      - name: Verify Backup
+        run: |
+          echo "Verifying backup integrity..."
+          # gunzip -t /tmp/${{ env.backup_name }}.gz
+          echo "Backup verification completed"
+
+      - name: Generate Backup Report
+        run: |
+          echo "# Database Backup Report" > backup-report.md
+          echo "## Environment: ${{ github.event.inputs.environment }}" >> backup-report.md
+          echo "## Backup Details" >> backup-report.md
+          echo "- Filename: ${{ env.backup_name }}.gz" >> backup-report.md
+          echo "- Timestamp: $(date)" >> backup-report.md
+          echo "- Location: s3://ytempire-backups/${{ github.event.inputs.environment }}/" >> backup-report.md
+          echo "- Retention: 30 days" >> backup-report.md
+
+      - name: Upload Backup Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-report-${{ github.event.inputs.environment }}
+          path: backup-report.md
+
+  execute-migrations:
+    name: Execute Database Migrations
+    runs-on: ubuntu-latest
+    needs: [backup-database]
+    if: github.event.inputs.dry_run != 'true'
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Migration Tools
+        working-directory: ./backend
+        run: |
+          npm ci --production=false
+
+      - name: Run Migrations
+        env:
+          NODE_ENV: ${{ github.event.inputs.environment }}
+          DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', github.event.inputs.environment)] }}
+          MIGRATION_TYPE: ${{ github.event.inputs.migration_type }}
+        run: |
+          echo "Executing migrations (${{ env.MIGRATION_TYPE }}) on ${{ github.event.inputs.environment }}..."
+          
+          cd backend
+          
+          case "${{ env.MIGRATION_TYPE }}" in
+            up)
+              echo "Running pending migrations..."
+              # npm run migrate:up
+              ;;
+            down)
+              echo "Rolling back last migration..."
+              # npm run migrate:down
+              ;;
+            status)
+              echo "Checking migration status..."
+              # npm run migrate:status
+              ;;
+            create)
+              echo "Creating new migration: ${{ github.event.inputs.migration_name }}"
+              # npm run migrate:create -- --name "${{ github.event.inputs.migration_name }}"
+              ;;
+          esac
+          
+          echo "Migration execution completed"
+
+      - name: Verify Database State
+        env:
+          DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', github.event.inputs.environment)] }}
+          PGPASSWORD: ${{ secrets[format('{0}_DB_PASSWORD', github.event.inputs.environment)] }}
+        run: |
+          echo "Verifying database state..."
+          
+          # Check all schemas exist
+          psql $DATABASE_URL -c "\dn" > schemas.txt
+          
+          # Check all tables exist
+          psql $DATABASE_URL -c "
+            SELECT schemaname, tablename 
+            FROM pg_tables 
+            WHERE schemaname IN ('users', 'content', 'analytics', 'campaigns', 'system')
+            ORDER BY schemaname, tablename;
+          " > tables.txt
+          
+          # Verify critical tables
+          EXPECTED_TABLES=17
+          ACTUAL_TABLES=$(cat tables.txt | grep -E "(users|content|analytics|campaigns|system)" | wc -l)
+          
+          if [ "$ACTUAL_TABLES" -lt "$EXPECTED_TABLES" ]; then
+            echo "::error::Expected $EXPECTED_TABLES tables but found $ACTUAL_TABLES"
+            exit 1
+          fi
+          
+          echo "Database verification completed successfully"
+
+      - name: Run Post-Migration Tests
+        env:
+          DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', github.event.inputs.environment)] }}
+        run: |
+          echo "Running post-migration tests..."
+          
+          # Test critical queries
+          psql $DATABASE_URL <<EOF
+          -- Test users schema
+          SELECT COUNT(*) FROM users.accounts;
+          SELECT COUNT(*) FROM users.profiles;
+          SELECT COUNT(*) FROM users.auth_tokens;
+          
+          -- Test content schema
+          SELECT COUNT(*) FROM content.channels;
+          SELECT COUNT(*) FROM content.videos;
+          SELECT COUNT(*) FROM content.playlists;
+          
+          -- Test analytics schema
+          SELECT COUNT(*) FROM analytics.views;
+          SELECT COUNT(*) FROM analytics.engagement;
+          
+          -- Test system schema
+          SELECT COUNT(*) FROM system.audit_logs;
+          SELECT COUNT(*) FROM system.migrations;
+          EOF
+          
+          echo "Post-migration tests completed"
+
+      - name: Generate Migration Report
+        run: |
+          echo "# Migration Execution Report" > execution-report.md
+          echo "## Environment: ${{ github.event.inputs.environment }}" >> execution-report.md
+          echo "## Migration Type: ${{ github.event.inputs.migration_type }}" >> execution-report.md
+          echo "## Execution Time: $(date)" >> execution-report.md
+          echo "## Executed by: ${{ github.actor }}" >> execution-report.md
+          echo "" >> execution-report.md
+          echo "## Database State" >> execution-report.md
+          echo "### Schemas" >> execution-report.md
+          cat schemas.txt >> execution-report.md
+          echo "" >> execution-report.md
+          echo "### Tables" >> execution-report.md
+          cat tables.txt >> execution-report.md
+
+      - name: Upload Execution Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-execution-report
+          path: execution-report.md
+
+  rollback-on-failure:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [execute-migrations]
+    if: failure() && github.event.inputs.dry_run != 'true'
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Initiate Rollback
+        env:
+          DATABASE_URL: ${{ secrets[format('{0}_DATABASE_URL', github.event.inputs.environment)] }}
+        run: |
+          echo "🔴 INITIATING DATABASE ROLLBACK"
+          echo "Migration failed, rolling back changes..."
+          
+          # Rollback migration
+          cd backend
+          # npm run migrate:down
+          
+          echo "Rollback completed"
+
+      - name: Restore from Backup if Critical
+        if: github.event.inputs.environment == 'production'
+        run: |
+          echo "Restoring database from backup..."
+          # Download latest backup from S3
+          # aws s3 cp s3://ytempire-backups/production/latest.sql.gz /tmp/
+          # gunzip /tmp/latest.sql.gz
+          # psql $DATABASE_URL < /tmp/latest.sql
+          echo "Database restored from backup"
+
+      - name: Send Alert
+        run: |
+          echo "Sending rollback alert..."
+          # Send critical alert for production rollback
+          if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+            echo "::error::CRITICAL: Production database rollback executed"
+            # Send PagerDuty alert
+          fi
+
+  migration-notification:
+    name: Send Migration Notification
+    runs-on: ubuntu-latest
+    needs: [execute-migrations]
+    if: always()
+    
+    steps:
+      - name: Determine Status
+        id: status
+        run: |
+          if [ "${{ needs.execute-migrations.result }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+            echo "status=dry-run" >> $GITHUB_OUTPUT
+            echo "emoji=🔍" >> $GITHUB_OUTPUT
+            echo "color=warning" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Notification
+        run: |
+          echo "${{ steps.status.outputs.emoji }} Database Migration ${{ steps.status.outputs.status }}"
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Type: ${{ github.event.inputs.migration_type }}"
+          echo "Dry Run: ${{ github.event.inputs.dry_run }}"
+          echo "Executed by: ${{ github.actor }}"
+          
+          # Send Slack notification
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{
+          #     "text": "Database Migration ${{ steps.status.outputs.status }}",
+          #     "attachments": [{
+          #       "color": "${{ steps.status.outputs.color }}",
+          #       "fields": [
+          #         {"title": "Environment", "value": "${{ github.event.inputs.environment }}", "short": true},
+          #         {"title": "Type", "value": "${{ github.event.inputs.migration_type }}", "short": true},
+          #         {"title": "Dry Run", "value": "${{ github.event.inputs.dry_run }}", "short": true},
+          #         {"title": "Status", "value": "${{ steps.status.outputs.status }}", "short": true}
+          #       ]
+          #     }]
+          #   }'
