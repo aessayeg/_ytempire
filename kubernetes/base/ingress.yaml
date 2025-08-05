@@ -37,7 +37,7 @@ spec:
       paths:
       # Backend API routes
       - path: /api(/|$)(.*)
-        pathType: Prefix
+        pathType: ImplementationSpecific
         backend:
           service:
             name: ytempire-backend
@@ -45,7 +45,7 @@ spec:
               number: 5000
       # WebSocket route
       - path: /socket.io
-        pathType: Prefix
+        pathType: ImplementationSpecific
         backend:
           service:
             name: ytempire-backend

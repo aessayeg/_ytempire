@@ -50,10 +50,6 @@ spec:
         prometheus.io/path: "/api/metrics"
     spec:
       serviceAccountName: ytempire-frontend
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
       containers:
       - name: frontend
         image: ytempire/frontend:dev
@@ -86,24 +82,6 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "300m"
-        livenessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /api/health
-            port: 3000
-          initialDelaySeconds: 10
-          periodSeconds: 5
-          timeoutSeconds: 3
-          successThreshold: 1
-          failureThreshold: 3
         lifecycle:
           preStop:
             exec:
@@ -115,6 +93,13 @@ spec:
       - name: wait-for-backend
         image: busybox:latest
         command: ['sh', '-c', 'until nc -z ytempire-backend 5000; do echo waiting for backend; sleep 2; done;']
+        resources:
+          limits:
+            cpu: 100m
+            memory: 64Mi
+          requests:
+            cpu: 50m
+            memory: 32Mi
       volumes:
       - name: nextjs-cache
         emptyDir: {}

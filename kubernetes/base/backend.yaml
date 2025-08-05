@@ -131,7 +131,7 @@ spec:
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /ready
+            path: /health
             port: 5000
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -146,9 +146,23 @@ spec:
       - name: wait-for-postgres
         image: busybox:latest
         command: ['sh', '-c', 'until nc -z postgresql 5432; do echo waiting for postgresql; sleep 2; done;']
+        resources:
+          limits:
+            cpu: 100m
+            memory: 64Mi
+          requests:
+            cpu: 50m
+            memory: 32Mi
       - name: wait-for-redis
         image: busybox:latest
         command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 2; done;']
+        resources:
+          limits:
+            cpu: 100m
+            memory: 64Mi
+          requests:
+            cpu: 50m
+            memory: 32Mi
       volumes:
       - name: uploads
         persistentVolumeClaim:

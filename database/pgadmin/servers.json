@@ -1,0 +1,27 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "YTEmpire PostgreSQL",
+            "Group": "Development",
+            "Host": "postgresql",
+            "Port": 5432,
+            "MaintenanceDB": "ytempire_dev",
+            "Username": "ytempire_user",
+            "Password": "ytempire_pass",
+            "SSLMode": "prefer",
+            "UseSSHTunnel": 0,
+            "TunnelPort": "22",
+            "TunnelAuthentication": 0,
+            "Comment": "YTEmpire Development Database",
+            "BGColor": "#1E88E5",
+            "FGColor": "#FFFFFF",
+            "ServerVersion": 15,
+            "ConnectionParameters": {
+                "sslmode": "prefer",
+                "connect_timeout": 10,
+                "application_name": "pgAdmin",
+                "options": "-c statement_timeout=30s"
+            }
+        }
+    }
+}

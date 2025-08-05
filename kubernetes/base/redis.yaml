@@ -184,7 +184,7 @@ spec:
           name: http
         env:
         - name: PGADMIN_DEFAULT_EMAIL
-          value: "admin@ytempire.local"
+          value: "admin@ytempire.com"
         - name: PGADMIN_DEFAULT_PASSWORD
           valueFrom:
             secretKeyRef:
