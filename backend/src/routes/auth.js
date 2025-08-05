@@ -7,15 +7,40 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const { authenticateToken } = require('../middleware/auth');
-const { validate } = require('../middleware/validation');
 
-// TODO: Define routes
+/**
+ * @route   POST /api/auth/register
+ * @desc    Register a new user
+ * @access  Public
+ */
+router.post('/register', authController.register);
 
-// Example routes
-router.get('/', authController.getAll);
-router.post('/', validate('create'), authController.create);
-router.get('/:id', authController.getById);
-router.put('/:id', validate('update'), authController.update);
-router.delete('/:id', authController.delete);
+/**
+ * @route   POST /api/auth/login
+ * @desc    Login user
+ * @access  Public
+ */
+router.post('/login', authController.login);
+
+/**
+ * @route   POST /api/auth/logout
+ * @desc    Logout user
+ * @access  Private
+ */
+router.post('/logout', authenticateToken, authController.logout);
+
+/**
+ * @route   GET /api/auth/me
+ * @desc    Get current user
+ * @access  Private
+ */
+router.get('/me', authenticateToken, authController.me);
+
+/**
+ * @route   POST /api/auth/refresh
+ * @desc    Refresh access token
+ * @access  Public
+ */
+router.post('/refresh', authController.refresh);
 
 module.exports = router;

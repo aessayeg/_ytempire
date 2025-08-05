@@ -5,7 +5,6 @@
 
 require('dotenv').config();
 const express = require('express');
-// const mongoose = require('mongoose'); // TODO: Replace with PostgreSQL connection
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -13,9 +12,14 @@ const rateLimit = require('express-rate-limit');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 
+// Import database connection
+const { sequelize } = require('./src/models');
+const { testConnection } = require('./src/utils/database');
+
 // Import routes (some temporarily disabled for initial setup)
 const authRoutes = require('./src/routes/auth');
 const userRoutes = require('./src/routes/users');
+const testRoutes = require('./src/routes/test');
 // const channelRoutes = require('./src/routes/channels');
 // const videoRoutes = require('./src/routes/videos');
 // const contentRoutes = require('./src/routes/content');  
@@ -30,7 +34,7 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
     credentials: true
   }
 });
@@ -59,6 +63,7 @@ app.use('/api/', limiter);
 // Routes (some temporarily disabled for initial setup)
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
+app.use('/api/test', testRoutes);
 // app.use('/api/channels', authenticateToken, channelRoutes);
 // app.use('/api/videos', authenticateToken, videoRoutes);
 // app.use('/api/content', authenticateToken, contentRoutes);
@@ -84,17 +89,49 @@ io.on('connection', (socket) => {
   // TODO: Implement WebSocket events
 });
 
-// Database connection (temporarily disabled for initial setup)
-// TODO: Configure PostgreSQL connection instead of MongoDB
-// mongoose.connect(process.env.MONGODB_URI, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true
-// })
-// .then(() => console.log('MongoDB connected'))
-// .catch(err => console.error('MongoDB connection error:', err));
+// Initialize database connection
+const initializeDatabase = async () => {
+  try {
+    // Test database connection
+    await testConnection();
+    
+    // Don't sync models - tables are already created in PostgreSQL
+    // In production, use migrations for schema changes
+    console.log('✓ Database models loaded (sync disabled - using existing schema)');
+  } catch (error) {
+    console.error('✗ Database initialization failed:', error);
+    process.exit(1);
+  }
+};
 
 // Start server
 const PORT = process.env.PORT || 5000;
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+
+const startServer = async () => {
+  try {
+    // Initialize database first
+    await initializeDatabase();
+    
+    // Then start the HTTP server
+    httpServer.listen(PORT, () => {
+      console.log(`✓ Server running on port ${PORT}`);
+      console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  } catch (error) {
+    console.error('✗ Server startup failed:', error);
+    process.exit(1);
+  }
+};
+
+// Handle graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  httpServer.close(() => {
+    console.log('HTTP server closed');
+  });
+  await sequelize.close();
+  process.exit(0);
 });
+
+// Start the server
+startServer();
