@@ -1,0 +1,12 @@
+{
+  "name": "analytics",
+  "description": "Analytics schema for YTEmpire application",
+  "fields": {
+    "_id": {
+      "type": "ObjectId",
+      "description": "Unique identifier"
+    }
+  },
+  "indexes": [],
+  "validation": {}
+}

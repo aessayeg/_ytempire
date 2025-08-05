@@ -1,0 +1,58 @@
+/**
+ * Responsive Styles - Media queries and responsive design utilities
+ * YTEmpire Project
+ */
+
+/* Breakpoints */
+:root {
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+}
+
+/* Mobile First Approach */
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
+  .container {
+    max-width: 540px;
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+  .container {
+    max-width: 720px;
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  .container {
+    max-width: 960px;
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+/* Utility classes for responsive design */
+.d-none { display: none; }
+.d-block { display: block; }
+.d-flex { display: flex; }
+
+@media (max-width: 767px) {
+  .d-md-none { display: none; }
+  .d-md-block { display: block; }
+}
+
+@media (min-width: 768px) {
+  .d-md-none { display: none; }
+  .d-md-block { display: block; }
+}
+
+/* TODO: Add more responsive styles */

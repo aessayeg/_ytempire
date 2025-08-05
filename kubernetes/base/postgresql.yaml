@@ -1,0 +1,208 @@
+# PostgreSQL StatefulSet configuration for YTEmpire MVP
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-config
+  namespace: ytempire-dev
+data:
+  postgresql.conf: |
+    max_connections = 100
+    shared_buffers = 128MB
+    effective_cache_size = 512MB
+    maintenance_work_mem = 64MB
+    work_mem = 4MB
+    wal_level = replica
+    max_wal_size = 1GB
+    min_wal_size = 80MB
+    log_statement = 'all'
+    log_duration = on
+  init.sql: |
+    -- Create YTEmpire database schema
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    
+    -- Create users table
+    CREATE TABLE IF NOT EXISTS users (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        email VARCHAR(255) UNIQUE NOT NULL,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        first_name VARCHAR(100),
+        last_name VARCHAR(100),
+        avatar_url TEXT,
+        email_verified BOOLEAN DEFAULT FALSE,
+        is_active BOOLEAN DEFAULT TRUE,
+        role VARCHAR(50) DEFAULT 'user',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+    
+    -- Create channels table
+    CREATE TABLE IF NOT EXISTS channels (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        youtube_channel_id VARCHAR(255) UNIQUE NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        thumbnail_url TEXT,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+    
+    -- Create indexes
+    CREATE INDEX idx_users_email ON users(email);
+    CREATE INDEX idx_channels_user_id ON channels(user_id);
+    
+    -- Insert test data
+    INSERT INTO users (email, username, password_hash, first_name, last_name, role)
+    VALUES ('admin@ytempire.local', 'admin', '$2b$10$YourHashHere', 'Admin', 'User', 'admin')
+    ON CONFLICT (email) DO NOTHING;
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-headless
+  namespace: ytempire-dev
+  labels:
+    app: postgresql
+spec:
+  ports:
+  - port: 5432
+    name: postgresql
+  clusterIP: None
+  selector:
+    app: postgresql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: ytempire-dev
+  labels:
+    app: postgresql
+spec:
+  type: NodePort
+  ports:
+  - port: 5432
+    targetPort: 5432
+    nodePort: 30000
+    name: postgresql
+  selector:
+    app: postgresql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql
+  namespace: ytempire-dev
+spec:
+  serviceName: postgresql-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9187"
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+      - name: postgresql
+        image: postgres:15-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+          name: postgresql
+        env:
+        - name: POSTGRES_DB
+          value: ytempire_dev
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secret
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secret
+              key: password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgresql-storage
+          mountPath: /var/lib/postgresql/data
+        - name: postgresql-config
+          mountPath: /etc/postgresql/postgresql.conf
+          subPath: postgresql.conf
+        - name: postgresql-config
+          mountPath: /docker-entrypoint-initdb.d/init.sql
+          subPath: init.sql
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - ytempire_user
+            - -d
+            - ytempire_dev
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - ytempire_user
+            - -d
+            - ytempire_dev
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+      - name: postgres-exporter
+        image: prometheuscommunity/postgres-exporter:latest
+        ports:
+        - containerPort: 9187
+          name: metrics
+        env:
+        - name: DATA_SOURCE_NAME
+          value: "postgresql://ytempire_user:ytempire_pass@localhost:5432/ytempire_dev?sslmode=disable"
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+      volumes:
+      - name: postgresql-config
+        configMap:
+          name: postgresql-config
+  volumeClaimTemplates:
+  - metadata:
+      name: postgresql-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: local-storage
+      resources:
+        requests:
+          storage: 5Gi
+      selector:
+        matchLabels:
+          app: postgresql

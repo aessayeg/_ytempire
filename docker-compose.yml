@@ -1,0 +1,169 @@
+version: '3.8'
+
+services:
+  # Frontend Service - React/Next.js Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: ytempire-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost/api
+      - NEXT_PUBLIC_APP_NAME=YTEmpire
+      - NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - ytempire-network
+    command: npm run dev
+
+  # Backend Service - Node.js/Express API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: ytempire-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./uploads:/app/uploads
+      - ./temp:/app/temp
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - DATABASE_URL=postgresql://ytempire_user:ytempire_pass@postgresql:5432/ytempire_dev
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev-jwt-secret-change-in-production
+      - SESSION_SECRET=dev-session-secret-change-in-production
+      - UPLOAD_PATH=/app/uploads
+      - TEMP_PATH=/app/temp
+      - CLIENT_URL=http://localhost:3000
+      - SMTP_HOST=mailhog
+      - SMTP_PORT=1025
+      - SMTP_SECURE=false
+      - EMAIL_FROM=noreply@ytempire.local
+    depends_on:
+      - postgresql
+      - redis
+      - mailhog
+    networks:
+      - ytempire-network
+    command: npm run dev
+
+  # PostgreSQL Database
+  postgresql:
+    image: postgres:15-alpine
+    container_name: ytempire-postgresql
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_USER=ytempire_user
+      - POSTGRES_PASSWORD=ytempire_pass
+      - POSTGRES_DB=ytempire_dev
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    networks:
+      - ytempire-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ytempire_user -d ytempire_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: ytempire-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ""
+    networks:
+      - ytempire-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: ytempire-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./frontend/public:/usr/share/nginx/html/static:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - ytempire-network
+
+  # pgAdmin - PostgreSQL Management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ytempire-pgadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@ytempire.local
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_CONFIG_SERVER_MODE=False
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      - postgresql
+    networks:
+      - ytempire-network
+
+  # MailHog - Email Testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ytempire-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - ytempire-network
+
+# Volumes
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+# Networks
+networks:
+  ytempire-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

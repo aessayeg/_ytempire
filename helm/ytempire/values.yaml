@@ -1,0 +1,230 @@
+# Default values for ytempire
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  environment: development
+  storageClass: local-storage
+  domain: ytempire.local
+
+# Frontend configuration
+frontend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ytempire/frontend
+    pullPolicy: IfNotPresent
+    tag: "dev"
+  service:
+    type: ClusterIP
+    port: 3000
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "300m"
+  env:
+    NODE_ENV: development
+    NEXT_PUBLIC_APP_NAME: YTEmpire
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+# Backend configuration
+backend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ytempire/backend
+    pullPolicy: IfNotPresent
+    tag: "dev"
+  service:
+    type: ClusterIP
+    port: 5000
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  env:
+    NODE_ENV: development
+    PORT: "5000"
+  secrets:
+    jwtSecret: "dev-jwt-secret-change-in-production"
+    sessionSecret: "dev-session-secret-change-in-production"
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  auth:
+    username: ytempire_user
+    password: ytempire_pass
+    database: ytempire_dev
+  primary:
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClass: local-storage
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    nodeSelector: {}
+    service:
+      type: NodePort
+      nodePort: 30000
+
+# Redis configuration
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 2Gi
+      storageClass: local-storage
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "50m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+    service:
+      type: NodePort
+      nodePort: 30001
+
+# Storage configuration
+storage:
+  uploads:
+    enabled: true
+    size: 10Gi
+    accessMode: ReadWriteMany
+    path: /uploads
+  logs:
+    enabled: true
+    size: 5Gi
+    accessMode: ReadWriteMany
+    path: /data/logs
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+  hosts:
+    - host: ytempire.local
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /
+          pathType: Prefix
+          service: frontend
+  tls: []
+
+# pgAdmin configuration
+pgadmin:
+  enabled: true
+  email: admin@ytempire.local
+  password: admin123
+  service:
+    type: NodePort
+    nodePort: 30002
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+# MailHog configuration
+mailhog:
+  enabled: true
+  service:
+    type: NodePort
+    uiNodePort: 30003
+    smtpPort: 1025
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "10m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+
+# Monitoring configuration
+monitoring:
+  enabled: false
+  prometheus:
+    enabled: false
+  grafana:
+    enabled: false
+
+# API Keys and External Services
+apiKeys:
+  youtube: "YOUR_YOUTUBE_API_KEY"
+  openai: "YOUR_OPENAI_API_KEY"
+  claude: "YOUR_CLAUDE_API_KEY"
+
+# Resource Quotas
+resourceQuota:
+  enabled: true
+  limits:
+    requests.cpu: "4"
+    requests.memory: "8Gi"
+    limits.cpu: "8"
+    limits.memory: "16Gi"
+    persistentvolumeclaims: "10"
+
+# Network Policies
+networkPolicy:
+  enabled: true
+  ingress:
+    enabled: true
+  egress:
+    enabled: true
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod Security Context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+# Image Pull Secrets
+imagePullSecrets: []
+
+# Node Selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}

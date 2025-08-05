@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "name": "ytempire",
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://ytempire-api.herokuapp.com/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "@api_url",
+    "NEXT_PUBLIC_YOUTUBE_API_KEY": "@youtube_api_key"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "@api_url",
+      "NEXT_PUBLIC_YOUTUBE_API_KEY": "@youtube_api_key"
+    }
+  }
+}

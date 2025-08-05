@@ -1,0 +1,61 @@
+# Kustomization for YTEmpire base configuration
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ytempire-dev
+
+resources:
+  - namespace.yaml
+  - storage.yaml
+  - configmap.yaml
+  - secrets.yaml
+  - postgresql.yaml
+  - redis.yaml
+  - backend.yaml
+  - frontend.yaml
+  - ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/name: ytempire
+  app.kubernetes.io/instance: ytempire-mvp
+  app.kubernetes.io/component: platform
+  app.kubernetes.io/part-of: ytempire
+  app.kubernetes.io/managed-by: kustomize
+
+images:
+  - name: ytempire/backend
+    newTag: dev
+  - name: ytempire/frontend
+    newTag: dev
+
+replicas:
+  - name: ytempire-backend
+    count: 2
+  - name: ytempire-frontend
+    count: 2
+
+configMapGenerator:
+  - name: ytempire-env
+    literals:
+      - ENVIRONMENT=development
+      - VERSION=1.0.0-mvp
+      - BUILD_TIME="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+secretGenerator:
+  - name: ytempire-generated
+    literals:
+      - api-key=generated-$(openssl rand -hex 16)
+    type: Opaque
+
+patchesStrategicMerge:
+  - |-
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: ytempire-backend
+      namespace: ytempire-dev
+    spec:
+      sessionAffinity: ClientIP
+      sessionAffinityConfig:
+        clientIP:
+          timeoutSeconds: 10800

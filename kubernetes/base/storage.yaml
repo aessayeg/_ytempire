@@ -1,0 +1,139 @@
+# Storage configuration for YTEmpire MVP
+# Local storage class for development
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+---
+# PostgreSQL persistent volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgresql-pv
+  labels:
+    type: local
+    app: postgresql
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/postgresql
+    type: DirectoryOrCreate
+  persistentVolumeReclaimPolicy: Retain
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - ytempire-dev-worker
+          - ytempire-dev-control-plane
+---
+# Redis persistent volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redis-pv
+  labels:
+    type: local
+    app: redis
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/redis
+    type: DirectoryOrCreate
+  persistentVolumeReclaimPolicy: Retain
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - ytempire-dev-worker
+          - ytempire-dev-control-plane
+---
+# Application file uploads persistent volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: uploads-pv
+  labels:
+    type: local
+    app: ytempire
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /uploads
+    type: DirectoryOrCreate
+  persistentVolumeReclaimPolicy: Retain
+---
+# Persistent Volume Claim for uploads
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: uploads-pvc
+  namespace: ytempire-dev
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  selector:
+    matchLabels:
+      app: ytempire
+---
+# Logs persistent volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-pv
+  labels:
+    type: local
+    app: logs
+spec:
+  storageClassName: local-storage
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /data/logs
+    type: DirectoryOrCreate
+  persistentVolumeReclaimPolicy: Retain
+---
+# Persistent Volume Claim for logs
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-pvc
+  namespace: ytempire-dev
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  selector:
+    matchLabels:
+      app: logs

@@ -1,0 +1,75 @@
+# Namespace configuration for YTEmpire MVP
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ytempire-dev
+  labels:
+    name: ytempire-dev
+    environment: development
+    project: ytempire
+    version: mvp
+  annotations:
+    description: "YTEmpire development environment namespace"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ytempire-monitoring
+  labels:
+    name: ytempire-monitoring
+    environment: development
+    project: ytempire
+    purpose: monitoring
+  annotations:
+    description: "YTEmpire monitoring and observability namespace"
+---
+# Resource Quota for development namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: ytempire-dev-quota
+  namespace: ytempire-dev
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: "8Gi"
+    limits.cpu: "8"
+    limits.memory: "16Gi"
+    persistentvolumeclaims: "10"
+    services: "20"
+    pods: "50"
+---
+# Network Policy for namespace isolation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ytempire-dev-network-policy
+  namespace: ytempire-dev
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ytempire-dev
+    - namespaceSelector:
+        matchLabels:
+          name: ytempire-monitoring
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+  egress:
+  - to:
+    - namespaceSelector: {}
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53

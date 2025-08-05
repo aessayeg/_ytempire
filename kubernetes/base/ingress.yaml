@@ -1,0 +1,158 @@
+# Ingress configuration for YTEmpire MVP
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: nginx
+  labels:
+    app.kubernetes.io/component: controller
+  annotations:
+    ingressclass.kubernetes.io/is-default-class: "true"
+spec:
+  controller: k8s.io/ingress-nginx
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ytempire-ingress
+  namespace: ytempire-dev
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "http://localhost:3000,http://ytempire.local"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    nginx.ingress.kubernetes.io/websocket-services: "ytempire-backend"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: ytempire.local
+    http:
+      paths:
+      # Backend API routes
+      - path: /api(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: ytempire-backend
+            port:
+              number: 5000
+      # WebSocket route
+      - path: /socket.io
+        pathType: Prefix
+        backend:
+          service:
+            name: ytempire-backend
+            port:
+              number: 5000
+      # Health check route
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: ytempire-backend
+            port:
+              number: 5000
+      # Frontend routes (catch-all)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ytempire-frontend
+            port:
+              number: 3000
+  - host: api.ytempire.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ytempire-backend
+            port:
+              number: 5000
+  - host: pgadmin.ytempire.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: pgadmin
+            port:
+              number: 80
+  - host: mailhog.ytempire.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mailhog
+            port:
+              number: 8025
+---
+# Rate limiting configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-rate-limiting
+  namespace: ytempire-dev
+data:
+  rate-limiting.conf: |
+    limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+    limit_req_zone $binary_remote_addr zone=auth_limit:10m rate=5r/m;
+    limit_req_zone $binary_remote_addr zone=upload_limit:10m rate=1r/s;
+---
+# Network Policy for service communication
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ytempire-network-policy
+  namespace: ytempire-dev
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress from nginx controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+  # Allow internal service communication
+  - from:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+  egress:
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow internal service communication
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+  # Allow external HTTPS (for APIs)
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80

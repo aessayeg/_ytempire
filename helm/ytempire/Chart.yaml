@@ -1,0 +1,29 @@
+apiVersion: v2
+name: ytempire
+description: YTEmpire - YouTube Automation Platform Helm Chart
+type: application
+version: 1.0.0
+appVersion: "1.0.0-mvp"
+home: https://github.com/yourusername/ytempire
+sources:
+  - https://github.com/yourusername/ytempire
+maintainers:
+  - name: YTEmpire Team
+    email: team@ytempire.com
+keywords:
+  - youtube
+  - automation
+  - content-creation
+  - kubernetes
+icon: https://ytempire.com/logo.png
+annotations:
+  category: Applications
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: "17.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled

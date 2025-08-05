@@ -1,0 +1,13 @@
+{
+  "name": "ytempire-production",
+  "environment": "production",
+  "database": {
+    "uri": "mongodb://localhost:27017/ytempire-production"
+  },
+  "server": {
+    "port": 5000
+  },
+  "logging": {
+    "level": "error"
+  }
+}

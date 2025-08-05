@@ -1,0 +1,41 @@
+# Netlify configuration for YTEmpire
+
+[build]
+  base = "frontend/"
+  command = "npm run build"
+  publish = "frontend/build"
+
+[build.environment]
+  NODE_VERSION = "16"
+  REACT_APP_API_URL = "https://api.ytempire.com"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://api.ytempire.com/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[context.production.environment]
+  NEXT_PUBLIC_API_URL = "https://api.ytempire.com"
+
+[context.deploy-preview.environment]
+  NEXT_PUBLIC_API_URL = "https://staging-api.ytempire.com"
+
+[context.branch-deploy.environment]
+  NEXT_PUBLIC_API_URL = "https://dev-api.ytempire.com"

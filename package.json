@@ -1,0 +1,51 @@
+{
+  "name": "ytempire",
+  "version": "1.0.0",
+  "description": "YouTube Automation Platform",
+  "main": "backend/server.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "start": "node backend/server.js",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "test:docker": "jest --config=jest.docker.config.js --runInBand --verbose",
+    "test:docker:compose": "jest tests/docker/compose.test.js --runInBand",
+    "test:docker:services": "jest tests/docker/services.test.js --runInBand",
+    "test:docker:integration": "jest tests/integration/*.test.js --runInBand",
+    "test:docker:all": "npm run test:docker",
+    "docker:up": "docker-compose up -d --build",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:ps": "docker-compose ps",
+    "docker:clean": "docker-compose down -v --remove-orphans",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js"
+  },
+  "keywords": ["youtube", "automation", "content-creation", "analytics"],
+  "author": "YTEmpire Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0",
+    "eslint": "^8.0.0",
+    "prettier": "^2.8.0",
+    "jest": "^29.6.0",
+    "axios": "^1.5.0",
+    "pg": "^8.11.0",
+    "redis": "^4.6.0",
+    "form-data": "^4.0.0",
+    "bcryptjs": "^2.4.3",
+    "@types/jest": "^29.5.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "ytempire-development",
+  "environment": "development",
+  "database": {
+    "uri": "mongodb://localhost:27017/ytempire-development"
+  },
+  "server": {
+    "port": 5000
+  },
+  "logging": {
+    "level": "debug"
+  }
+}
